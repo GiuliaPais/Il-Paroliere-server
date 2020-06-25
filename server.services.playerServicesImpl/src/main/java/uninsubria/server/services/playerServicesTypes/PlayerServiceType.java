@@ -1,6 +1,6 @@
 package uninsubria.server.services.playerServicesTypes;
 
-import uninsubria.server.services.serviceInterface.ServiceType;
+import uninsubria.server.services.api.ServiceType;
 import uninsubria.server.services.playerServicesImpl.*;
 
 public enum PlayerServiceType implements ServiceType {
@@ -12,7 +12,8 @@ public enum PlayerServiceType implements ServiceType {
 	PlayerServiceType(Class<?> sClass) {
 		this.value = sClass;
 	}
-
+	
+	@Override
 	public Class<?> getValue() {
 		return value;
 	}

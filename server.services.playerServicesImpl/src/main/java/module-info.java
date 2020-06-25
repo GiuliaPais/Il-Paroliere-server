@@ -1,10 +1,8 @@
 module server.services.playerServicesImpl {
 	requires java.base;
-	requires transitive server.services.serviceInterface;
+	requires transitive server.services.api;
 	
-	exports uninsubria.server.services.playerServicesTypes to server.services.api;
-	exports uninsubria.server.services.playerServicesImpl to server.services.api;
+	exports uninsubria.server.services.playerServicesImpl;
+	exports uninsubria.server.services.playerServicesTypes;
 	
-	provides uninsubria.server.services.serviceInterface.AbstractServiceFactory with
-				uninsubria.server.services.playerServicesFactory.PlayerServiceFactory;
 }

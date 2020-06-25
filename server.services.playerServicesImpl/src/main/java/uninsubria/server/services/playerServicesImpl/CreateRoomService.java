@@ -1,8 +1,7 @@
 package uninsubria.server.services.playerServicesImpl;
 
+import uninsubria.server.services.api.Service;
 import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
-import uninsubria.server.services.serviceInterface.Service;
-import uninsubria.server.services.serviceInterface.ServiceType;
 
 public class CreateRoomService implements Service {
 	
@@ -22,8 +21,7 @@ public class CreateRoomService implements Service {
 		
 	}
 
-	@Override
-	public ServiceType getServiceType() {
+	public PlayerServiceType getServiceType() {
 		return serviceType;
 	}
 
