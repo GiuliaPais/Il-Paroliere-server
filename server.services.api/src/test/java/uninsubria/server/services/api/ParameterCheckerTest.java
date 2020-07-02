@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.InvocationTargetException;
 import org.junit.jupiter.api.Test;
 
-import uninsubria.server.services.api.ParameterChecker;
-import uninsubria.server.services.api.Service;
-
 class ParameterCheckerTest {
 	
 	private ParameterChecker checker = new ParameterChecker();

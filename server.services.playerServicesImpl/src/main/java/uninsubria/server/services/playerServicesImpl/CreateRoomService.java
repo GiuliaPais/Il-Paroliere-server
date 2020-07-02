@@ -2,6 +2,7 @@ package uninsubria.server.services.playerServicesImpl;
 
 import uninsubria.server.services.api.Service;
 import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class CreateRoomService implements Service {
 	
@@ -15,12 +16,6 @@ public class CreateRoomService implements Service {
 		this.playersNo = playersNo;
 	}
 	
-	@Override
-	public void execute() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public PlayerServiceType getServiceType() {
 		return serviceType;
 	}
@@ -39,6 +34,12 @@ public class CreateRoomService implements Service {
 
 	public void setPlayersNo(Integer playersNo) {
 		this.playersNo = playersNo;
+	}
+
+	@Override
+	public ServiceResultInterface execute() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

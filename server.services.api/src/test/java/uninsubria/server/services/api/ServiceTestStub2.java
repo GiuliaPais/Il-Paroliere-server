@@ -1,7 +1,7 @@
 package uninsubria.server.services.api;
 
 import uninsubria.server.services.api.Service;
-import uninsubria.server.services.api.ServiceType;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class ServiceTestStub2 implements Service {
 	/*---Fields---*/
@@ -28,11 +28,6 @@ public class ServiceTestStub2 implements Service {
 		this.test = superC;
 	}
 
-	@Override
-	public void execute() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public String getS() {
 		return s;
@@ -44,6 +39,12 @@ public class ServiceTestStub2 implements Service {
 
 	public TestSubClassStub getTest() {
 		return test;
+	}
+
+	@Override
+	public ServiceResultInterface execute() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

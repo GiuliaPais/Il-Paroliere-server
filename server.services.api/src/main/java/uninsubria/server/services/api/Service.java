@@ -1,5 +1,7 @@
 package uninsubria.server.services.api;
 
+import uninsubria.utils.serviceResults.ServiceResultInterface;
+
 /**
  * Common interface for Service objects. <br><br>
  * <b>Guidelines for implementing classes</b><br>
@@ -24,6 +26,9 @@ package uninsubria.server.services.api;
  * @version 0.9.0
  */
 public interface Service {
-	//TO CHANGE return value
-	public void execute();
+	/**
+	 * Executes the service.
+	 * @return an object of type ServiceResultInterface that contains the results produced.
+	 */
+	public ServiceResultInterface execute();
 }

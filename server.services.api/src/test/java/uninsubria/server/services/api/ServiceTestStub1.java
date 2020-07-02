@@ -1,7 +1,7 @@
 package uninsubria.server.services.api;
 
 import uninsubria.server.services.api.Service;
-import uninsubria.server.services.api.ServiceType;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class ServiceTestStub1 implements Service {
 	
@@ -12,10 +12,11 @@ public class ServiceTestStub1 implements Service {
 	}
 
 	@Override
-	public void execute() {
+	public ServiceResultInterface execute() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
+
 
 	
 }
