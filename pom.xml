@@ -16,6 +16,8 @@
     <module>server.services.playerServicesImpl</module>
     <module>server.gui</module>
     <module>server.services.api</module>
+    <module>server.dice</module>
+    <module>server.grid</module>
   </modules>
   
   <build>
