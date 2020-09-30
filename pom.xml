@@ -18,6 +18,7 @@
     <module>server.services.api</module>
     <module>server.dice</module>
     <module>server.grid</module>
+    <module>server.dictionary</module>
   </modules>
   
   <build>
