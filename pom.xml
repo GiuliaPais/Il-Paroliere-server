@@ -19,6 +19,7 @@
     <module>server.dice</module>
     <module>server.grid</module>
     <module>server.dictionary</module>
+    <module>server.room</module>
   </modules>
   
   <build>
