@@ -12,6 +12,7 @@ public class Room extends Thread{
 	private RoomState state;
 	private Player roomAdmin;
 	
+	private int id;
 	private static int MaxPlayer = 6;
 	private static int actualPlayer = 0;
 	
@@ -20,11 +21,12 @@ public class Room extends Thread{
 	 * altri player fino al numero massimo consentito potranno unirsi alla lobby.
 	 * @param player
 	 */
-	public Room(Player player) {
+	public Room(int id, Player player) {
+		this.id = id;
 		state = RoomState.OPEN;
 		slots = new ArrayList<Player>();
 		roomAdmin = player;
-		join(roomAdmin);
+		joinPlayer(roomAdmin);
 	}
 	
 	// Il trhead stanza esiste fintanto che al suo interno vi è l'admin della stanza.
@@ -41,7 +43,7 @@ public class Room extends Thread{
 	 * Ciò è possibile esclusivamente se non è già stato raggiunto il numero massimo di player consentito.
 	 * @param player
 	 */
-	public void join(Player player) {
+	public void joinPlayer(Player player) {
 		if(actualPlayer < MaxPlayer) {
 			slots.add(player);
 			actualPlayer++;
@@ -71,13 +73,12 @@ public class Room extends Thread{
 		}
 	}
 	
-	// Serve davvero?
 	/**
-	 * Setta lo stato attuale della stanza.
-	 * @param state
+	 * Restituisce l'id della stanza.
+	 * @return int
 	 */
-	public void setStates(RoomState state) {
-		this.state = state;
+	public int getIdRoom() {
+		return id;
 	}
 	
 	/**

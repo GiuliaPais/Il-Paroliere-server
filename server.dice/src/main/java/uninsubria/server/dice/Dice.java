@@ -21,14 +21,16 @@ public class Dice implements DiceInterface {
 	}
 	
 	/**
-	 * Lancia il dado sfruttando come argomento un'istanza di random e setta la variabile booleana
-	 * del lancio a <code>true</code>.
+	 * Lancia il dado, esclusivamente se non è già stato lanciato, sfruttando come argomento un'istanza di 
+	 * random e setta la variabile booleana del lancio a <code>true</code>.
 	 */
 	@Override
 	public void throwDice(Random generator) {
-		int i = faces.length;
-		resultFace = faces[generator.nextInt(i)];
-		thrown = true;
+		if(!thrown) {
+			int i = faces.length;
+			resultFace = faces[generator.nextInt(i)];
+			thrown = true;
+		}
 	}
 
 	/**

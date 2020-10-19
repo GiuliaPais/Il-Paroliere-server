@@ -5,7 +5,7 @@ import java.util.Map;
 
 import tmpClasses.Grid;
 import tmpClasses.Player;
-import tmpClasses.ServiceResultInterface;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class RoomManager implements RoomManagerInterface {
 	

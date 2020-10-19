@@ -20,6 +20,7 @@
     <module>server.grid</module>
     <module>server.dictionary</module>
     <module>server.room</module>
+    <module>server.match</module>
   </modules>
   
   <build>

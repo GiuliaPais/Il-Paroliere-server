@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import tmpClasses.*;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public interface RoomManagerInterface {
 

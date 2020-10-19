@@ -5,14 +5,16 @@
     <artifactId>serverIP</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>server.grid</artifactId>
   
-   <properties>
+  <artifactId>server.match</artifactId>
+  
+  <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>14</maven.compiler.source>
     <maven.compiler.target>14</maven.compiler.target>
   </properties>
 
+  
   <dependencies>
   	<dependency>
   		<groupId>org.junit.jupiter</groupId>
@@ -20,11 +22,17 @@
   		<version>5.6.0</version>
   	</dependency>
   	<dependency>
+  		<groupId>org.mockito</groupId>
+  		<artifactId>mockito-core</artifactId>
+  		<version>3.3.0</version>
+  	</dependency>
+  	<dependency>
   		<groupId>it.uninsubria.labB717304</groupId>
   		<artifactId>server.dice</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
   </dependencies>
+  
   
   <build>
         <plugins>
@@ -38,4 +46,5 @@
             </plugin>
             </plugins>
    </build>
+   
 </project>

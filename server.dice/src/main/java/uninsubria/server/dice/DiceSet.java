@@ -2,15 +2,15 @@ package uninsubria.server.dice;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.Random;
 
 public class DiceSet {
 
 	private static final int nOfDices = 16;
-	private ArrayList<Dice> poolDices = new ArrayList<>();
 	private Dice[] dices = new Dice[nOfDices];
 	private DiceSetStandard standard = DiceSetStandard.STANDARD;
-	boolean thrown;
+	private boolean thrown;
+	private Random generator;
 	
 	/**
 	 * Costruttore del set di dadi. Al suo interno vengono inizializzati l'array dei dadi,
@@ -20,7 +20,7 @@ public class DiceSet {
 	public DiceSet() throws IOException, URISyntaxException {
 		dices = new StandardParser(standard).getDices();
 		thrown = false;
-
+		generator = new Random();
 	}
 	
 	/**
@@ -46,18 +46,39 @@ public class DiceSet {
 	public boolean areThrown() {
 		return thrown;
 	}
-
+	
 	/**
-	 * La "pool" di dadi viene riempita col set di dadi selezionato.
+	 * Lancia i dadi e setta la variabile thrown a <code>True</code>.
 	 */
-	public void fillPoolDices() {
-		for(int i = 0; i < nOfDices; i++)
-			poolDices.add(dices[i]);
+	public void throwDices() {
+		for(Dice d : dices) {
+			d.throwDice(generator);
+		}
+		thrown = true;
 	}
 	
-	public ArrayList<Dice> getPoolDices() {
-		fillPoolDices();
-		return poolDices;
+	/**
+	 * Setta la variabile thrown a <code>False</code> e resetta le facce dei dadi.
+	 */
+	public void setNotThrown() {
+		for(Dice d : dices) {
+			d.setNotThrown();
+		}
+		thrown = false;
+	}
+	
+	/**
+	 * Restituisce un array di stringhe contenenti i risultati del lancio dei dadi, se lanciati. Null altrimenti.
+	 * @return Array di stringhe contenente i risultati del lancio.
+	 */
+	public String[] getResultFaces() {
+		String[] faces = new String[dices.length];
+		
+		for(int i = 0; i < faces.length; i++) {
+			faces[i] = dices[i].getResultFace();
+		}
+		
+		return faces;
 	}
 	
 	/**
