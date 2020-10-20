@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Map;
 
-import tmpClasses.Grid;
+import server.match.Grid;
 import tmpClasses.Player;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 

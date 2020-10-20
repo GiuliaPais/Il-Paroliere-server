@@ -1,6 +1,6 @@
 package server.room;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import tmpClasses.Player;
 
@@ -9,7 +9,7 @@ public class RoomList {
 	private static final int MAX_ROOMS = 10;
 	private static RoomList instance;
 	
-	private Map<Integer, Room> rooms;
+	private HashMap<Integer, Room> rooms;
 	private int idRoom, actualRooms;
 	
 	/**
@@ -18,6 +18,7 @@ public class RoomList {
 	private RoomList() {
 		idRoom = 0;
 		actualRooms = 0;
+		rooms = new HashMap<Integer, Room>();
 	}
 	
 	/**
@@ -33,7 +34,7 @@ public class RoomList {
 	 * Restituisce l'elenco di tutte le stanze attualmente esistenti.
 	 * @return Map<Integer, Room>
 	 */
-	public synchronized Map<Integer, Room> getRoomList() {
+	public synchronized HashMap<Integer, Room> getRoomList() {
 		return rooms;
 	}
 	
@@ -52,7 +53,7 @@ public class RoomList {
 	 */
 	public void createRoom(Player player) {
 		if(actualRooms < MAX_ROOMS) {
-			this.incrementId();
+			this.incrementRoom();
 			Room tmp = new Room(idRoom, player);
 			rooms.put(idRoom, tmp);	
 		}
@@ -66,7 +67,7 @@ public class RoomList {
 	 */
 	public synchronized void joinRoom(int id, Player player) {
 		if(rooms.containsKey(id)) {
-			rooms.get(id).joinPlayer(player);
+			rooms.get(id).joinRoom(player);
 		}
 	}
 	
@@ -79,25 +80,30 @@ public class RoomList {
 	 */
 	public synchronized void leaveRoom(int id, Player player) {
 		Room tmp = rooms.get(id);
-		tmp.leave(player);
+		tmp.leaveRoom(player);
+		
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 		if(!tmp.isAlive()) {
 			rooms.remove(id);
-			this.setActualRooms();
+			this.decrementRoom();
 		}
-		
-		this.resetId();
-	}
-	
-	// Setta le stanze attualmente esistenti in base al valore della dimensione della mappa
-	private synchronized void setActualRooms() {
-		actualRooms = rooms.size();
 	}
 	
 	// Incrementa di 1 l'id room e setta le stanze attuali
-	private synchronized void incrementId() {
+	private synchronized void incrementRoom() {
 		idRoom++;
-		this.setActualRooms();
+		actualRooms++;
+	}
+	
+	// Decrementa di 1 le attuali stanze e controlla se resettare gli id
+	private synchronized void decrementRoom() {
+		actualRooms--;
+		this.resetId();
 	}
 	
 	// resetta l'id room se e solo se non esistono più stanze esistenti

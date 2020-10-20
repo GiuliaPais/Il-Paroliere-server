@@ -3,7 +3,7 @@ package server.room;
 import java.io.IOException;
 import java.util.Map;
 
-import tmpClasses.Grid;
+import server.match.Grid;
 import tmpClasses.Player;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
@@ -48,6 +48,14 @@ public class RoomManager implements RoomManagerInterface {
 
 	}
 
+	/**
+	 * Restituisce i player attualmente presenti in stanza.
+	 * @return array di Player.
+	 */
+	public Player[] getPlayers() {
+		return players;
+	}
+	
 	// Genera i proxy necessari per la comunicazione col singolo player.
 	private void setProxy(Player[] players) {
 		

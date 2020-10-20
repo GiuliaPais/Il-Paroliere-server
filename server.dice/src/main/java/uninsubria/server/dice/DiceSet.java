@@ -2,6 +2,7 @@ package uninsubria.server.dice;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class DiceSet {
@@ -81,6 +82,16 @@ public class DiceSet {
 		return faces;
 	}
 	
+	public Integer[] getResultNumb() {
+		Integer[] numb = new Integer[dices.length];
+		
+		for(int i = 0; i < numb.length; i++) {
+			numb[i] = dices[i].getDiceNo();
+		}
+		
+		return numb;
+	}
+	
 	/**
 	 * Restituisce una stringa contenente il numero ed i singoli valori delle facce dei dadi.
 	 */
@@ -89,6 +100,21 @@ public class DiceSet {
 		for(Dice d : dices)
 			tmp += d.toString();
 		return tmp;
+	}
+	
+	/**
+	 * Randomizza la posizione dei dadi lanciati
+	 */
+	public void randomizePosition() {
+		ArrayList<Dice> pool = new ArrayList<Dice>();
+		for(int i = 0; i < dices.length; i++)
+			pool.add(dices[i]);
+		
+		for(int i = 0; i < dices.length; i++) {
+			int pos = generator.nextInt(pool.size());
+			dices[i] = pool.get(pos);
+			pool.remove(pos);
+		}
 	}
 	
 }

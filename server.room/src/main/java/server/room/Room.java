@@ -10,32 +10,31 @@ public class Room extends Thread{
 	private ArrayList<Player> slots;
 	private RoomManager manager;
 	private RoomState state;
-	private Player roomAdmin;
 	
 	private int id;
 	private static int MaxPlayer = 6;
 	private static int actualPlayer = 0;
 	
 	/**
-	 * Quando un player crea una nuova stanza viene nominato Player Principale. Fintanto che sarà presente,
-	 * altri player fino al numero massimo consentito potranno unirsi alla lobby.
+	 * La stanza viene creata nel momento in cui un player vi entra. Fintanto che vi sia almeno un player,
+	 * sarà possibile per altri aggiugnervisi fintanto che non sarà raggiunto il numero massimo consentito.
 	 * @param player
 	 */
 	public Room(int id, Player player) {
 		this.id = id;
 		state = RoomState.OPEN;
 		slots = new ArrayList<Player>();
-		roomAdmin = player;
-		joinPlayer(roomAdmin);
+
+		this.joinRoom(player);
+		this.start();
 	}
 	
-	// Il trhead stanza esiste fintanto che al suo interno vi è l'admin della stanza.
+	// Il trhead stanza esiste fintanto che al suo interno vi è almeno un player
 	public void run() {
-		
 		while(actualPlayer > 0) {
 			
 		}
-		
+		System.out.println("Stanza distrutta");
 	}
 	
 	/**
@@ -43,7 +42,7 @@ public class Room extends Thread{
 	 * Ciò è possibile esclusivamente se non è già stato raggiunto il numero massimo di player consentito.
 	 * @param player
 	 */
-	public void joinPlayer(Player player) {
+	public void joinRoom(Player player) {
 		if(actualPlayer < MaxPlayer) {
 			slots.add(player);
 			actualPlayer++;
@@ -55,22 +54,21 @@ public class Room extends Thread{
 	}
 	
 	/**
-	 * Permette ad un player, passato come parametro, di uscire dalla lobby prima che la partita sia iniziata.
-	 * Qualora il player in uscita fosse il creatore della stanza, tutti i giocatori vengono espulsi e la 
-	 * stanza distrutta.
-	 * @param player
+	 * Restituisce il numero attuale di player nella stanza
+	 * @return il numero di player nella stanza
 	 */
-	public void leave(Player player) {
-		if(player != roomAdmin) {
-			slots.remove(player);
-			actualPlayer--;
-			state = RoomState.OPEN;
-		} else {
-			for(int i = 0; i < actualPlayer; i++) {
-				slots.remove(i);
-				actualPlayer--;
-			}
-		}
+	public int getActualPlayer() {
+		return actualPlayer;
+	}
+	
+	/**
+	 * Permette ad un player, passato come parametro, di uscire dalla lobby prima che la partita sia iniziata.
+	 * @param player in uscita
+	 */
+	public void leaveRoom(Player player) {
+		slots.remove(player);
+		actualPlayer--;
+		state = RoomState.OPEN;
 	}
 	
 	/**

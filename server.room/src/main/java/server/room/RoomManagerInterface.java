@@ -3,6 +3,7 @@ package server.room;
 import java.io.IOException;
 import java.util.Map;
 
+import server.match.Grid;
 import tmpClasses.*;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 

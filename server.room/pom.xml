@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>server.room</artifactId>
+  <name>server.room</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,6 +31,11 @@
   	<dependency>
   		<groupId>it.uninsubria.labB717304</groupId>
   		<artifactId>utils.serviceResults</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>it.uninsubria.labB717304</groupId>
+  		<artifactId>server.match</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
   </dependencies>
