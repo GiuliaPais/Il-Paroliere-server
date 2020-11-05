@@ -37,48 +37,45 @@ public class StatisticPreset {
 					"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
 					"GROUP BY PlayerId, Game, Match\r\n" + 
 					"HAVING SUM(points)>(	SELECT SUM(points)\r\n" + 
-			"								FROM Game\r\n" + 
-			"								GROUP BY PlayerId, Game, Match))sumMatch\r\n" + 
-			"\r\n" + 
+										   "FROM Game\r\n" + 
+										   "GROUP BY PlayerId, Game, Match))sumMatch\r\n" +
 			"FULL JOIN\r\n" + 
-			"\r\n" + 
-			"		(SELECT PlayerId, SUM(points) as SUM_GAME\r\n" + 
-			"		FROM Game\r\n" + 
-			"		WHERE Duplicated='0' AND Wrong='0'\r\n" + 
-			"		GROUP BY PlayerId, Game\r\n" + 
-			"		HAVING SUM(points)>(	SELECT SUM(points)\r\n" + 
-			"								FROM Game\r\n" + 
-			"								GROUP BY PlayerId, Game))sumGame\r\n" + 
-			"ON sumMatch.PlayerId=sumGame.PlayerId\r\n";
-	
-	private String MostGamePlayedPl = 
-			"SELECT PlayerId, AVG(points) as Avarage_Match_Score\r\n" + 
+			"(SELECT PlayerId, SUM(points) as SUM_GAME\r\n" + 
 			"FROM Game\r\n" + 
 			"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
 			"GROUP BY PlayerId, Game\r\n" + 
-			"HAVING AVG(points) >(	SELECT AVG(points)\r\n" + 
+			"HAVING SUM(points)>(	SELECT SUM(points)\r\n" + 
 									"FROM Game\r\n" + 
-									"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
-									"GROUP BY PlayerId, Game)\r\n" + 
-			"UNION\r\n" + 
-			"SELECT PlayerId, AVG(points) as Avarage_Match_Score\r\n" + 
-			"FROM Game\r\n" + 
-			"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
-			"GROUP BY PlayerId, Game,Match\r\n" + 
-			"HAVING AVG(points) >(	SELECT AVG(points)\r\n" + 
-									"FROM Game\r\n" + 
-									"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
-									"GROUP BY PlayerId, Game, Match)\r\n";
+									"GROUP BY PlayerId, Game))sumGame\r\n" + 
+			"ON sumMatch.PlayerId=sumGame.PlayerId\r\n";
 	
 	private String BestAvgScorePl = 
-			"SELECT PlayerId, COUNT(*)\r\n" + 
+			"SELECT avgGame.PlayerId, avgMatch.AVG_MATCH, avgGame.AVG_GAME\r\n" + 
+			"FROM(	SELECT PlayerId, AVG(points) as AVG_MATCH\r\n" + 
+					"FROM Game\r\n" + 
+					"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
+					"GROUP BY PlayerId, Game\r\n" + 
+					"HAVING AVG(points) >(	SELECT AVG(points)\r\n" + 
+											"FROM Game\r\n" + 
+											"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
+											"GROUP BY PlayerId, Game))avgMatch\r\n" + 
+			"FULL JOIN (SELECT PlayerId, AVG(points) as AVG_GAME\r\n" + 
+						"FROM Game\r\n" + 
+						"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
+						"GROUP BY PlayerId, Game,Match\r\n" + 
+						"HAVING AVG(points) >(	SELECT AVG(points)\r\n" + 
+												"FROM Game\r\n" + 
+												"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
+												"GROUP BY PlayerId, Game, Match))avgGame\r\n" + 
+			"ON avgMatch.PlayerId=avgGame.PlayerId";
+	
+	private String  MostGamePlayedPl= 
+			"SELECT PlayerId, COUNT(*) as num_Game_played\r\n" + 
 			"FROM Game\r\n" + 
-			"WHERE Wrong>'0'\r\n" + 
-			"GROUP BY PlayerId, Word\r\n" + 
-			"HAVING  COUNT(*) > (	SELECT COUNT(*)\r\n" + 
+			"GROUP BY PlayerId, Game\r\n" + 
+			"HAVING COUNT(*) > (	SELECT COUNT(*)\r\n" + 
 			"FROM Game\r\n" + 
-			"WHERE Wrong>'0'\r\n" + 
-			"GROUP BY PlayerId, Word)\r\n";
+			"GROUP BY PlayerId, Game)";
 	
 	private String MostDuplicateWordPl =
 			"SELECT PlayerId, COUNT(*)\r\n" + 
@@ -95,34 +92,35 @@ public class StatisticPreset {
 			"FROM Game\r\n" + 
 			"WHERE Wrong>'0'\r\n" + 
 			"GROUP BY PlayerId, Word\r\n" + 
-			"HAVING  COUNT(*) > (	SELECT COUNT(*)\r\n" + 
-			"FROM Game\r\n" + 
-			"WHERE Wrong>'0'\r\n" + 
-			"GROUP BY PlayerId, Word)\r\n";
+			"HAVING  COUNT(*) > (	 SELECT COUNT(*)\r\n" + 
+									"FROM Game\r\n" + 
+									"WHERE Wrong>'0'\r\n" + 
+									"GROUP BY PlayerId, Word)\r\n";
 	
 	//Game Statistics
 	private String AvgTurns = 
-			"SELECT AVG(Match) as Avarage_Match_Number\r\n" + 
+			"SELECT Game, AVG(Match) as Avarage_Match_Number\r\n" + 
 			"FROM Game NATURAL JOIN GameRule\r\n" + 
 			"GROUP BY Num_players, Game\r\n" + 
-			"HAVING MAX(Match) = (SELECT MAX(Match)\r\n" + 
-			"			   	FROM Game NATURAL JOIN GameRule\r\n" + 
-			"			   	GROUP BY Num_players, Game)";
-	
-	private String MinMaxTurns = 
-			"SELECT MAX(Match) as MAX_Match_Number\r\n" + 
-			"FROM Game NATURAL JOIN GameRule\r\n" + 
-			"GROUP BY Num_players, Game\r\n" + 
-			"HAVING MAX(Match) = (	SELECT MAX(Match)\r\n" + 
-									"FROM Game NATURAL JOIN GameRule\r\n" + 
-									"GROUP BY Num_players, Game)\r\n" + 
-			"UNION\r\n" + 
-			"SELECT MIN(Match) as MIN_Match_Number\r\n" + 
-			"FROM Game NATURAL JOIN GameRule\r\n" + 
-			"GROUP BY Num_players, Game\r\n" + 
-			"HAVING MIN(Match) = (	SELECT MIN(Match)\r\n" + 
+			"HAVING MAX(Match) = (	 SELECT MAX(Match)\r\n" + 
 									"FROM Game NATURAL JOIN GameRule\r\n" + 
 									"GROUP BY Num_players, Game)";
+	
+	private String MinMaxTurns = 
+			"SELECT minTurn.Game, minTurn.Num_Players, maxTurn.MAX_Match_Number, minTurn.MIN_Match_Number\r\n" + 
+			"FROM(	SELECT Game, Num_players, MAX(Match) as MAX_Match_Number\r\n" + 
+					"FROM Game NATURAL JOIN GameRule\r\n" + 
+					"GROUP BY Num_players, Game\r\n" + 
+					"HAVING MAX(Match) = (	SELECT MAX(Match)\r\n" + 
+											"FROM Game NATURAL JOIN GameRule\r\n" + 
+											"GROUP BY Num_players, Game))maxTurn\r\n" + 
+			"FULL JOIN (	SELECT  Game, Num_players, MIN(Match) as MIN_Match_Number\r\n" + 
+							"FROM Game NATURAL JOIN GameRule\r\n" + 
+							"GROUP BY Num_players, Game\r\n" + 
+							"HAVING MIN(Match) = (	SELECT MIN(Match)\r\n" + 
+													"FROM Game NATURAL JOIN GameRule\r\n" + 
+													"GROUP BY Num_players, Game))minTurn\r\n" + 
+			"ON maxTurn.Game = minTurn.Game";
 	
 	private String AvgGridOccurences =
 			"SELECT grid\r\n" + 
@@ -139,21 +137,23 @@ public class StatisticPreset {
 	
 	//Word Statistics
 	private String WordRankOccourences = 
-			"SELECT Word, Occurrences\r\n" + 
+			"SELECT Word, COUNT(*) as word_occurences\r\n" + 
 			"FROM Game\r\n" + 
-			"ORDER BY Occurrences DESC\r\n";
+			"WHERE Duplicated='0' AND Wrong='0'\r\n" + 
+			"GROUP BY Word\r\n" + 
+			"ORDER BY COUNT(*) DESC";
 	
 	private String MostImportantWord =
-			"SELECT Word, Game\r\n" + 
+			"SELECT Game, Word, Points \r\n" + 
 			"FROM Game\r\n" + 
-			"WHERE Points = (	SELECT MAX(Points)\r\n" + 
+			"WHERE Points = (	 SELECT MAX(Points)\r\n" + 
 								"FROM Game\r\n" + 
-								"GROUP BY Game)\r\n";
+								"GROUP BY Game)";
 	
 	private String ShowDefinitionRequest = 
-			"SELECT Game\r\n" + 
+			"SELECT Game, word\r\n" + 
 			"FROM Game\r\n" + 
-			"WHERE word = ? AND Requested > '0'\r\n";
+			"WHERE word = 'Parola scelta' AND Requested > '0'";
 
 	public String getBestScorePl() {
 		return BestScorePl;
