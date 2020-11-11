@@ -3,6 +3,8 @@
  */
 package uninsubria.server.database;
 
+import uninsubria.utils.business.Player;
+
 import java.util.List;
 
 /**

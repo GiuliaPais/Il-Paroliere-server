@@ -3,6 +3,8 @@
  */
 package uninsubria.server.database;
 
+import uninsubria.utils.business.Player;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,7 +50,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				Player currPlayer = new Player();
 				currPlayer.setPlayerID(rs.getString(1));
 				currPlayer.setEmail(rs.getString(2));
-				currPlayer.setStatus(rs.getString(3));
+				currPlayer.setLog_Status(rs.getString(3));
 				currPlayer.setName(rs.getString(4));
 				currPlayer.setSurname(rs.getString(5));
 				currPlayer.setPassword(rs.getString(6));
@@ -73,7 +75,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				player = new Player();
 				player.setPlayerID(rs.getString(1));
 				player.setEmail(rs.getString(2));
-				player.setStatus(rs.getString(3));
+				player.setLog_Status(rs.getString(3));
 				player.setName(rs.getString(4));
 				player.setSurname(rs.getString(5));
 				player.setPassword(rs.getString(6));
@@ -96,7 +98,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				player = new Player();
 				player.setPlayerID(rs.getString(1));
 				player.setEmail(rs.getString(2));
-				player.setStatus(rs.getString(3));
+				player.setLog_Status(rs.getString(3));
 				player.setName(rs.getString(4));
 				player.setSurname(rs.getString(5));
 				player.setPassword(rs.getString(6));
@@ -114,7 +116,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 			PreparedStatement statement = con.prepareStatement(updatePlayer);
 			statement.setString(1,pl.getPlayerID());
 			statement.setString(2,pl.getEmail());
-			statement.setString(3,pl.getStatus());
+			statement.setString(3,pl.getLog_Status());
 			statement.setString(4,pl.getName());
 			statement.setString(5,pl.getSurname());
 			statement.setString(6,pl.getPassword());

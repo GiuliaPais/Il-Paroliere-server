@@ -3,6 +3,8 @@
  */
 package uninsubria.server.database;
 
+import uninsubria.utils.business.Player;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -131,5 +133,23 @@ public class TransactionManager {
 		
 		return player;
 	}
-	
+
+	/**
+	 * Lookup user player given either userID or email.
+	 * This is used in login phase to check if a user exists in the database.
+	 *
+	 * @param id userID or email
+	 * @return a Player object or null
+	 * @author Giulia Pais
+	 */
+	public Player lookupUser(String id) {
+		boolean email = id.contains("@");
+		Player user = null;
+		if (email) {
+			user = playerDAO.getByEmail(id);
+		} else {
+			user = playerDAO.getByUserId(id);
+		}
+		return user;
+	}
 }

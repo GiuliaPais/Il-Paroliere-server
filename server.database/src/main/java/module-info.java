@@ -3,4 +3,5 @@ module server.database {
 	
 	requires transitive java.sql;
 	requires utils.serviceResults;
+	requires utils.business;
 }

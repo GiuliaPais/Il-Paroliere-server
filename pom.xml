@@ -14,10 +14,9 @@
 
   <modules>
     <module>server.services.playerServicesImpl</module>
-    <module>server.gui</module>
+    <module>server.core</module>
     <module>server.services.api</module>
     <module>server.dice</module>
-    <module>server.grid</module>
     <module>server.dictionary</module>
     <module>server.room</module>
     <module>server.match</module>
