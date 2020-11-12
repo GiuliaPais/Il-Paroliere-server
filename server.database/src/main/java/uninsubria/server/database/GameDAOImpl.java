@@ -9,16 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Alessandro
+ * @author Alessandro Lerro
+ * @author Giulia Pais
  *
  */
 public class GameDAOImpl implements GameDAO {
-	
+	/*
+	 * Modifiche di Giulia:
+	 * - Modificato costruttore, rimosso campo del pool
+	 * */
 	private Connection con;
 	private Game gm;
 	private GameRule gameRule; 
 	private GAMEInfo totalgame;
-	private ConnectionPoolImpl conn;	
 	
 	//query della tabella Game
 	public String selectAllGame = "SELECT * FROM Game";
@@ -29,13 +32,8 @@ public class GameDAOImpl implements GameDAO {
 	public String updateGameRule = "UPDATE Game SET ? = ? WHERE UserId=?";
 	public String deleteGame = "DELETE FROM Game WHERE Game=?";
 	
-	public GameDAOImpl() {
-        try {
-			this.con = conn.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public GameDAOImpl() throws SQLException {
+        this.con = ConnectionPoolImpl.getInstance().getConnection();
     }
 	/**
 	 * @param con

@@ -34,6 +34,52 @@
           <target>14</target>
         </configuration>
       </plugin>
+      <plugin>
+          <groupId>org.moditect</groupId>
+          <artifactId>moditect-maven-plugin</artifactId>
+          <version>1.0.0.Beta2</version>
+          <executions>
+              <execution>
+                  <id>add-module-info</id>
+                  <phase>generate-resources</phase>
+                  <goals>
+                      <goal>add-module-info</goal>
+                  </goals>
+                  <configuration>
+                      <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                      <modules>
+                          <module>
+                              <artifact>
+                                  <groupId>com.lambdaworks</groupId>
+                                  <artifactId>scrypt</artifactId>
+                                  <version>1.4.0</version>
+                              </artifact>
+                              <moduleInfoSource>
+                                  module com.lambdaworks.scrypt {
+                                  opens com.lambdaworks.codec;
+                                  opens com.lambdaworks.crypto;
+                                  opens com.lambdaworks.jni;
+                                  }
+                              </moduleInfoSource>
+                          </module>
+                          <module>
+                              <artifact>
+                                  <groupId>nl.jqno.equalsverifier</groupId>
+                                  <artifactId>equalsverifier</artifactId>
+                                  <version>3.5</version>
+                              </artifact>
+                              <moduleInfoSource>
+                                  module nl.jqno.equalsverifier {
+                                  opens nl.jqno.equalsverifier;
+                                  }
+                              </moduleInfoSource>
+                          </module>
+                      </modules>
+                      <overwriteExistingFiles>true</overwriteExistingFiles>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

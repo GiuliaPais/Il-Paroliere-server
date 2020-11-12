@@ -17,10 +17,12 @@ import java.util.List;
  *
  */
 public class PlayerDAOImpl implements PlayerDAO{
-	
+	/*
+	 * Modifiche di Giulia:
+	 * - Modificato costruttore, rimosso campo del pool
+	 * */
 	private Connection con;
 	private Player pl;
-	private ConnectionPoolImpl conn;	
 	
 	//query della tabella Player
 	
@@ -34,18 +36,9 @@ public class PlayerDAOImpl implements PlayerDAO{
 	private String modifyLogStatusIn="UPDATE Player SET Log_Status="+"true"+"WHERE UserId=?";
 	private String modifyLogStatusOut="UPDATE Player SET Log_Status="+"false"+"WHERE UserId=?";
 	
-	public PlayerDAOImpl() {
-        try {
-			this.con = conn.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public PlayerDAOImpl() throws SQLException {
+		this.con = ConnectionPoolImpl.getInstance().getConnection();
     }
-	
-	public Connection getCon() {
-		return con;
-	}
 	
 	/**
 	 * crea una tupla nella tabella Player
@@ -57,7 +50,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 			PreparedStatement statement = con.prepareStatement(createPlayer);
 			statement.setString(1,pl.getPlayerID());
 			statement.setString(2,pl.getEmail());
-			statement.setBoolean(3,pl.getStatus());
+			statement.setBoolean(3,pl.isLogStatus());
 			statement.setString(4,pl.getName());
 			statement.setString(5,pl.getSurname());
 			statement.setString(6,pl.getPassword());
@@ -85,7 +78,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				Player currPlayer = new Player();
 				currPlayer.setPlayerID(rs.getString(1));
 				currPlayer.setEmail(rs.getString(2));
-				currPlayer.setStatus(rs.getBoolean(3));
+				currPlayer.setLogStatus(rs.getBoolean(3));
 				currPlayer.setName(rs.getString(4));
 				currPlayer.setSurname(rs.getString(5));
 				currPlayer.setPassword(rs.getString(6));
@@ -114,7 +107,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				player = new Player();
 				player.setPlayerID(rs.getString(1));
 				player.setEmail(rs.getString(2));
-				player.setStatus(rs.getBoolean(3));
+				player.setLogStatus(rs.getBoolean(3));
 				player.setName(rs.getString(4));
 				player.setSurname(rs.getString(5));
 				player.setPassword(rs.getString(6));
@@ -141,7 +134,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 				player = new Player();
 				player.setPlayerID(rs.getString(1));
 				player.setEmail(rs.getString(2));
-				player.setStatus(rs.getBoolean(3));
+				player.setLogStatus(rs.getBoolean(3));
 				player.setName(rs.getString(4));
 				player.setSurname(rs.getString(5));
 				player.setPassword(rs.getString(6));

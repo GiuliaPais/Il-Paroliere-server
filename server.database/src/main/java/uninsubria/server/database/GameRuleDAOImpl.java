@@ -11,14 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Alessandro
+ *
+ * @author Alessandro Lerro
+ * @author Giulia Pais
  *
  */
 public class GameRuleDAOImpl implements GameRuleDAO {
-
+	/*
+	 * Modifiche di Giulia:
+	 * - Modificato costruttore, rimosso campo del pool
+	 * */
 	private Connection con;
 	private GameRule gr;
-	private ConnectionPoolImpl conn;	
 	
 	//query della tabella GameRule
 	public String selectAllGameRule="SELECT * FROM GameRule";
@@ -27,13 +31,8 @@ public class GameRuleDAOImpl implements GameRuleDAO {
 	public String updateGameRule="UPDATE GameRule SET ? = ? WHERE UserId=?";
 	public String deleteGameRule="DELETE FROM GameRule WHERE game=?";
 	
-	public GameRuleDAOImpl() {
-        try {
-			this.con = conn.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public GameRuleDAOImpl() throws SQLException {
+        this.con = ConnectionPoolImpl.getInstance().getConnection();
     }
 	
 	public Connection getCon() {

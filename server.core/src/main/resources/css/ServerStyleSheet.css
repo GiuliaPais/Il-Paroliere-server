@@ -1,0 +1,61 @@
+.root{
+	/*Constants*/
+	background: #121212;
+	secondary: derive(background, +30%);
+	box-border: ladder(
+        background,
+        black 20%,
+        derive(background,-15%) 30%
+    );
+	/*Defaults*/
+	-fx-background-color: background;
+	-fx-font-size: 14px;
+}
+
+.scroll-pane,
+.scroll-pane > .corner {
+	-fx-background-color: background;
+	-fx-background-radius: 0 0 2 0;
+}
+
+
+.button {
+	-fx-background-color:secondary;
+	-fx-text-fill: white;
+	-fx-font-weight: bold;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: derive(box-border,30%), linear-gradient(to bottom, derive(background,-3%), derive(background,5%) 50%, derive(background,-3%));
+    -fx-background-insets: 0, 1 0 1 0;
+	-fx-background-radius: 0 0 2 2;
+}
+.scroll-bar:vertical {
+    -fx-background-color: derive(box-border,30%), linear-gradient(to right, derive(background,-3%), derive(background,5%) 50%, derive(background,-3%));
+    -fx-background-insets: 0, 0 1 0 1;
+	-fx-background-radius: 0 2 2 0;
+}
+
+.scroll-bar > .thumb {
+	-fx-background-color: secondary;
+}
+
+.text-flow {
+	-fx-background-color: secondary;
+	-fx-text-fill: white;
+	-fx-background-radius: 2;
+	-fx-padding: 10 15 10 15;
+}
+
+
+#error {
+	-fx-fill: red;
+}
+
+#message{
+	-fx-fill: white;
+}
+
+#warning{
+	-fx-fill: yellow;
+}

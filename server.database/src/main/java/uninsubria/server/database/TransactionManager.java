@@ -12,37 +12,49 @@ import java.sql.SQLException;
 
 
 /**
- * @author Alessandro
- *
+ * Entry point of database module, this class is responsible for all database functionality and offers
+ * the API that can be used by other modules.
+ * @author Alessandro Lerro
+ * @author Giulia Pais
  */
 public class TransactionManager {
-
+	/*
+	* Modifiche di Giulia:
+	* - Aggiunto un metodo per controllare l'esistenza di un giocatore nel db (utile per servizi di login)
+	* - Aggiunto costruttore vuoto e commentato via l'altro (dove viene usato?)
+	* */
 	private Connection con;
 	private PlayerDAOImpl playerDAO;
 	private GameRuleDAOImpl gameruleDAO;
 	private GameDAOImpl gameDAO;
-	private ConnectionPoolImpl connectionP;
 	
-	/**
-	 * costruttore
-	 * @param con
-	 * @param playerDAO
-	 * @param gameruleDAO
-	 * @param gameDAO
-	 * @param connectionP
-	 */
-	private TransactionManager(Connection con, PlayerDAOImpl playerDAO, GameRuleDAOImpl gameruleDAO, GameDAOImpl gameDAO,
-			ConnectionPoolImpl connectionP) {
-		super();
-		this.con = con;
-		this.playerDAO = playerDAO;
-		this.gameruleDAO = gameruleDAO;
-		this.gameDAO = gameDAO;
-		this.connectionP = connectionP;
+//	/**
+//	 * costruttore
+//	 * @param con
+//	 * @param playerDAO
+//	 * @param gameruleDAO
+//	 * @param gameDAO
+//	 * @param connectionP
+//	 */
+//	private TransactionManager(Connection con, PlayerDAOImpl playerDAO, GameRuleDAOImpl gameruleDAO, GameDAOImpl gameDAO,
+//			ConnectionPoolImpl connectionP) {
+//		super();
+//		this.con = con;
+//		this.playerDAO = playerDAO;
+//		this.gameruleDAO = gameruleDAO;
+//		this.gameDAO = gameDAO;
+//		this.connectionP = connectionP;
+//	}
+
+	public TransactionManager() throws SQLException {
+		this.con = ConnectionPoolImpl.getInstance().getConnection();
+		this.playerDAO = new PlayerDAOImpl();
+		this.gameruleDAO = new GameRuleDAOImpl();
+		this.gameDAO = new GameDAOImpl();
 	}
 	
 	/**
-	 * @Preleva le statistiche richieste(passate per argomento)
+	 * Preleva le statistiche richieste(passate per argomento)
 	 * @param statPreset
 	 */
 	public ResultSet fetchStatistics(StatisticPreset statPreset) {
@@ -78,22 +90,22 @@ public class TransactionManager {
 	 * Inserisce una partita nel database
 	 */
 	public void archiveGame(GAMEInfo gameInf) {
-		try {
-			connectionP.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			connectionP.getConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		gameruleDAO.create();
 		gameDAO.create(gameDAO.getGameRule(),gameDAO.getTotalgame());
 				
-		try {
-			connectionP.releaseConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			connectionP.releaseConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 	}
 	/**
@@ -101,65 +113,66 @@ public class TransactionManager {
 	 */
 	public Player registerPlayer() {
 		Player player = null;
-		try {
-			connectionP.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			connectionP.getConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		if(playerDAO.getByUserId(player.getPlayerID())!=null);
 			playerDAO.create();
 		
-			try {
-				connectionP.releaseConnection();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				connectionP.releaseConnection();
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		return player;
 	}
 	/**
 	 * Login, verifica che il player esista(sia registrato) e cambia lo status in online
 	 */
 	public Player loginPlayer(Player player) {
-		try {
-			connectionP.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			connectionP.getConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		if(playerDAO.getByUserId(player.getPlayerID())!=null);
 			playerDAO.modifyLogin();
 		
-		try {
-			connectionP.releaseConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			}
-		
+//		try {
+//			connectionP.releaseConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			}
+//
 		return player;
 	}
+
 	/**
 	 * Logout, verifica che il player esista(sia registrato) e cambia lo status in online
 	 */
 	public Player logoutPlayer(Player player) {
-		try {
-			connectionP.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			connectionP.getConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		if(playerDAO.getByUserId(player.getPlayerID())!=null);
 			playerDAO.modifyLogout();
 		
-		try {
-			connectionP.releaseConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			}
-		
+//		try {
+//			connectionP.releaseConnection();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			}
+//
 		return player;
 	}
 
