@@ -24,7 +24,7 @@ public class StatisticPreset {
 	}
 
 	public void setQuery(String query) {
-		this.query = query;
+		this.query = "query";
 	}
 
 
@@ -123,10 +123,9 @@ public class StatisticPreset {
 			"ON maxTurn.Game = minTurn.Game";
 	
 	private String AvgGridOccurences =
-			"SELECT grid\r\n" + 
-			"FROM Game NATURAL JOIN GameRule\r\n" + 
-			"WHERE Language=?\r\n" + 
-			"GROUP BY Game, Match, grid\r\n"; 
+			"SELECT game, grid\r\n" + 
+			"FROM GameRule\r\n" + 
+			"WHERE Language=?\r\n"; 
 	
 	private String GameWordRequested = 
 			"SELECT word, COUNT(*) as Definition_Request\r\n" + 

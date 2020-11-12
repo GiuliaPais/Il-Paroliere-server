@@ -17,7 +17,7 @@ public interface PlayerDAO {
 	public List<Player> getAll();
 	public Player getByUserId(String id);
 	public Player getByEmail(String email);
-	public void update();
+	public void update(String[] type, String[] value);
 	public void delete();
 	
 }

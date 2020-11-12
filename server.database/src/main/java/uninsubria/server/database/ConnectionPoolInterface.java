@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.database;
 
 import java.sql.Connection;

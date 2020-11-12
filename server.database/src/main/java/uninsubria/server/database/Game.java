@@ -1,10 +1,6 @@
-/**
- * 
- */
+
 package uninsubria.server.database;
 
-import java.sql.Array;
-import java.sql.Date;
 import java.util.UUID;
 
 /**
@@ -15,16 +11,11 @@ public class Game {
 	
 	private String game;
 	private String PlayerId;	
-	private Array Grid;
-	private java.sql.Date date;
 	private int match;
 	private String word;
 	private boolean Requested, Duplicated, Wrong;
-	private int points, occurrences;
+	private int points;
 	
-	/**
-	 * 
-	 */
 	protected Game() {
 		super();
 	}
@@ -40,15 +31,13 @@ public class Game {
 	 * @param wrong
 	 * @param points
 	 */
-	protected Game(String game, String playerId, Array grid, Date date, int match, String word, boolean requested,
+	protected Game(String game, String playerId, int match, String word, boolean requested,
 			boolean duplicated, boolean wrong, int points) {
 		super();
 
 		UUID id = UUID.randomUUID();
 		this.game = id.toString();
 		PlayerId = playerId;
-		Grid = grid;
-		this.date = date;
 		this.match = match;
 		this.word = word;
 		Requested = requested;
@@ -57,60 +46,63 @@ public class Game {
 		this.points = points;
 	}
 	
+	//getter e setter del game id
 	public String getGame() {
 		return game;
 	}
 	public void setGame(String game) {
 		this.game = game;
 	}
+	
+	//getter e setter del player id
 	public String getPlayerId() {
 		return PlayerId;
 	}
 	public void setPlayerId(String playerId) {
 		PlayerId = playerId;
 	}
-	public Array getGrid() {
-		return Grid;
-	}
-	public void setGrid(Array grid) {
-		Grid = grid;
-	}
-	public java.sql.Date getDate() {
-		return date;
-	}
-	public void setDate(java.sql.Date date) {
-		this.date = date;
-	}
+
+	//getter e setter del numero del match di una partina(1+)
 	public int getMatch() {
 		return match;
 	}
 	public void setMatch(int match) {
 		this.match = match;
 	}
+	
+	//getter e setter delle parole
 	public String getWord() {
 		return word;
 	}
 	public void setWord(String word) {
 		this.word = word;
 	}
+	
+	//getter e setter dell'informazione relativa alla presenza di una richiesta di una parola
 	public boolean isRequested() {
 		return Requested;
 	}
 	public void setRequested(boolean requested) {
 		Requested = requested;
 	}
+	
+	//getter e setter dell'informazione relativa alla conferma che la parola sia doppia (ovvero che qualcuno abbia giÃ  preso)
 	public boolean isDuplicated() {
 		return Duplicated;
 	}
 	public void setDuplicated(boolean duplicated) {
 		Duplicated = duplicated;
 	}
+	
+	//getter e setter dell'informazione relativa alla presenza di una parola sbagliata(non derivante dalla configurazione o priva di significato)
 	public boolean isWrong() {
 		return Wrong;
 	}
 	public void setWrong(boolean wrong) {
 		Wrong = wrong;
 	}
+	
+	//getter e setter del punteggio di una parola
 	public int getPoints() {
 		return points;
 	}

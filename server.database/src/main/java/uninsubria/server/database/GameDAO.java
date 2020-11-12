@@ -1,6 +1,4 @@
-/**
- * 
- */
+
 package uninsubria.server.database;
 
 import java.util.List;
@@ -11,10 +9,11 @@ import java.util.List;
  */
 public interface GameDAO {
 	
-	public void create();
+	public void create(GameRule gameRule, GAMEInfo totalgame);
 	public List<Game> getAll();
 	public Game getByPK(String id);
-	public void update(GameRule gameRule, GAMEInfo gameInf);
+	public void update(String[] type, String[] value);
 	public void delete();
+	
 	
 }

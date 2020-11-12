@@ -17,27 +17,45 @@ public class ConnectionPoolImpl implements ConnectionPoolInterface {
 
 	private String user;
 	private String password;
-	private String dburl, dbhost;
+	private String dburl;
+	private String dbhost;
 	private final int POOL_SIZE=100;
 	private Connection con;
 	private List<Connection> connectionPool;
 	
-
-	public List<Connection> getConnectionPool() {
-		return connectionPool;
+	public Connection getCon(){
+		return con;
+	}
+	
+	/**
+	 * 
+	 */
+	public ConnectionPoolImpl() {
+		super();
 	}
 
-	public void setConnectionPool(List<Connection> connectionPool) {
+	/**
+	 * @param con
+	 * @param connectionPool
+	 */
+	public ConnectionPoolImpl(Connection con, List<Connection> connectionPool) {
+		super();
+		try {
+			this.con = ((ConnectionPoolImpl) con).getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.connectionPool = connectionPool;
 	}
+
 	/**
 	 * Chiede al metodo openConnection() di realizzare una connessione col database
 	 * 
 	 */
-	@Override
 	public Connection getConnection() throws SQLException{
 		
-		dbhost="localhost";
+		dbhost="localhost"; //inserire l'indirizzo ip della macchina che hosta il server
 		dburl = "jdbc:postgresql://" + dbhost + "/Paroliere";
 		user="postgres";
 		password="qwerty";
@@ -63,7 +81,7 @@ public class ConnectionPoolImpl implements ConnectionPoolInterface {
 	}
 
 	/**
-	 * Realizza la connessione con il database (il metodo � privato per limitare la possibilit� di creare connessioni al database)
+	 * Realizza la connessione con il database (il metodo ï¿½ privato per limitare la possibilitï¿½ di creare connessioni al database)
 	 * @param url, usr, pwd
 	 * @throws SQLException
 	 * 
@@ -78,7 +96,10 @@ public class ConnectionPoolImpl implements ConnectionPoolInterface {
 		return con;
 	}
 	
-	@Override
+	
+	/**
+	 * chiude la connessione e la rimuove dalla lista
+	 */
 	public void releaseConnection() throws SQLException {
 		try {
 			con.close();
@@ -86,9 +107,6 @@ public class ConnectionPoolImpl implements ConnectionPoolInterface {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		connectionPool.remove(this.con);
+		connectionPool.remove(con);
 	}
-	
-
-
 }

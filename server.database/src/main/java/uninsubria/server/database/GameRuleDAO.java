@@ -6,7 +6,7 @@ public interface GameRuleDAO {
 
 	public void create();
 	public List<GameRule> getAll();
-	public void update();
+	public void update(String[] type, String[] value);
 	public void delete();
 	
 }

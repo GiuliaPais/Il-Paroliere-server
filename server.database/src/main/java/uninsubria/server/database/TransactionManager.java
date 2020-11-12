@@ -23,7 +23,28 @@ public class TransactionManager {
 	private GameDAOImpl gameDAO;
 	private ConnectionPoolImpl connectionP;
 	
+	/**
+	 * costruttore
+	 * @param con
+	 * @param playerDAO
+	 * @param gameruleDAO
+	 * @param gameDAO
+	 * @param connectionP
+	 */
+	private TransactionManager(Connection con, PlayerDAOImpl playerDAO, GameRuleDAOImpl gameruleDAO, GameDAOImpl gameDAO,
+			ConnectionPoolImpl connectionP) {
+		super();
+		this.con = con;
+		this.playerDAO = playerDAO;
+		this.gameruleDAO = gameruleDAO;
+		this.gameDAO = gameDAO;
+		this.connectionP = connectionP;
+	}
 	
+	/**
+	 * @Preleva le statistiche richieste(passate per argomento)
+	 * @param statPreset
+	 */
 	public ResultSet fetchStatistics(StatisticPreset statPreset) {
 		ResultSet rs = null;
 		try {
@@ -35,6 +56,12 @@ public class TransactionManager {
 		}
 		return rs;
 	}
+	
+	/**
+	 * Preleva le statistiche richieste(passate per argomento)
+	 * @param statPreset
+	 * @param arg
+	 */
 	public ResultSet fetchStatistics(StatisticPreset statPreset, String arg) {
 		ResultSet rs = null;
 		try {
@@ -58,8 +85,8 @@ public class TransactionManager {
 			e.printStackTrace();
 		}
 		
-		gameruleDAO.update();
-		gameDAO.update(gameruleDAO.getGr(), gameInf);
+		gameruleDAO.create();
+		gameDAO.create(gameDAO.getGameRule(),gameDAO.getTotalgame());
 				
 		try {
 			connectionP.releaseConnection();
@@ -69,7 +96,9 @@ public class TransactionManager {
 		}
 		
 	}
-	
+	/**
+	 * Registra un nuovo giocatore
+	 */
 	public Player registerPlayer() {
 		Player player = null;
 		try {
@@ -78,8 +107,8 @@ public class TransactionManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		playerDAO.update();
+		if(playerDAO.getByUserId(player.getPlayerID())!=null);
+			playerDAO.create();
 		
 			try {
 				connectionP.releaseConnection();
@@ -112,7 +141,7 @@ public class TransactionManager {
 		return player;
 	}
 	/**
-	 * Logoutin, verifica che il player esista(sia registrato) e cambia lo status in online
+	 * Logout, verifica che il player esista(sia registrato) e cambia lo status in online
 	 */
 	public Player logoutPlayer(Player player) {
 		try {
