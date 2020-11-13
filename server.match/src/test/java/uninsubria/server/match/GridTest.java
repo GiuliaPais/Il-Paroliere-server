@@ -1,7 +1,5 @@
 package uninsubria.server.match;
 
-import server.match.Grid;
-
 public class GridTest {
 
 	public static void main(String[] args) {

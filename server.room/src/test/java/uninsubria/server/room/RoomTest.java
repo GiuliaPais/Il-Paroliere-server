@@ -1,6 +1,5 @@
 package uninsubria.server.room;
 
-import server.room.Room;
 import tmpClasses.Player;
 
 public class RoomTest {

@@ -1,9 +1,9 @@
-package server.room;
+package uninsubria.server.room;
 
 import java.io.IOException;
 import java.util.Map;
 
-import server.match.Grid;
+import uninsubria.server.match.Grid;
 import tmpClasses.*;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 

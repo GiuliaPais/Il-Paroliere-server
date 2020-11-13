@@ -1,23 +1,23 @@
-package server.room;
+package uninsubria.server.room;
 
 import java.io.IOException;
 import java.util.Map;
 
-import server.match.Grid;
+import uninsubria.server.match.Grid;
 import tmpClasses.Player;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class RoomManager implements RoomManagerInterface {
-	
+
 	private Player[] players;
 	private ProxyRoom[] proxy;
-	
+
 	public RoomManager(Player[] players) {
 		this.players = players;
-		
+
 		setProxy(players);
 	}
-	
+
 	@Override
 	public void sendScores(Map<Player, Integer> scores) throws IOException {
 		// TODO Auto-generated method stub
@@ -55,10 +55,10 @@ public class RoomManager implements RoomManagerInterface {
 	public Player[] getPlayers() {
 		return players;
 	}
-	
+
 	// Genera i proxy necessari per la comunicazione col singolo player.
 	private void setProxy(Player[] players) {
-		
+
 		proxy = new ProxyRoom[players.length];
 		for(int i = 0; i < players.length; i++) {
 			proxy[i] = new ProxyRoom(players[i]);
