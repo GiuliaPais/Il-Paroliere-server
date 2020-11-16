@@ -1,17 +1,13 @@
 package uninsubria.server.room;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import uninsubria.server.match.Grid;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
+import uninsubria.utils.business.Player;
+
+import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Map;
-
-import uninsubria.server.match.Grid;
-import tmpClasses.Player;
-import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class ProxyRoom implements RoomManagerInterface {
 
@@ -26,7 +22,10 @@ public class ProxyRoom implements RoomManagerInterface {
 		this.player = player;
 
 		try {
-			socket = new Socket(player.getAddr(), PORT);
+			InetAddress tmpAddr = InetAddress.getByName(""); // Da rimuovere quando sarà implementato il metodo sotto
+//			InetAddress playerAddr = player.getPlayerManager().getAddress();
+
+			socket = new Socket(tmpAddr, PORT);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
 					socket.getOutputStream())), true);
@@ -53,15 +52,15 @@ public class ProxyRoom implements RoomManagerInterface {
 
 	@Override
 	public void setSyncTimer() throws IOException {
-		// TODO Auto-generated method stub
+		out.println("<SYNC>");
+		String serverTime = System.currentTimeMillis() + "";
+		out.println(serverTime);
 
 	}
 
 	@Override
 	public void synchronizeClocks() throws IOException {
-		out.println("<SYNC>");
-		String serverTime = System.currentTimeMillis() + "";
-		out.println(serverTime);
+		// TODO Auto-generated method stub
 	}
 
 }

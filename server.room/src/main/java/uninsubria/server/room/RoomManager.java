@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import uninsubria.server.match.Grid;
-import tmpClasses.Player;
+import uninsubria.utils.business.Player;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class RoomManager implements RoomManagerInterface {

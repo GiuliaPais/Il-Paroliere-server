@@ -1,26 +1,26 @@
 package uninsubria.server.match;
 
 import java.util.List;
-
-import tmpClasses.Player;
+import uninsubria.utils.business.Player;
 
 public class Game {
 
     private List<MatchInterface> matches;
     private Player winner;
-    private List<Player> participants;
+    private final List<Player> PARTICIPANTS;
     private GameState state;
 
     public Game(List<Player> participants) {
-        this.participants = participants;
+        PARTICIPANTS = participants;
         state = GameState.ONGOING;
     }
 
     /**
      * Aggiunge un nuovo match al game in corso.
-     * @param match
+     * @param match il nuovo match da aggiungere
      */
     public void add(ActiveMatchInterface match) {
+
         matches.add(match);
     }
 
@@ -29,11 +29,12 @@ public class Game {
     }
 
     /**
-     * Rimuove il partecipante passato come argomento.
-     * @param player
+     * Rimuove il partecipante passato come argomento e lo espelle dalla stanza.
+     * @param player in uscita dal gioco.
      */
     public void abandon(Player player) {
-        participants.remove(player);
+        PARTICIPANTS.remove(player);
+        state = GameState.INTERRUPTED;
     }
 
     /**
@@ -42,14 +43,6 @@ public class Game {
      */
     public List<MatchInterface> getMatches() {
         return matches;
-    }
-
-    /**
-     * Setta i nuovi match.
-     * @param matches
-     */
-    public void setMatches(List<MatchInterface> matches) {
-        this.matches = matches;
     }
 
     /**
@@ -62,7 +55,7 @@ public class Game {
 
     /**
      * Setta un nuovo vincitore
-     * @param winner
+     * @param winner il nuovo vincitore.
      */
     public void setWinner(Player winner) {
         this.winner = winner;
@@ -73,15 +66,7 @@ public class Game {
      * @return i partecipanti attuali.
      */
     public List<Player> getParticipants() {
-        return participants;
-    }
-
-    /**
-     * Setta i nuovi partecipanti alla partita.
-     * @param participants
-     */
-    public void setParticipants(List<Player> participants) {
-        this.participants = participants;
+        return PARTICIPANTS;
     }
 
     /**
@@ -94,7 +79,7 @@ public class Game {
 
     /**
      * Setta un nuovo stato di gioco.
-     * @param state
+     * @param state lo stato di gioco.
      */
     public void setState(GameState state) {
         this.state = state;

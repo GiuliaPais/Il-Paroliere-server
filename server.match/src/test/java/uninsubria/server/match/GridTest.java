@@ -13,6 +13,8 @@ public class GridTest {
 		grid.throwDices();
 		show(grid.generateGridString());
 		show(grid.generateGridNumber());
+
+		System.out.println(grid.toString());
 		
 
 	}

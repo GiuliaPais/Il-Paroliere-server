@@ -3,12 +3,13 @@ package uninsubria.server.dice;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class DiceSet {
 
 	private static final int nOfDices = 16;
-	private Dice[] dices = new Dice[nOfDices];
+	private Dice[] dices;
 	private DiceSetStandard standard = DiceSetStandard.STANDARD;
 	private boolean thrown;
 	private Random generator;
@@ -16,7 +17,7 @@ public class DiceSet {
 	/**
 	 * Costruttore del set di dadi. Al suo interno vengono inizializzati l'array dei dadi,
 	 * la variabile booleana del lancio settata su <code>false</code>.
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException
 	 */
 	public DiceSet() throws IOException, URISyntaxException {
 		dices = new StandardParser(standard).getDices();
@@ -67,6 +68,14 @@ public class DiceSet {
 		}
 		thrown = false;
 	}
+
+	/**
+	 * Setta un nuovo standard di dadi da utilizzare.
+	 * @param newStandard il nuovo standard di dadi da utilizzare.
+	 */
+	public void setDiceSetStandard(DiceSetStandard newStandard) {
+		standard = newStandard;
+	}
 	
 	/**
 	 * Restituisce un array di stringhe contenenti i risultati del lancio dei dadi, se lanciati. Null altrimenti.
@@ -97,8 +106,14 @@ public class DiceSet {
 	 */
 	public String toString() {
 		String tmp = "";
-		for(Dice d : dices)
-			tmp += d.toString();
+
+		for(int i = 0; i < dices.length; i++) {
+			if(i == dices.length -1)
+				tmp += dices[i].toString();
+			else
+				tmp += dices[i].toString() + " - ";
+		}
+
 		return tmp;
 	}
 	
@@ -106,9 +121,7 @@ public class DiceSet {
 	 * Randomizza la posizione dei dadi lanciati
 	 */
 	public void randomizePosition() {
-		ArrayList<Dice> pool = new ArrayList<Dice>();
-		for(int i = 0; i < dices.length; i++)
-			pool.add(dices[i]);
+		ArrayList<Dice> pool = new ArrayList<>(Arrays.asList(dices));
 		
 		for(int i = 0; i < dices.length; i++) {
 			int pos = generator.nextInt(pool.size());

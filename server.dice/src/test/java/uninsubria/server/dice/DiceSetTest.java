@@ -31,6 +31,8 @@ public class DiceSetTest {
 			risultato += s + " ";
 		System.out.println(risultato);
 
+		System.out.println(ds.toString());
+
 	}
 
 }

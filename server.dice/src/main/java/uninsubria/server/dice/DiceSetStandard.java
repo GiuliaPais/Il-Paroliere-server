@@ -5,9 +5,9 @@ public enum DiceSetStandard {
 	STANDARD("Standard", "DiceSetFaces_STANDARD.json"), 
 	ITALIAN("Italian", "DiceSetFaces_ITA.json");
 	
-	private String language, fileName;
+	private final String language, fileName;
 	
-	private DiceSetStandard(String language, String fileName) {
+	DiceSetStandard(String language, String fileName) {
 		this.language = language;
 		this.fileName = fileName;
 	}

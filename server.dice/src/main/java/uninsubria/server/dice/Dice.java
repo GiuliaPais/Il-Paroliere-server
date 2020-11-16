@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class Dice implements DiceInterface {
 
-	private int diceNo;
-	private String[] faces;
+	private final int diceNo;
+	private final String[] faces;
 	private String resultFace;
 	private boolean thrown;
 	
@@ -55,7 +55,7 @@ public class Dice implements DiceInterface {
 	 */
 	@Override
 	public String getResultFace() {
-		if(thrown == true)
+		if(thrown)
 			return resultFace;
 		else
 			return null;
@@ -80,16 +80,9 @@ public class Dice implements DiceInterface {
 	}
 
 	/**
-	 * Restituisce una stringa contenente il numero ed i singoli valori delle facce del dado.
+	 * Restituisce una stringa contenente la faccia estratta dal lancio ed il numero del dado.
 	 */
 	public String toString() {
-		String s = "Dice num: " + diceNo + "\n";
-		for(int i = 0; i < faces.length; i++) {
-			if(i < faces.length -1)
-				s += "Face" + (i+1) + ": " + faces[i] + "; ";
-			else
-				s += "Face" + (i+1) + ": " + faces[i] + ".\n";
-		}
-		return s;
+		return resultFace + " " + diceNo;
 	}
 }

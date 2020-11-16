@@ -1,6 +1,6 @@
 package uninsubria.server.match;
 
-import tmpClasses.Player;
+import uninsubria.utils.business.Player;
 
 public interface MatchInterface {
 

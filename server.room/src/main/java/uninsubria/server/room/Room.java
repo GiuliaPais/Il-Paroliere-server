@@ -3,31 +3,33 @@ package uninsubria.server.room;
 import java.util.ArrayList;
 
 import uninsubria.server.match.Game;
-import uninsubria.server.match.GameState;
-import tmpClasses.*;
+import uninsubria.utils.business.Player;
+import tmpClasses.RuleSet;
 
 public class Room extends Thread{
 
 	private RuleSet ruleSet;
-	private ArrayList<Player> slots;
 	private RoomManager manager;
 	private RoomState state;
 	private Game game;
+	private int maxPlayer;
+	private int actualPlayer;
 
-	private int id;
-
-	private static int MaxPlayer = 6;
-	private static int actualPlayer = 0;
+	private ArrayList<Player> slots;
+	private final int ID;
 
 	/**
-	 * La stanza viene creata nel momento in cui un player vi entra. Fintanto che vi sia almeno un player,
-	 * sarà possibile per altri aggiugnervisi fintanto che non sarà raggiunto il numero massimo consentito.
-	 * @param player
+	 * La stanza viene creata nel momento in cui un player vi entra. Fintanto che la stanza esiste,
+	 * sarà possibile per altri aggiugnervisi fintanto che non sarà raggiunto il numero massimo di player consentito.
+	 * @param id l'id univoco della stanza.
+	 * @param player il primo player ad entrare nella stanza, colui che ne richiede la creazione
 	 */
 	public Room(int id, Player player) {
-		this.id = id;
+		this.ID = id;
 		state = RoomState.OPEN;
-		slots = new ArrayList<Player>();
+		slots = new ArrayList<>();
+		maxPlayer = 6;
+		actualPlayer = 0;
 
 		this.joinRoom(player);
 		this.start();
@@ -43,19 +45,36 @@ public class Room extends Thread{
 	/**
 	 * Permette ad un player, passato come parametro, di unirsi alla lobby in attesa dell'inizio della partita.
 	 * Ciò è possibile esclusivamente se non è già stato raggiunto il numero massimo di player consentito.
-	 * @param player
+	 * @param player il player che entra nella stanza e viene aggiunto alla coda di chi è già presente.
 	 */
 	public void joinRoom(Player player) {
-		if(actualPlayer < MaxPlayer) {
+		if(actualPlayer < maxPlayer) {
 			slots.add(player);
 			actualPlayer++;
 		}
 
-		if(actualPlayer == MaxPlayer) {
+		if(actualPlayer == maxPlayer) {
 			state = RoomState.FULL;
 		}
 	}
 
+	/**
+	 * Permette di settare il numero massimo di giocatori col valore passato come parametro, purché sia un valore
+	 * maggiore o uguale dell'attuale numero di giocatori presenti in stanza.
+	 * I valori ammessi sono compresi tra 2 e 6. Valori minori o maggiori impostano il numero massimo di giocatori
+	 * rispettivamente al minimo ed al massimo consentito.
+	 * @param i il nuovo numero massimo di giocatori consentito.
+	 */
+	public void setMaxPlayer(int i) {
+		if(actualPlayer <= i) {
+			if (maxPlayer < 2)
+				maxPlayer = 2;
+			else if (maxPlayer > 6)
+				maxPlayer = 6;
+			else
+				maxPlayer = i;
+		}
+	}
 
 	/**
 	 * Restituisce il numero attuale di player nella stanza
@@ -67,7 +86,7 @@ public class Room extends Thread{
 
 	/**
 	 * Permette ad un player, passato come parametro, di uscire dalla lobby prima che la partita sia iniziata.
-	 * @param player in uscita
+	 * @param player il player in uscita
 	 */
 	public void leaveRoom(Player player) {
 		slots.remove(player);
@@ -77,15 +96,15 @@ public class Room extends Thread{
 
 	/**
 	 * Restituisce l'id della stanza.
-	 * @return int
+	 * @return l'id della stanza
 	 */
 	public int getIdRoom() {
-		return id;
+		return ID;
 	}
 
 	/**
 	 * Restituisce lo stato attuale della stanza.
-	 * @return RoomState, lo stato attuale.
+	 * @return RoomState, lo stato attuale della stanza.
 	 */
 	public RoomState getRoomState() {
 		return state;
@@ -101,7 +120,7 @@ public class Room extends Thread{
 
 	/**
 	 * Permette di settare le nuove regole, passate come parametro.
-	 * @param ruleSet
+	 * @param ruleSet il nuovo set di regole.
 	 */
 	public void setRuleSet(RuleSet ruleSet) {
 		this.ruleSet = ruleSet;
@@ -120,7 +139,7 @@ public class Room extends Thread{
 	 * ai player nella lobby.
 	 */
 	public void newGame() {
-		if(actualPlayer == MaxPlayer) {
+		if(actualPlayer == maxPlayer) {
 			Player[] slotsArray = new Player[slots.size()];
 			slots.toArray(slotsArray);
 			manager = new RoomManager(slotsArray);
@@ -129,6 +148,10 @@ public class Room extends Thread{
 		}
 	}
 
+	/**
+	 * Restituisce un riferimento al gioco in corso.
+	 * @return Game, il game in corso.
+	 */
 	public Game getGame() {
 		return game;
 	}
@@ -144,11 +167,8 @@ public class Room extends Thread{
 	/**
 	 * Distrugge immediatamente la stanza.
 	 */
-	public void stopped() {
+	public void interrupt() {
+		super.interrupt();
 		actualPlayer = 0;
-	}
-
-	public String toString() {
-		return "Room " + id + ", " + "Actual Player: " + actualPlayer + ", " + state.toString() + ".";
 	}
 }

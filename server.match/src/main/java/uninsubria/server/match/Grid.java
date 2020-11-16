@@ -63,4 +63,9 @@ public class Grid implements Serializable {
 		diceFaces = dices.getResultFaces();
 		diceNumb = dices.getResultNumb();
 	}
+
+	public String toString() {
+		String tmp = "";
+		return dices.toString();
+	}
 }

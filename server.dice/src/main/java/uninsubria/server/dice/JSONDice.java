@@ -19,7 +19,7 @@ public class JSONDice {
 	
 	/**
 	 * Trasforma il dado passato come parametro in un oggetto JSONObject.
-	 * @param dice
+	 * @param dice il dado da trasformare in JSONObject.
 	 * @return <code>JSONObject</code> del dado.
 	 */
 	public JSONObject makeJSONFromDice(Dice dice) {
@@ -41,17 +41,17 @@ public class JSONDice {
 	}
 	
 	/**
-	 * Trasforma il dado passato come parametro in un oggetto JSONArray.
-	 * @param dice
+	 * Trasforma l'array di dadi passati come parametro in un oggetto JSONArray.
+	 * @param dices l'array di dadi da trasformare in JSONArray.
 	 * @return <code>JSONArray</code> dei dadi.
 	 */
 	public JSONArray makeJSONFromDice(Dice[] dices) {
 		
 		JSONArray array = new JSONArray();
-		JSONObject obj = new JSONObject();
-		
-		for(int i = 0; i < dices.length; i++) {
-			obj = this.makeJSONFromDice(dices[i]);
+		var obj = new JSONObject();
+
+		for(Dice dice : dices) {
+			obj = this.makeJSONFromDice(dice);
 			array.put(obj);
 		}
 		
@@ -59,8 +59,8 @@ public class JSONDice {
 	}
 	
 	/**
-	 * Trasforma JSONObject passato come parametro i dado.
-	 * @param obj
+	 * Trasforma JSONObject passato come parametro in dado.
+	 * @param obj l'oggetto da trasformare in dado.
 	 * @return <code>Dice</code> ricavato da JSONObject.
 	 */
 	public Dice makeDiceFromJSON(JSONObject obj) {
@@ -75,16 +75,14 @@ public class JSONDice {
 		
 		for(int i = 0; i < length; i++)
 			faces[i] = facesJSON.getString(i);
-		
-		Dice dice = new Dice(diceNo, faces);
-		
-		return dice;
+
+		return new Dice(diceNo, faces);
 		
 	}
 	
 	/**
 	 * Ricava un array di dadi da un JSONArray contenente JSONObject di dadi.
-	 * @param array
+	 * @param array JSONArray da trasformare in array di dadi.
 	 * @return <code>Dice[]</code> contenenti tutti i dadi contenuti in JSONArray.
 	 */
 	public Dice[] makeDiceFromJSON(JSONArray array) {
@@ -103,7 +101,6 @@ public class JSONDice {
 	
 	/**
 	 * Ricava un array di dadi da una stringa di un file JSON.
-	 * @param array
 	 * @return <code>Dice[]</code> contenenti tutti i dadi contenuti in JSONArray.
 	 */
 	public Dice[] makeDiceFromJSON(String jsonString) {
@@ -127,10 +124,9 @@ public class JSONDice {
 	 * Scrive su un file o lo aggiorna se esistente, l'oggetto JSONObject.
 	 * @param path: il percorso del file.
 	 * @param obj: l'oggetto da trascrivere.
-	 * @throws IOException
+	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
 	public void writeJSONFile(URI path, JSONObject obj) throws IOException {
-		
 		File file = new File(path);
 		
 		BufferedWriter buff = new BufferedWriter(new FileWriter(file));
@@ -138,17 +134,15 @@ public class JSONDice {
 		buff.write(obj.toString());
 		buff.flush();
 		buff.close();
-
 	}
 	
 	/**
 	 * Scrive su un file o lo aggiorna se esistente, l'oggetto JSONArray.
 	 * @param path: il percorso del file.
 	 * @param array: l'array da trascrivere.
-	 * @throws IOException
+	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
 	public void writeJSONFile(URI path, JSONArray array) throws IOException {
-		
 		File file = new File(path);
 		
 		BufferedWriter buff = new BufferedWriter(new FileWriter(file));
@@ -156,17 +150,16 @@ public class JSONDice {
 		buff.write(array.toString());
 		buff.flush();
 		buff.close();
-
 	}
 	
 	/**
 	 * Legge da un file JSON le stringhe contenute al suo interno e la restituisce.
 	 * @param path: il percorso del file JSON da leggere.
 	 * @return <code>String</code contenente l'array del file.
-	 * @throws IOException
+	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
-	public String readJSONFile(URI path) throws IOException{
-		
+	public String readJSONFile(URI path) throws IOException {
+
 		File file = new File(path);
 		
 		BufferedReader buff = new BufferedReader(new FileReader(file));

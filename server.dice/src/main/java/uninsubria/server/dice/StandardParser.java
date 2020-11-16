@@ -4,29 +4,27 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 import org.json.JSONArray;
 
 public class StandardParser {
-	
-	private URI path;
+
 	private Dice[] dices;
 	
 	public StandardParser(DiceSetStandard diceSet) throws IOException, URISyntaxException {
-		path = this.getClass().getClassLoader().getResource(diceSet.getFileName()).toURI();
+		URI path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(diceSet.getFileName())).toURI();
 		
 		this.readJSONFile(path);
 	}
 	
 	private void readJSONFile(URI path) throws IOException {
-		
 		if(!new File(path).exists())
 			this.writeJSONFile(path);
 		
 		JSONDice jd = new JSONDice();
 		String jsonString = jd.readJSONFile(path);
 		dices = jd.makeDiceFromJSON(jsonString);
-		
 	}
 	
 	private void writeJSONFile(URI path) throws IOException {
@@ -75,10 +73,11 @@ public class StandardParser {
 		Dice dice15 = new Dice(15, faces15);
 		Dice dice16 = new Dice(16, faces16);
 		
-		Dice[] array = {dice1, dice2, dice3, dice4, dice5, 
+		Dice[] array;
+		array = new Dice[]{dice1, dice2, dice3, dice4, dice5,
 				dice6, dice7, dice8, dice9, dice10, dice11, dice12, dice13, dice14,
 				dice15, dice16};
-		
+
 		return array;
 	}
 	

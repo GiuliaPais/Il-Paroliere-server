@@ -2,7 +2,7 @@ package uninsubria.server.room;
 
 import java.util.HashMap;
 
-import tmpClasses.Player;
+import uninsubria.utils.business.Player;
 
 public class RoomList {
 
@@ -108,54 +108,6 @@ public class RoomList {
 		this.resetId();
 	}
 
-	// resetta l'id room se e solo se non esistono più stanze esistenti
-	private synchronized void resetId() {
-		if(actualRooms == 0)
-			idRoom = 0;
-	}
-}
-
-	public synchronized void joinRoom(int id, Player player) {
-		if(rooms.containsKey(id)) {
-			rooms.get(id).joinRoom(player);
-		}
-	}
-	
-	/**
-	 * Permette al player passato come secondo parametro di abbandonare la stanza il cui id è uguale al primo
-	 * parametro. Qualora il player fosse l'admin della stanza, la stanza verrà distrutta e rimossa dalla lista
-	 * di stanze accessibili. Se non esistono più stanze, resetta gli id disponibili da assegnare.
-	 * @param id
-	 * @param player
-	 */
-	public synchronized void leaveRoom(int id, Player player) {
-		Room tmp = rooms.get(id);
-		tmp.leaveRoom(player);
-		
-		try {
-			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		if(!tmp.isAlive()) {
-			rooms.remove(id);
-			this.decrementRoom();
-		}
-	}
-	
-	// Incrementa di 1 l'id room e setta le stanze attuali
-	private synchronized void incrementRoom() {
-		idRoom++;
-		actualRooms++;
-	}
-	
-	// Decrementa di 1 le attuali stanze e controlla se resettare gli id
-	private synchronized void decrementRoom() {
-		actualRooms--;
-		this.resetId();
-	}
-	
 	// resetta l'id room se e solo se non esistono più stanze esistenti
 	private synchronized void resetId() {
 		if(actualRooms == 0)
