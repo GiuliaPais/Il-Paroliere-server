@@ -4,9 +4,12 @@ import java.util.ArrayList;
 
 import uninsubria.server.match.Game;
 import uninsubria.utils.business.Player;
+import uninsubria.server.roomReference.*;
 import tmpClasses.RuleSet;
 
 public class Room extends Thread{
+
+	private RoomReference reference;
 
 	private RuleSet ruleSet;
 	private RoomManager manager;
@@ -25,13 +28,9 @@ public class Room extends Thread{
 	 * @param player il primo player ad entrare nella stanza, colui che ne richiede la creazione
 	 */
 	public Room(int id, Player player) {
-		this.ID = id;
-		state = RoomState.OPEN;
-		slots = new ArrayList<>();
-		maxPlayer = 6;
-		actualPlayer = 0;
-
-		this.joinRoom(player);
+		ID = id;
+		reference = new RoomReference(player);
+		setReference();
 		this.start();
 	}
 
@@ -48,14 +47,7 @@ public class Room extends Thread{
 	 * @param player il player che entra nella stanza e viene aggiunto alla coda di chi è già presente.
 	 */
 	public void joinRoom(Player player) {
-		if(actualPlayer < maxPlayer) {
-			slots.add(player);
-			actualPlayer++;
-		}
-
-		if(actualPlayer == maxPlayer) {
-			state = RoomState.FULL;
-		}
+		reference.joinRoom(player);
 	}
 
 	/**
@@ -66,14 +58,7 @@ public class Room extends Thread{
 	 * @param i il nuovo numero massimo di giocatori consentito.
 	 */
 	public void setMaxPlayer(int i) {
-		if(actualPlayer <= i) {
-			if (maxPlayer < 2)
-				maxPlayer = 2;
-			else if (maxPlayer > 6)
-				maxPlayer = 6;
-			else
-				maxPlayer = i;
-		}
+		reference.setMaxPlayer(i);
 	}
 
 	/**
@@ -89,9 +74,7 @@ public class Room extends Thread{
 	 * @param player il player in uscita
 	 */
 	public void leaveRoom(Player player) {
-		slots.remove(player);
-		actualPlayer--;
-		state = RoomState.OPEN;
+		reference.leaveRoom(player);
 	}
 
 	/**
@@ -139,12 +122,9 @@ public class Room extends Thread{
 	 * ai player nella lobby.
 	 */
 	public void newGame() {
-		if(actualPlayer == maxPlayer) {
-			Player[] slotsArray = new Player[slots.size()];
-			slots.toArray(slotsArray);
-			manager = new RoomManager(slotsArray);
-			game = new Game(slots);
-			state = RoomState.GAMEON;
+		if(reference.newGameIsPossible()) {
+			manager = reference.getRoomManager();
+			game = new Game(reference);
 		}
 	}
 
@@ -170,5 +150,13 @@ public class Room extends Thread{
 	public void interrupt() {
 		super.interrupt();
 		actualPlayer = 0;
+	}
+
+	// Setta tutti dadi necessari dalla roomReference
+	private void setReference() {
+		slots = reference.getSlots();
+		maxPlayer = reference.getMaxPlayer();
+		actualPlayer = reference.getActualPlayer();
+		state = reference.getRoomState();
 	}
 }

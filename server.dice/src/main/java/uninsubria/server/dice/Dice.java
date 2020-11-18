@@ -1,11 +1,13 @@
 package uninsubria.server.dice;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Dice implements DiceInterface {
 
 	private final int diceNo;
 	private final String[] faces;
+	private String[] lettersOccurrences;
 	private String resultFace;
 	private boolean thrown;
 	
@@ -18,6 +20,8 @@ public class Dice implements DiceInterface {
 		this.diceNo = diceNo;
 		this.faces = faces;
 		thrown = false;
+
+		setLettersOccurrences();
 	}
 	
 	/**
@@ -80,9 +84,32 @@ public class Dice implements DiceInterface {
 	}
 
 	/**
+	 * Restituisce un array di String contenente le singole facce del dado, senza ripetizioni.
+	 * @return String[], un array di String con le occorrenze delle lettere.
+	 */
+	public String[] getLettersOccurrences() {
+		return lettersOccurrences;
+	}
+
+	/**
 	 * Restituisce una stringa contenente la faccia estratta dal lancio ed il numero del dado.
 	 */
 	public String toString() {
 		return resultFace + " " + diceNo;
+	}
+
+	// Crea un array contenente le singole facce, senza ripetizioni.
+	private void setLettersOccurrences() {
+		ArrayList<String> occurrences = new ArrayList<>();
+
+		for(String s : faces) {
+			if(!occurrences.contains(s))
+				occurrences.add(s);
+		}
+
+		lettersOccurrences = new String[occurrences.size()];
+
+		for(int i = 0; i < lettersOccurrences.length; i++)
+			lettersOccurrences[i] = occurrences.get(i);
 	}
 }

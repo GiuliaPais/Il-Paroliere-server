@@ -33,6 +33,11 @@ public class DiceSetTest {
 
 		System.out.println(ds.toString());
 
+		String[] occorrenze = ds.getLettersOccurrences();
+
+		for(String s: occorrenze)
+			System.out.print(s + " ");
+
 	}
 
 }

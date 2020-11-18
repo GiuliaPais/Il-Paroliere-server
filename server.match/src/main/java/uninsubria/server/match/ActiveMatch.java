@@ -1,5 +1,8 @@
 package uninsubria.server.match;
 
+import uninsubria.server.roomReference.RoomManager;
+import uninsubria.utils.business.Player;
+
 import java.util.Map;
 
 public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
@@ -8,23 +11,22 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     private int[] duplicatedWords;
     private Game game;
 
-    public ActiveMatch() {
-        super.matchNo = 1;
+    public ActiveMatch(int numMatch, Player[] p) {
+        super.matchNo = numMatch;
+        super.participants = p;
     }
 
     /**
      * Lancia i dadi e li dispone sulla griglia.
      */
     @Override
-    public Grid throwDices() {
+    public void throwDices() {
         super.grid.throwDices();
-        return super.grid;
     }
 
     @Override
     public void calculateScore() {
         // TODO Auto-generated method stub
-
     }
 
     /**
@@ -33,7 +35,6 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     @Override
     public void Conclude() {
         super.grid.resetDices();
-        super.matchNo++;
     }
 
 }

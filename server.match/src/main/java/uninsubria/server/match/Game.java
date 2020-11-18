@@ -1,27 +1,44 @@
 package uninsubria.server.match;
 
+import java.io.IOException;
 import java.util.List;
+
+import uninsubria.server.roomReference.RoomManager;
+import uninsubria.server.roomReference.RoomReference;
 import uninsubria.utils.business.Player;
 
 public class Game {
 
+    private RoomReference reference;
+    private RoomManager roomManager;
     private List<MatchInterface> matches;
     private Player winner;
     private final List<Player> PARTICIPANTS;
     private GameState state;
+    private int numMatch;
 
-    public Game(List<Player> participants) {
-        PARTICIPANTS = participants;
+    public Game(RoomReference r) {
+        reference = r;
+        roomManager = r.getRoomManager();
+        PARTICIPANTS = reference.getSlots();
         state = GameState.ONGOING;
+        numMatch = 0;
     }
 
     /**
-     * Aggiunge un nuovo match al game in corso.
-     * @param match il nuovo match da aggiungere
+     * Aggiunge un nuovo match al game in corso e manda la griglia corrispondente ai player.
      */
-    public void add(ActiveMatchInterface match) {
+    public void newMatch() {
+        numMatch++;
+        Player[] p = (Player[])PARTICIPANTS.toArray();
 
+        ActiveMatch match = new ActiveMatch(numMatch, p);
         matches.add(match);
+
+        try {
+            String strGrid = match.getGrid().toString();
+            roomManager.sendGrid(strGrid);
+        } catch (IOException e) { }
     }
 
     public void totalScore() {
@@ -33,7 +50,7 @@ public class Game {
      * @param player in uscita dal gioco.
      */
     public void abandon(Player player) {
-        PARTICIPANTS.remove(player);
+        reference.leaveRoom(player);
         state = GameState.INTERRUPTED;
     }
 

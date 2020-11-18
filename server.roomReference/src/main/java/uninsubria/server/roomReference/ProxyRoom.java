@@ -1,8 +1,7 @@
-package uninsubria.server.room;
+package uninsubria.server.roomReference;
 
-import uninsubria.server.match.Grid;
-import uninsubria.utils.serviceResults.ServiceResultInterface;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -38,10 +37,14 @@ public class ProxyRoom implements RoomManagerInterface {
 
 	}
 
+	/**
+	 * Manda al player identificato come server, la griglia sotto forma di stringa anticipato dal tag "<GRID>".
+	 * @param grid la stringa da mandare
+	 * @throws IOException
+	 */
 	@Override
-	public void sendGrid(Grid grid) throws IOException {
-		// TODO Auto-generated method stub
-
+	public void sendGrid(String grid) throws IOException {
+		out.println("<GRID>" + grid);
 	}
 
 	@Override
@@ -50,12 +53,14 @@ public class ProxyRoom implements RoomManagerInterface {
 		return null;
 	}
 
+	/**
+	 * Manda al player identificato come server, il proprio system.currentTimeMillis() sotto forma
+	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
+	 * @throws IOException
+	 */
 	@Override
 	public void setSyncTimer() throws IOException {
-		out.println("<SYNC>");
-		String serverTime = System.currentTimeMillis() + "";
-		out.println(serverTime);
-
+		out.println("<SYNC>" + System.currentTimeMillis());
 	}
 
 	@Override

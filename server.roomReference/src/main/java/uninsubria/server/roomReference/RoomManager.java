@@ -1,11 +1,10 @@
-package uninsubria.server.room;
+package uninsubria.server.roomReference;
+
+import uninsubria.utils.business.Player;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import java.io.IOException;
 import java.util.Map;
-
-import uninsubria.server.match.Grid;
-import uninsubria.utils.business.Player;
-import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 public class RoomManager implements RoomManagerInterface {
 
@@ -13,9 +12,9 @@ public class RoomManager implements RoomManagerInterface {
 	private ProxyRoom[] proxy;
 
 	public RoomManager(Player[] players) {
-		this.players = players;
+		players = players;
 
-		setProxy(players);
+		setProxy();
 	}
 
 	@Override
@@ -24,10 +23,15 @@ public class RoomManager implements RoomManagerInterface {
 
 	}
 
+	/**
+	 * Manda ai player la griglia sotto forma di stringa anticipato dal tag "<GRID>".
+	 * @param grid la stringa da mandare
+	 * @throws IOException
+	 */
 	@Override
-	public void sendGrid(Grid grid) throws IOException {
-		// TODO Auto-generated method stub
-
+	public void sendGrid(String grid) throws IOException {
+		for(ProxyRoom p : proxy)
+			p.sendGrid(grid);
 	}
 
 	@Override
@@ -36,10 +40,15 @@ public class RoomManager implements RoomManagerInterface {
 		return null;
 	}
 
+	/**
+	 * Manda ai player il proprio system.currentTimeMillis() sotto forma
+	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
+	 * @throws IOException
+	 */
 	@Override
 	public void setSyncTimer() throws IOException {
-		// TODO Auto-generated method stub
-
+		for(ProxyRoom p : proxy)
+			p.setSyncTimer();
 	}
 
 	@Override
@@ -57,8 +66,7 @@ public class RoomManager implements RoomManagerInterface {
 	}
 
 	// Genera i proxy necessari per la comunicazione col singolo player.
-	private void setProxy(Player[] players) {
-
+	private void setProxy() {
 		proxy = new ProxyRoom[players.length];
 		for(int i = 0; i < players.length; i++) {
 			proxy[i] = new ProxyRoom(players[i]);

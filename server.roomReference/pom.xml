@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>serverIP</artifactId>
         <groupId>it.uninsubria.labB717304</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>server.room</artifactId>
-    <name>server.room</name>
+    <artifactId>server.roomReference</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
     </properties>
-
 
     <dependencies>
         <dependency>
@@ -30,16 +30,6 @@
         </dependency>
         <dependency>
             <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>server.match</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>server.roomReference</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
             <artifactId>utils.serviceresults</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
@@ -49,7 +39,6 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -63,4 +52,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

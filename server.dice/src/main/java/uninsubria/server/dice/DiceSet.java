@@ -10,6 +10,7 @@ public class DiceSet {
 
 	private static final int nOfDices = 16;
 	private Dice[] dices;
+	private String[] lettersOccurrences;
 	private DiceSetStandard standard = DiceSetStandard.STANDARD;
 	private boolean thrown;
 	private Random generator;
@@ -23,6 +24,8 @@ public class DiceSet {
 		dices = new StandardParser(standard).getDices();
 		thrown = false;
 		generator = new Random();
+
+		setLettersOccurrences();
 	}
 	
 	/**
@@ -90,7 +93,11 @@ public class DiceSet {
 		
 		return faces;
 	}
-	
+
+	/**
+	 * Restituisce un array di Integer contenenti i numeri dei dadi lanciati. Null altrimenti.
+	 * @return Array di Integer contenente il numero dei dadi del lancio.
+	 */
 	public Integer[] getResultNumb() {
 		Integer[] numb = new Integer[dices.length];
 		
@@ -99,6 +106,15 @@ public class DiceSet {
 		}
 		
 		return numb;
+	}
+
+	/**
+	 * Restituisce un array di String contenente le singole lettere sulle facce dei dadi, partendo dal primo,
+	 * senza ripetizioni.
+	 * @return String[], un array di String con le occorrenze delle lettere.
+	 */
+	public String[] getLettersOccurrences() {
+		return lettersOccurrences;
 	}
 	
 	/**
@@ -118,7 +134,7 @@ public class DiceSet {
 	}
 	
 	/**
-	 * Randomizza la posizione dei dadi lanciati
+	 * Randomizza la posizione dei dadi lanciati.
 	 */
 	public void randomizePosition() {
 		ArrayList<Dice> pool = new ArrayList<>(Arrays.asList(dices));
@@ -128,6 +144,23 @@ public class DiceSet {
 			dices[i] = pool.get(pos);
 			pool.remove(pos);
 		}
+	}
+
+	// Crea un array contenente le singole facce, senza ripetizioni, a partire dal primo dado.
+	private void setLettersOccurrences() {
+		ArrayList<String> occurrences = new ArrayList<>();
+
+		for(Dice d : dices) {
+			for(String s : d.getFaces()) {
+				if(!occurrences.contains(s))
+					occurrences.add(s);
+			}
+		}
+
+		lettersOccurrences = new String[occurrences.size()];
+
+		for(int i = 0; i < lettersOccurrences.length; i++)
+			lettersOccurrences[i] = occurrences.get(i);
 	}
 	
 }

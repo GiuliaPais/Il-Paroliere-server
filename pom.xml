@@ -21,6 +21,7 @@
     <module>server.room</module>
     <module>server.match</module>
     <module>server.database</module>
+      <module>server.roomReference</module>
   </modules>
   
   <build>
