@@ -104,7 +104,6 @@ public class EmailManager{
 	
 	/**
 	 * Il metodo restituisce una stringa alfanumerica casuale
-	 * @param passwordSize 
 	 * @return una stringa randomica
 	 */
 	synchronized public String getNewAlphaNumeric() {

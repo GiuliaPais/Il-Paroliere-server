@@ -53,6 +53,7 @@ public class ProvaEmail {
 		} catch (MessagingException e) {
 		    System.err.println("SMTP SEND FAILED:");
 		    System.err.println(e.getMessage());
+		    e.printStackTrace();
 			
 		}
 	}

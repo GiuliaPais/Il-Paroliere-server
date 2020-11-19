@@ -13,8 +13,8 @@ public class Email {
 
     /**
      * costruttore
-     * @param usr						The admin email adress
-     * @param pwd						The password of the admin email
+     * @param username					The admin email adress
+     * @param password						The password of the admin email
      * @param to						The Destination adress
      * @param subject					The Object of the email
      * @param body						The text of the email
@@ -30,8 +30,7 @@ public class Email {
 
     /**
      * costruttore
-     * @param usr						The admin email adress
-     * @param pwd						The password of the admin email
+     * @param emailSender				The object EmailSender
      * @param to						The Destination adress
      * @param subject					The Object of the email
      * @param body						The text of the email

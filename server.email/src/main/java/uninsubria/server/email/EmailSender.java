@@ -11,7 +11,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class EmailSender{
-	/*(le propriet� sono state prese dal sito:
+	/*(le proprieta' sono state prese dal sito:
 	 						https://support.microsoft.com/it-it/office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
 
     private String username = "Il_Paroliere@outlook.it";
@@ -83,24 +83,31 @@ public class EmailSender{
         String from = username;
         String provider = username.substring(username.indexOf("@") + 1, username.indexOf("."));
 
+        //InternetAddress fromAddress = new InternetAddress(from);
+        //InternetAddress toAddress = new InternetAddress(email.getTo());
+
         System.out.println(provider);
         Properties props = getProperties(provider);
 
-        Session session = Session.getInstance(props, null);
-
+        Session session = Session.getInstance(props,  new javax.mail.Authenticator() {
+            protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new javax.mail.PasswordAuthentication(username, password);
+            }
+        });
         Message msg = new MimeMessage(session);
+        //msg.setFrom(fromAddress));
         msg.setFrom(new InternetAddress(from));
-        msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo(), false));
+        // msg.setRecipient(Message.RecipientType.TO, toAddress);
+        msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo()));
         msg.setSubject(email.getSubject());
         msg.setText(email.getBody());
 
-
-        Transport.send(msg,username,password);
+        Transport.send(msg);
         System.out.println("\nMail was sent successfully.");
     }
 
-    /**
-     * il metodo restituisce le propriet� delle impostazioni SMTP dei vari provider
+    /**mv
+     * il metodo restituisce le proprieta' delle impostazioni SMTP dei vari provider
      * @param provider		The Provider
      * @return props		The properties of the provider(see line 14)
      */
@@ -114,6 +121,8 @@ public class EmailSender{
             props.put("mail.smtp.host",getHost(provider));
             props.put("mail.smtp.ssl/tls.enable", "true");
             props.put("mail.smtp.port",465);
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
 
             return props;
         }
@@ -124,6 +133,8 @@ public class EmailSender{
             props.put("mail.smtp.host", getHost(provider));
             props.put("mail.smtp.starttls.enable", "true");
             props.put("mail.smtp.port",587);
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
 
             return props;
         }
@@ -134,6 +145,8 @@ public class EmailSender{
             props.put("mail.smtp.host",getHost(provider));
             props.put("mail.smtp.tls/starttls.enable", "true");
             props.put("mail.smtp.port",587);
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
 
             return props;
         }
