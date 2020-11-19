@@ -3,7 +3,8 @@ package uninsubria.server.dice;
 public enum DiceSetStandard {
 	
 	STANDARD("Standard", "DiceSetFaces_STANDARD.json"), 
-	ITALIAN("Italian", "DiceSetFaces_ITA.json");
+	ITALIAN("Italian", "DiceSetFaces_ITA.json"),
+	ENGLISH("English", "DiceSetFaces_ENG.json");
 	
 	private final String language, fileName;
 	

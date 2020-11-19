@@ -2,7 +2,7 @@ package uninsubria.server.dice;
 
 public class DiceSetTest {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		
 		DiceSet ds = new DiceSet();
 		
@@ -31,9 +31,22 @@ public class DiceSetTest {
 			risultato += s + " ";
 		System.out.println(risultato);
 
+		// Metodo toString
 		System.out.println(ds.toString());
 
+		// Controllo delle occorrenze
 		String[] occorrenze = ds.getLettersOccurrences();
+
+		for(String s: occorrenze)
+			System.out.print(s + " ");
+
+		System.out.println();
+
+		// Settaggio di una nuova lingua
+		ds.setDiceSetStandard(DiceSetStandard.ENGLISH);
+
+		// Controllo delle nuove occorrenze
+		occorrenze = ds.getLettersOccurrences();
 
 		for(String s: occorrenze)
 			System.out.print(s + " ");

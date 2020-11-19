@@ -46,19 +46,23 @@ public class RoomReference {
     /**
      * Permette di settare il numero massimo di giocatori col valore passato come parametro, purché sia un valore
      * maggiore o uguale dell'attuale numero di giocatori presenti in stanza.
-     * I valori ammessi sono compresi tra 2 e 6. Valori minori o maggiori impostano il numero massimo di giocatori
-     * rispettivamente al minimo ed al massimo consentito.
+     * I valori ammessi sono compresi tra 2 e 6. Valori minori o maggiori impostano rispettivamente
+     * al minimo ed al massimo consentito.
      * @param i il nuovo numero massimo di giocatori consentito.
      */
     public void setMaxPlayer(int i) {
         if(actualPlayer <= i) {
-            if (maxPlayer < 2)
+            if (i < 2)
                 maxPlayer = 2;
-            else if (maxPlayer > 6)
+            else if (i > 6)
                 maxPlayer = 6;
             else
                 maxPlayer = i;
         }
+    }
+
+    public void setActualPlayer(int i) {
+        actualPlayer = i;
     }
 
     /**
@@ -95,10 +99,6 @@ public class RoomReference {
         return state;
     }
 
-    public void setRoomState(RoomState newState) {
-        state = newState;
-    }
-
     /**
      * Restituisce sotto forma di ArrayList tutti i player attualmente nella room.
      * @return ArrayList\<Player\> attualmente nella room.
@@ -113,9 +113,7 @@ public class RoomReference {
      */
     public boolean newGameIsPossible() {
         if(actualPlayer == maxPlayer) {
-            Player[] slotsArray = new Player[slots.size()];
-            slots.toArray(slotsArray);
-            manager = new RoomManager(slotsArray);
+            manager = new RoomManager(slots);
             state = RoomState.GAMEON;
             return true;
 

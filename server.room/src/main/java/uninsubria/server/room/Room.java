@@ -3,6 +3,7 @@ package uninsubria.server.room;
 import java.util.ArrayList;
 
 import uninsubria.server.match.Game;
+import uninsubria.server.match.GameState;
 import uninsubria.utils.business.Player;
 import uninsubria.server.roomReference.*;
 import tmpClasses.RuleSet;
@@ -10,13 +11,10 @@ import tmpClasses.RuleSet;
 public class Room extends Thread{
 
 	private RoomReference reference;
-
 	private RuleSet ruleSet;
 	private RoomManager manager;
 	private RoomState state;
 	private Game game;
-	private int maxPlayer;
-	private int actualPlayer;
 
 	private ArrayList<Player> slots;
 	private final int ID;
@@ -30,14 +28,19 @@ public class Room extends Thread{
 	public Room(int id, Player player) {
 		ID = id;
 		reference = new RoomReference(player);
-		setReference();
 		this.start();
 	}
 
 	// Il trhead stanza esiste fintanto che al suo interno vi è almeno un player
 	public void run() {
-		while(actualPlayer > 0) {
+		while(reference.getActualPlayer() > 0) {
 
+			while(game != null) {
+
+
+
+
+			}
 		}
 	}
 
@@ -48,6 +51,14 @@ public class Room extends Thread{
 	 */
 	public void joinRoom(Player player) {
 		reference.joinRoom(player);
+	}
+
+	/**
+	 * Restituisce il riferimento alla RoomReference attualmente in uso dalla Room.
+	 * @return la RoomReference attualmente in uso dalla Room.
+	 */
+	public RoomReference getRoomReference() {
+		return reference;
 	}
 
 	/**
@@ -62,11 +73,19 @@ public class Room extends Thread{
 	}
 
 	/**
+	 Restituisce il numero massimo di player che la stanza può accettare.
+	 * @return il numero di player massimo della stanza.
+	 */
+	public int getMaxPlayer() {
+		return reference.getMaxPlayer();
+	}
+
+	/**
 	 * Restituisce il numero attuale di player nella stanza
 	 * @return il numero di player nella stanza
 	 */
 	public int getActualPlayer() {
-		return actualPlayer;
+		return reference.getActualPlayer();
 	}
 
 	/**
@@ -90,7 +109,7 @@ public class Room extends Thread{
 	 * @return RoomState, lo stato attuale della stanza.
 	 */
 	public RoomState getRoomState() {
-		return state;
+		return reference.getRoomState();
 	}
 
 	/**
@@ -114,7 +133,7 @@ public class Room extends Thread{
 	 * @return ArrayList\<Player\> attualmente nella room.
 	 */
 	public ArrayList<Player> getSlots() {
-		return slots;
+		return reference.getSlots();
 	}
 
 	/**
@@ -149,14 +168,6 @@ public class Room extends Thread{
 	 */
 	public void interrupt() {
 		super.interrupt();
-		actualPlayer = 0;
-	}
-
-	// Setta tutti dadi necessari dalla roomReference
-	private void setReference() {
-		slots = reference.getSlots();
-		maxPlayer = reference.getMaxPlayer();
-		actualPlayer = reference.getActualPlayer();
-		state = reference.getRoomState();
+		reference.setActualPlayer(0);
 	}
 }

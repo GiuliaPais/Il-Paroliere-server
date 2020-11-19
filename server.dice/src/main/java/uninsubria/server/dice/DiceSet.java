@@ -11,7 +11,7 @@ public class DiceSet {
 	private static final int nOfDices = 16;
 	private Dice[] dices;
 	private String[] lettersOccurrences;
-	private DiceSetStandard standard = DiceSetStandard.STANDARD;
+	private DiceSetStandard diceLang;
 	private boolean thrown;
 	private Random generator;
 	
@@ -20,12 +20,23 @@ public class DiceSet {
 	 * la variabile booleana del lancio settata su <code>false</code>.
 	 * @throws URISyntaxException
 	 */
-	public DiceSet() throws IOException, URISyntaxException {
-		dices = new StandardParser(standard).getDices();
-		thrown = false;
+	public DiceSet() {
 		generator = new Random();
 
-		setLettersOccurrences();
+		init(DiceSetStandard.STANDARD);
+	}
+
+	/**
+	 * Costruttore del set di dadi. Al suo interno vengono inizializzati l'array dei dadi,
+	 * la variabile booleana del lancio settata su <code>false</code>.
+	 * @param diceLanguage il set di lingue da utilizzare.
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public DiceSet(DiceSetStandard diceLanguage) {
+		generator = new Random();
+
+		init(diceLanguage);
 	}
 	
 	/**
@@ -74,10 +85,10 @@ public class DiceSet {
 
 	/**
 	 * Setta un nuovo standard di dadi da utilizzare.
-	 * @param newStandard il nuovo standard di dadi da utilizzare.
+	 * @param newLanguage il nuovo standard di dadi da utilizzare.
 	 */
-	public void setDiceSetStandard(DiceSetStandard newStandard) {
-		standard = newStandard;
+	public void setDiceSetStandard(DiceSetStandard newLanguage) {
+		init(newLanguage);
 	}
 	
 	/**
@@ -161,6 +172,16 @@ public class DiceSet {
 
 		for(int i = 0; i < lettersOccurrences.length; i++)
 			lettersOccurrences[i] = occurrences.get(i);
+	}
+
+	// Inizializza il set di dadi
+	private void init(DiceSetStandard diceLanguage) {
+		diceLang = diceLanguage;
+		try {
+			dices = new StandardParser(diceLang).getDices();
+		} catch (IOException | URISyntaxException ignored) { }
+		thrown = false;
+		setLettersOccurrences();
 	}
 	
 }

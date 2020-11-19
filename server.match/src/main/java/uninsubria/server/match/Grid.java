@@ -6,22 +6,14 @@ import java.net.URISyntaxException;
 
 import uninsubria.server.dice.DiceSet;
 
-public class Grid implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-
-	private final static int SIZE = 16;
+public class Grid {
 
 	private DiceSet dices;
-	private String[] diceFaces = new String[SIZE];
-	private Integer[] diceNumb = new Integer[SIZE];
+	private String[] diceFaces;
+	private Integer[] diceNumb;
 
 	public Grid() {
-		try {
-			dices = new DiceSet();
-		} catch (IOException | URISyntaxException e) {
-			e.printStackTrace();
-		}
+		dices = new DiceSet();
 		diceNumb = dices.getResultNumb();
 	}
 

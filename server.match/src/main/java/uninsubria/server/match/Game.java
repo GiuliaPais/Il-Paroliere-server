@@ -16,6 +16,7 @@ public class Game {
     private final List<Player> PARTICIPANTS;
     private GameState state;
     private int numMatch;
+    private boolean exists;
 
     public Game(RoomReference r) {
         reference = r;
@@ -23,6 +24,7 @@ public class Game {
         PARTICIPANTS = reference.getSlots();
         state = GameState.ONGOING;
         numMatch = 0;
+        exists = true;
     }
 
     /**
@@ -39,6 +41,14 @@ public class Game {
             String strGrid = match.getGrid().toString();
             roomManager.sendGrid(strGrid);
         } catch (IOException e) { }
+    }
+
+    /**
+     * Metodo per i test. Restituisce true se la classe è stata istanziata.
+     * @return true se istanziato.
+     */
+    public boolean exists() {
+        return exists;
     }
 
     public void totalScore() {
@@ -94,11 +104,4 @@ public class Game {
         return state;
     }
 
-    /**
-     * Setta un nuovo stato di gioco.
-     * @param state lo stato di gioco.
-     */
-    public void setState(GameState state) {
-        this.state = state;
-    }
 }
