@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import com.jfoenix.controls.JFXButton?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@../css/ServerStyleSheet.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uninsubria.server.gui.MainServerGuiController">
+<AnchorPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" stylesheets="@../css/ServerStyleSheet.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uninsubria.server.gui.MainServerGuiController">
    <children>
       <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" layoutX="40.0" layoutY="50.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="50.0">
          <content>
@@ -14,11 +14,12 @@
          </content>
       </ScrollPane>
       <ButtonBar layoutX="136.0" layoutY="311.0" prefHeight="43.0" prefWidth="520.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
-        <buttons>
-            <Button fx:id="serverStart_btn" mnemonicParsing="false" onAction="#startServer" prefHeight="43.0" prefWidth="120.0" text="Start server" />
-          <Button fx:id="stopServer_btn" mnemonicParsing="false" onAction="#stopServer" prefHeight="43.0" prefWidth="120.0" text="Stop server" />
-            <Button fx:id="exit_btn" minWidth="49.0" mnemonicParsing="false" onAction="#exit" prefHeight="43.0" prefWidth="120.0" text="Exit" />
-        </buttons>
+         <buttons>
+            <JFXButton fx:id="back_btn" onAction="#back" prefHeight="43.0" text="Back" />
+            <JFXButton onAction="#startServer" prefHeight="43.0" text="Start Server" />
+            <JFXButton onAction="#stopServer" prefHeight="43.0" text="Stop Server" />
+            <JFXButton onAction="#exit" prefHeight="43.0" text="Exit" />
+         </buttons>
       </ButtonBar>
    </children>
 </AnchorPane>

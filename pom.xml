@@ -23,6 +23,7 @@
     <module>server.database</module>
       <module>server.roomReference</module>
       <module>server.email</module>
+      <module>server.dbpopulator</module>
   </modules>
   
   <build>

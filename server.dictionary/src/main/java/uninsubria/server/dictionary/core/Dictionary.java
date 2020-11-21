@@ -1,7 +1,10 @@
 package uninsubria.server.dictionary.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+
 import uninsubria.utils.dictionary.Definition;
 
 /**
@@ -9,7 +12,7 @@ import uninsubria.utils.dictionary.Definition;
  * terms are keys and each term is associated with a list of definitions.
  * 
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class Dictionary {
 	/*---Fields---*/
@@ -42,7 +45,8 @@ public class Dictionary {
 	 * @return TRUE or FALSE
 	 */
 	public boolean wordExists(String word) {
-		return dict.containsKey(word);
+		String lower = word.toLowerCase();
+		return dict.containsKey(lower);
 	}
 	
 	/**
@@ -51,7 +55,11 @@ public class Dictionary {
 	 * @return A list of Definition objects
 	 */
 	public List<Definition> getDefinitions(String word) {
-		return dict.get(word);
+		String lower = word.toLowerCase();
+		return dict.get(lower);
 	}
-	
+
+	public Set<String> getAllWords() {
+		return dict.keySet();
+	}
 }

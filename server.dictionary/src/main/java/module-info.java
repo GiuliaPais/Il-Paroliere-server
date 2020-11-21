@@ -3,4 +3,5 @@ module server.dictionary {
 	requires transitive utils.languages;
 	requires transitive utils.dictionary;
 	exports uninsubria.server.dictionary.manager;
+    exports uninsubria.server.dictionary.loader;
 }

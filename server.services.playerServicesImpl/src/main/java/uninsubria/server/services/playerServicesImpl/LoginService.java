@@ -1,6 +1,6 @@
 package uninsubria.server.services.playerServicesImpl;
 
-import uninsubria.server.database.TransactionManager;
+import uninsubria.server.db.api.TransactionManager;
 import uninsubria.server.services.api.Service;
 import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
 import uninsubria.utils.business.Player;
@@ -8,18 +8,26 @@ import uninsubria.utils.serviceResults.ErrorMsgType;
 import uninsubria.utils.serviceResults.Result;
 import uninsubria.utils.serviceResults.ServiceResult;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.sql.SQLException;
-
+/**
+ * Implementation of the service that manages the user login.
+ *
+ * @author Giulia Pais
+ * @version 0.9.1
+ */
 public class LoginService implements Service {
 	
 	private final PlayerServiceType serviceType = PlayerServiceType.LOGIN;
 	private String userid;
 	private String pw;
+	private List<Byte> errorList;
 
 	public LoginService(String id, String password) {
 		this.userid = id;
 		this.pw = password;
+		this.errorList = new ArrayList<>();
 	}
 
 	public PlayerServiceType getServiceType() {
@@ -29,46 +37,35 @@ public class LoginService implements Service {
 	@Override
 	public ServiceResultInterface execute() {
 		ServiceResultInterface sr = new ServiceResult("LOGIN");
-		Result<Player> player;
-		Result<ErrorMsgType> error;
-		TransactionManager tm = null;
-		try {
-			tm = new TransactionManager();
-		} catch (SQLException throwables) {
-			throwables.printStackTrace();
+		Player player;
+		TransactionManager tm = new TransactionManager(); // valutare se mettere unico tm per player
+		player = tm.loginPlayer(userid, pw, this.errorList);
+		Result<Player> pres = new Result<>("Player", player);
+		sr.addResult(pres);
+		if (player == null) {
+			int errorN = 1;
+			for (Byte code : errorList) {
+				Result<ErrorMsgType> error;
+				switch(code) {
+					case 1:
+						error = new Result<>("Error" + errorN, ErrorMsgType.GENERIC_DB_ERROR);
+						sr.addResult(error);
+						break;
+					case 2:
+						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_NOMATCH);
+						sr.addResult(error);
+						break;
+					case 3:
+						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_PW);
+						sr.addResult(error);
+						break;
+					case 4:
+						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_USER_ONLINE);
+						sr.addResult(error);
+						break;
+				}
+			}
 		}
-		/* Check user exists in DB */
-		Player user = tm.lookupUser(userid);
-		if (user == null) {
-			player = new Result<>("Player", null);
-			error = new Result<>("Error", ErrorMsgType.LOGIN_ERR_NOMATCH);
-			sr.addResult(player);
-			sr.addResult(error);
-			return sr;
-		}
-		/* Check if the pw is correct */
-		boolean pwOk = false;
-//		boolean pwOk = SCryptUtil.check(pw, user.getPassword());
-		if (!pwOk) {
-			player = new Result<>("Player", null);
-			error = new Result<>("Error", ErrorMsgType.LOGIN_ERR_PW);
-			sr.addResult(player);
-			sr.addResult(error);
-			return sr;
-		}
-		/* Check if user is not already logged in - da rivedere, non credo sia appropriato metterlo qui il check, va fatto dal db */
-		if (user.isLogStatus()) {
-			player = new Result<>("Player", null);
-			error = new Result<>("Error", ErrorMsgType.LOGIN_ERR_USER_ONLINE);
-			sr.addResult(player);
-			sr.addResult(error);
-			return sr;
-		}
-		tm.loginPlayer(user); //questo dovrebbe lanciare un'eccezione se log status è già true
-		player = new Result<>("Player", user);
-		error = new Result<>("Error", null);
-		sr.addResult(player);
-		sr.addResult(error);
 		return sr;
 	}
 	

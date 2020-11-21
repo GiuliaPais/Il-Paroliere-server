@@ -1,11 +1,13 @@
 package uninsubria.server.gui;
 
+import com.jfoenix.controls.JFXButton;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import uninsubria.server.core.MasterServer;
 import uninsubria.utils.connection.CommHolder;
 
 import java.io.IOException;
@@ -13,20 +15,23 @@ import java.net.Socket;
 
 /**
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class MainServerGuiController {
     /*---Fields---*/
+    @FXML
+    AnchorPane root;
     @FXML TextFlow console;
-    @FXML Button serverStart_btn, stopServer_btn, exit_btn;
+    @FXML
+    JFXButton back_btn;
 
     /*---Constructors---*/
     public MainServerGuiController() {
-        ServerLauncher.masterServer = new MasterServer(this);
     }
 
     /*---Methods---*/
     public void initialize() {
+        ServerLauncher.masterServer.setControllerReference(this);
     }
 
     public void printToConsole(String msg, MessageType msgType) {
@@ -38,16 +43,20 @@ public class MainServerGuiController {
 
     @FXML
     void startServer() {
-        if (ServerLauncher.masterServer == null) {
-            ServerLauncher.masterServer = new MasterServer(this);
-            ServerLauncher.masterServer.start();
+        if (ServerLauncher.masterServer.isAlive()) {
+            printToConsole("Server already running", MessageType.WARNING);
             return;
         }
-        if (ServerLauncher.masterServer.getState().equals(Thread.State.NEW)) {
+        if (ServerLauncher.masterServer.getState().equals(Thread.State.NEW) ||
+                ServerLauncher.masterServer.getState().equals(Thread.State.RUNNABLE)) {
             ServerLauncher.masterServer.start();
+            back_btn.setDisable(true);
             return;
         }
-        printToConsole("Server already running", MessageType.WARNING);
+        ServerLauncher.newServerInstance();
+        ServerLauncher.masterServer.start();
+        back_btn.setDisable(true);
+        return;
     }
 
     @FXML void exit() {
@@ -56,21 +65,23 @@ public class MainServerGuiController {
     }
 
     @FXML void stopServer() {
-        if (ServerLauncher.masterServer == null) {
+        if (!ServerLauncher.masterServer.isAlive()) {
             printToConsole("No server to stop", MessageType.WARNING);
             return;
         }
-        if (ServerLauncher.masterServer.isAlive()) {
-            ServerLauncher.masterServer.interrupt();
-            /* Dummy client: necessary because of server socket blocked on listening */
-            try {
-                new Socket("localhost", CommHolder.SERVER_PORT);
-            } catch (IOException e) {
-                printToConsole(e.getStackTrace().toString(), MessageType.WARNING);
-            }
-            ServerLauncher.masterServer = null;
-        } else {
-            printToConsole("No server to stop", MessageType.WARNING);
+        ServerLauncher.masterServer.interrupt();
+        /* Dummy client: necessary because of server socket blocked on listening */
+        try {
+            new Socket("localhost", CommHolder.SERVER_PORT);
+        } catch (IOException e) {
+            printToConsole(e.getStackTrace().toString(), MessageType.WARNING);
         }
+        back_btn.setDisable(false);
+    }
+
+    @FXML void back() throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DbLogin.fxml"));
+        Parent parent = loader.load();
+        root.getScene().setRoot(parent);
     }
 }

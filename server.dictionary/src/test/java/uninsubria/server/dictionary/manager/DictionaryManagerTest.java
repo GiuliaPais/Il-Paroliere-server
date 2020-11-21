@@ -27,7 +27,7 @@ class DictionaryManagerTest {
 	@BeforeAll
 	public static void init() {
 		try {
-			dm = new DictionaryManager();
+			dm = dm.getInstance();
 		} catch (DictionaryException | URISyntaxException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -35,29 +35,33 @@ class DictionaryManagerTest {
 	}
 
 	@Test
-	void testLookUpWord() {
-		List<Definition> defs_ok = dm.lookUpWord("casa", Language.ITALIAN);
+	void testLookUpWord() throws IOException, DictionaryException, URISyntaxException {
+		List<Definition> defs_ok = DictionaryManager.lookUpWord("casa", Language.ITALIAN);
 		assertNotNull(defs_ok);
-		List<Definition> defs_ko = dm.lookUpWord("ergtet", Language.ITALIAN);
+		List<Definition> defs_ko = DictionaryManager.lookUpWord("ergtet", Language.ITALIAN);
 		assertNull(defs_ko);
-		List<Definition> defs_ok_eng = dm.lookUpWord("home", Language.ENGLISH);
+		List<Definition> defs_ok_eng = DictionaryManager.lookUpWord("home", Language.ENGLISH);
 		assertNotNull(defs_ok_eng);
-		List<Definition> defs_ko_eng = dm.lookUpWord("ergtet", Language.ENGLISH);
+		List<Definition> defs_ko_eng = DictionaryManager.lookUpWord("ergtet", Language.ENGLISH);
 		assertNull(defs_ko_eng);
 	}
 	
 	@Test
-	void testIsValid() {
-		boolean valid_ok = dm.isValid("casa", Language.ITALIAN);
+	void testIsValid() throws IOException, DictionaryException, URISyntaxException {
+		boolean valid_ok = DictionaryManager.isValid("casa", Language.ITALIAN);
 		assertTrue(valid_ok);
-		boolean valid_ko = dm.isValid("per", Language.ITALIAN);
+		boolean valid_ok_title = DictionaryManager.isValid("Casa", Language.ITALIAN);
+		assertTrue(valid_ok_title);
+		boolean valid_ok_upper = DictionaryManager.isValid("CASA", Language.ITALIAN);
+		assertTrue(valid_ok_upper);
+		boolean valid_ko = DictionaryManager.isValid("per", Language.ITALIAN);
 		assertFalse(valid_ko);
-		boolean valid_ok_eng = dm.isValid("home", Language.ENGLISH);
+		boolean valid_ok_eng = DictionaryManager.isValid("home", Language.ENGLISH);
 		assertTrue(valid_ok_eng);
-		boolean valid_ko_eng = dm.isValid("the", Language.ENGLISH);
+		boolean valid_ko_eng = DictionaryManager.isValid("the", Language.ENGLISH);
 		assertFalse(valid_ko_eng);
-		boolean valid_ko_missing = dm.isValid("fdgfdg", Language.ITALIAN);
-		boolean valid_ko_missing_eng = dm.isValid("fdgfdg", Language.ENGLISH);
+		boolean valid_ko_missing = DictionaryManager.isValid("fdgfdg", Language.ITALIAN);
+		boolean valid_ko_missing_eng = DictionaryManager.isValid("fdgfdg", Language.ENGLISH);
 		assertFalse(valid_ko_missing);
 		assertFalse(valid_ko_missing_eng);
 	}

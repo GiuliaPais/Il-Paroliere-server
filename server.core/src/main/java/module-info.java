@@ -8,6 +8,9 @@ module server.core {
     requires server.services.api;
     requires server.services.playerServicesImpl;
     requires utils.business;
+    requires com.jfoenix;
+    requires java.prefs;
+    requires server.dictionary;
 
     opens uninsubria.server.gui to javafx.fxml;
     exports uninsubria.server.gui;

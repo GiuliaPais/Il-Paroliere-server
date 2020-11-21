@@ -24,11 +24,11 @@
   		<artifactId>junit-jupiter</artifactId>
   		<version>5.6.0</version>
   	</dependency>
-  	<dependency>
-  		<groupId>org.mockito</groupId>
-  		<artifactId>mockito-core</artifactId>
-  		<version>3.3.0</version>
-  	</dependency>
+      <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>42.2.18.jre7</version>
+      </dependency>
   	<dependency>
   		<groupId>it.uninsubria.labB717304</groupId>
   		<artifactId>utils.serviceresults</artifactId>
@@ -37,6 +37,17 @@
       <dependency>
           <groupId>it.uninsubria.labB717304</groupId>
           <artifactId>utils.business</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>it.uninsubria.labB717304</groupId>
+          <artifactId>utils.languages</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+          <groupId>it.uninsubria.labB717304</groupId>
+          <artifactId>server.dice</artifactId>
           <version>0.0.1-SNAPSHOT</version>
           <scope>compile</scope>
       </dependency>

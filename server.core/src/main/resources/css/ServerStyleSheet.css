@@ -10,6 +10,7 @@
 	/*Defaults*/
 	-fx-background-color: background;
 	-fx-font-size: 14px;
+	-fx-text-fill: white;
 }
 
 .scroll-pane,
@@ -47,7 +48,6 @@
 	-fx-padding: 10 15 10 15;
 }
 
-
 #error {
 	-fx-fill: red;
 }
@@ -58,4 +58,14 @@
 
 #warning{
 	-fx-fill: yellow;
+}
+
+#dbWindowTitle {
+	-fx-text-fill:white;
+	-fx-font-size: 22px;
+	-fx-font-weight: bold;
+}
+
+.jfx-text-field, .jfx-password-field {
+	-fx-text-fill: white;
 }
