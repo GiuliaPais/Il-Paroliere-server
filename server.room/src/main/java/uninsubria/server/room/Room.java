@@ -162,4 +162,8 @@ public class Room extends Thread{
 		super.interrupt();
 		reference.setActualPlayer(0);
 	}
+
+	public String toSTring() {
+		return "Room n-" + ID + ", actual player: " + getActualPlayer() + ", max player: " + getMaxPlayer() + ". ";
+	}
 }

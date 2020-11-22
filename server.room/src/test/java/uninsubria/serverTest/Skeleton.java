@@ -1,5 +1,6 @@
 package uninsubria.serverTest;
 
+import uninsubria.server.room.Room;
 import uninsubria.server.room.RoomList;
 
 import java.io.*;
@@ -13,12 +14,14 @@ public class Skeleton implements Runnable{
     private Socket socket;
     private RoomList rooms;
     private Player player;
+    private int roomId;
 
     /*-----Constructors-----*/
 
     public Skeleton(Socket s, RoomList rl) {
         socket = s;
         rooms = rl;
+        roomId = 0;
         setInOut();
     }
 
@@ -52,6 +55,15 @@ public class Skeleton implements Runnable{
             case "<PLAYER>":
                 createPlayer();
                 break;
+            case "<CREA_STANZA>":
+                rooms.createRoom(player);
+                break;
+            case "<ENTRA_STANZA>":
+                entraStanza();
+                break;
+            case "<ESCI_STANZA>":
+                rooms.leaveRoom(roomId, player);
+                break;
             default:
                 System.out.println(command);
 
@@ -62,10 +74,12 @@ public class Skeleton implements Runnable{
        ObjectInputStream input = null;
 
         try {
-            input = new ObjectInputStream(new FileInputStream("player.dat"));
+            input = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        player = null;
 
         try {
             player = (Player) input.readObject();
@@ -74,13 +88,27 @@ public class Skeleton implements Runnable{
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-        try {
-            input.close();
-        } catch (IOException e) {
-
-        }
-
     }
 
+    private void entraStanza() {
+        String tmp = "";
+
+        if(rooms.getRoomList().size() == 0)
+            tmp = "Nessuna stanza presente.";
+        else {
+
+            for (int i = 1; i < rooms.getRoomList().size(); i++)
+                tmp += rooms.getRoomList().get(i).toSTring();
+
+            out.println(tmp);
+
+            try {
+                roomId = Integer.parseInt(in.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            rooms.joinRoom(roomId, player);
+        }
+    }
 }

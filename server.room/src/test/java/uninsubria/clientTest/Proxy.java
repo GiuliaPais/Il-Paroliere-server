@@ -78,6 +78,10 @@ public class Proxy implements ClientInterface {
         return active;
     }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     /*-----Private methods-----*/
 
     private void init(InetAddress addr, int port) throws IOException {

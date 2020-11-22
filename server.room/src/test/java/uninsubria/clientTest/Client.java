@@ -82,17 +82,7 @@ public class Client extends Thread {
                 client.printOut("<CREA_STANZA>");
                 break;
             case 2:
-                client.printOut("<ENTRA_STANZA>");
-                System.out.print("Digitare il numero della stanza: -> ");
-                int tmp = 0;
-
-                try {
-                    tmp = Integer.parseInt(in.readLine());
-                } catch (Exception e) {
-                    System.out.println("Comando non riconosciuto. Digitare di nuovo.");
-                    selectCommand();
-                }
-
+                entraStanza();
                 break;
             case 3:
                 client.printOut("<ESCI_STANZA>");
@@ -111,12 +101,32 @@ public class Client extends Thread {
         ObjectOutputStream output = null;
 
         try {
-            output = new ObjectOutputStream(new FileOutputStream("player.dat"));
+            output = new ObjectOutputStream(client.getSocket().getOutputStream());
             output.writeObject(player);
-            output.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void entraStanza() {
+        client.printOut("<ENTRA_STANZA>");
+        String s = client.readIn();
+        System.out.println(s);
+
+        if(!s.equals("Nessuna stanza presente.")) {
+            System.out.print("Digitare il numero della stanza: -> ");
+            int tmp = 0;
+
+            try {
+                tmp = Integer.parseInt(in.readLine());
+            } catch (Exception e) {
+                System.out.println("Comando non riconosciuto. Digitare di nuovo.");
+                selectCommand();
+            }
+
+            client.printOut(tmp + "");
+        } else
+            selectCommand();
     }
 
 }
