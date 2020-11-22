@@ -12,5 +12,5 @@ public interface RoomManagerInterface {
 	void sendGrid(String grid) throws IOException;
 	ServiceResultInterface areValidWord(String[] words) throws IOException;
 	void setSyncTimer() throws IOException;
-	void synchronizeClocks() throws IOException;
+	void synchronizeClocks(int m, int s, int ml) throws IOException;
 }

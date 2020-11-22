@@ -12,8 +12,6 @@ public class Room extends Thread{
 
 	private RoomReference reference;
 	private RuleSet ruleSet;
-	private RoomManager manager;
-	private RoomState state;
 	private Game game;
 
 	private ArrayList<Player> slots;
@@ -35,12 +33,7 @@ public class Room extends Thread{
 	public void run() {
 		while(reference.getActualPlayer() > 0) {
 
-			while(game != null) {
 
-
-
-
-			}
 		}
 	}
 
@@ -142,7 +135,6 @@ public class Room extends Thread{
 	 */
 	public void newGame() {
 		if(reference.newGameIsPossible()) {
-			manager = reference.getRoomManager();
 			game = new Game(reference);
 		}
 	}
@@ -160,7 +152,7 @@ public class Room extends Thread{
 	 * @return RoomManager.
 	 */
 	public RoomManager getRoomManager() {
-		return manager;
+		return reference.getRoomManager();
 	}
 
 	/**

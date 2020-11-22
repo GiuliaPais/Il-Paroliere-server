@@ -1,6 +1,8 @@
 package uninsubria.server.roomReference;
 
 import uninsubria.utils.business.Player;
+import uninsubria.utils.chronometer.Chronometer;
+import uninsubria.utils.chronometer.Counter;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import java.io.*;
@@ -64,8 +66,14 @@ public class ProxyRoom implements RoomManagerInterface {
 	}
 
 	@Override
-	public void synchronizeClocks() throws IOException {
-		// TODO Auto-generated method stub
+	public void synchronizeClocks(int m, int s, int ml) throws IOException {
+		Counter c = new Counter(m, s, ml);
+		Chronometer chron = new Chronometer(c);
+		try {
+			chron.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

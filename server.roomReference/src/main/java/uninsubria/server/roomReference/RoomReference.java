@@ -32,7 +32,7 @@ public class RoomReference {
      * Ciò è possibile esclusivamente se non è già stato raggiunto il numero massimo di player consentito.
      * @param player il player che entra nella stanza e viene aggiunto alla coda di chi è già presente.
      */
-    public void joinRoom(Player player) {
+    public synchronized void joinRoom(Player player) {
         if(actualPlayer < maxPlayer) {
             slots.add(player);
             actualPlayer++;
@@ -50,7 +50,7 @@ public class RoomReference {
      * al minimo ed al massimo consentito.
      * @param i il nuovo numero massimo di giocatori consentito.
      */
-    public void setMaxPlayer(int i) {
+    public synchronized void setMaxPlayer(int i) {
         if(actualPlayer <= i) {
             if (i < 2)
                 maxPlayer = 2;
@@ -61,6 +61,10 @@ public class RoomReference {
         }
     }
 
+    /**
+     * Permette di settare il numero attuale di giocatori col valore passato come parametro.
+     * @param i
+     */
     public void setActualPlayer(int i) {
         actualPlayer = i;
     }
@@ -85,7 +89,7 @@ public class RoomReference {
      * Permette ad un player, passato come parametro, di uscire dalla lobby prima che la partita sia iniziata.
      * @param player il player in uscita
      */
-    public void leaveRoom(Player player) {
+    public synchronized void leaveRoom(Player player) {
         slots.remove(player);
         actualPlayer--;
         state = RoomState.OPEN;

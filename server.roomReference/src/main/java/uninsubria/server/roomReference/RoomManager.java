@@ -1,6 +1,8 @@
 package uninsubria.server.roomReference;
 
 import uninsubria.utils.business.Player;
+import uninsubria.utils.chronometer.Chronometer;
+import uninsubria.utils.chronometer.Counter;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import java.io.IOException;
@@ -12,6 +14,7 @@ public class RoomManager implements RoomManagerInterface {
 	private Player[] players;
 	private ProxyRoom[] proxy;
 	private final boolean exists;
+	private Chronometer chronometer;
 
 	public RoomManager(ArrayList<Player> players) {
 		setPlayers(players);
@@ -54,9 +57,14 @@ public class RoomManager implements RoomManagerInterface {
 	}
 
 	@Override
-	public void synchronizeClocks() throws IOException {
-		// TODO Auto-generated method stub
-
+	public void synchronizeClocks(int m, int s, int ml) throws IOException {
+		Counter c = new Counter(m, s, ml);
+		chronometer = new Chronometer(c);
+		try {
+			chronometer.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -73,6 +81,14 @@ public class RoomManager implements RoomManagerInterface {
 	 */
 	public boolean exists() {
 		return exists;
+	}
+
+	/**
+	 * Restituisce l'attuale cronometro se avviato. Null altrimenti.
+	 * @return l'attuale cronometro in uso.
+	 */
+	public Chronometer getChronometer() {
+		return chronometer;
 	}
 
 	// Genera i proxy necessari per la comunicazione col singolo player.

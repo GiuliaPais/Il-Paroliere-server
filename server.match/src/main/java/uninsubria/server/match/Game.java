@@ -1,6 +1,7 @@
 package uninsubria.server.match;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import uninsubria.server.roomReference.RoomManager;
@@ -11,9 +12,9 @@ public class Game {
 
     private RoomReference reference;
     private RoomManager roomManager;
-    private List<MatchInterface> matches;
+    private ArrayList<MatchInterface> matches;
     private Player winner;
-    private final List<Player> PARTICIPANTS;
+    private Player[] participants;
     private GameState state;
     private int numMatch;
     private boolean exists;
@@ -21,26 +22,19 @@ public class Game {
     public Game(RoomReference r) {
         reference = r;
         roomManager = r.getRoomManager();
-        PARTICIPANTS = reference.getSlots();
         state = GameState.ONGOING;
         numMatch = 0;
         exists = true;
+
+        setParticipants(r.getSlots());
     }
 
-    /**
-     * Aggiunge un nuovo match al game in corso e manda la griglia corrispondente ai player.
-     */
     public void newMatch() {
-        numMatch++;
-        Player[] p = (Player[])PARTICIPANTS.toArray();
-
-        ActiveMatch match = new ActiveMatch(numMatch, p);
-        matches.add(match);
-
         try {
-            String strGrid = match.getGrid().toString();
-            roomManager.sendGrid(strGrid);
-        } catch (IOException e) { }
+            roomManager.setSyncTimer();
+            roomManager.synchronizeClocks(0,5,0);
+        } catch (IOException ignored) { }
+        addMatch();
     }
 
     /**
@@ -62,6 +56,7 @@ public class Game {
     public void abandon(Player player) {
         reference.leaveRoom(player);
         state = GameState.INTERRUPTED;
+        roomManager.getChronometer().interrupt();
     }
 
     /**
@@ -92,8 +87,8 @@ public class Game {
      * Restituisce la lista dei partecipanti attuali.
      * @return i partecipanti attuali.
      */
-    public List<Player> getParticipants() {
-        return PARTICIPANTS;
+    public Player[] getParticipants() {
+        return participants;
     }
 
     /**
@@ -102,6 +97,29 @@ public class Game {
      */
     public GameState getGameState() {
         return state;
+    }
+
+    // Trasforma l'ArrayList di player passato come argomento nell'array di Player.
+    private void setParticipants(ArrayList<Player> p) {
+        participants = new Player[p.size()];
+
+        for(int i = 0; i < p.size(); i++) {
+            participants[i] = p.get(i);
+        }
+    }
+
+    // Aggiunge un nuovo match al game in corso e manda la griglia corrispondente ai player.
+    private void addMatch() {
+        numMatch++;
+        ActiveMatch match = new ActiveMatch(numMatch, participants);
+        matches.add(match);
+
+        try {
+            String strGrid = match.getGrid().toString();
+            roomManager.sendGrid(strGrid);
+            roomManager.synchronizeClocks(3,0,0);
+ //           roomManager.sendScores();
+        } catch (IOException e) { }
     }
 
 }
