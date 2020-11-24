@@ -24,6 +24,7 @@
       <module>server.roomReference</module>
       <module>server.email</module>
       <module>server.dbpopulator</module>
+      <module>server.scoreCounter</module>
   </modules>
   
   <build>

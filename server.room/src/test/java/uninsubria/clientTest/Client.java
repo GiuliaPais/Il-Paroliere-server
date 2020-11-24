@@ -33,8 +33,10 @@ public class Client extends Thread {
     /*-----Methods-----*/
 
     public void run() {
+        sendPlayer();
+
         while(client.isActive()) {
-            sendPlayer();
+
             selectCommand();
 
         }
@@ -48,6 +50,10 @@ public class Client extends Thread {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public void thisCommand(int i) {
+        commandList(i);
     }
 
     /*-----Private methods-----*/
@@ -96,8 +102,6 @@ public class Client extends Thread {
     }
 
     private void sendPlayer() {
-        client.printOut("<PLAYER>");
-
         ObjectOutputStream output = null;
 
         try {
@@ -111,9 +115,8 @@ public class Client extends Thread {
     private void entraStanza() {
         client.printOut("<ENTRA_STANZA>");
         String s = client.readIn();
-        System.out.println(s);
 
-        if(!s.equals("Nessuna stanza presente.")) {
+        if(!s.equals("false")) {
             System.out.print("Digitare il numero della stanza: -> ");
             int tmp = 0;
 
@@ -126,6 +129,7 @@ public class Client extends Thread {
 
             client.printOut(tmp + "");
         } else
+            System.out.println("Nessuna stanza presente.");
             selectCommand();
     }
 

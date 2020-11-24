@@ -29,6 +29,8 @@ public class Skeleton implements Runnable{
 
     @Override
     public void run() {
+        createPlayer();
+
         while(!socket.isClosed()) {
             try {
                 commandList(in.readLine());
@@ -52,9 +54,6 @@ public class Skeleton implements Runnable{
 
     private void commandList(String command) {
         switch(command) {
-            case "<PLAYER>":
-                createPlayer();
-                break;
             case "<CREA_STANZA>":
                 rooms.createRoom(player);
                 break;
@@ -94,7 +93,7 @@ public class Skeleton implements Runnable{
         String tmp = "";
 
         if(rooms.getRoomList().size() == 0)
-            tmp = "Nessuna stanza presente.";
+            tmp = "false";
         else {
 
             for (int i = 1; i < rooms.getRoomList().size(); i++)
@@ -110,5 +109,7 @@ public class Skeleton implements Runnable{
 
             rooms.joinRoom(roomId, player);
         }
+
+        out.println(tmp);
     }
 }

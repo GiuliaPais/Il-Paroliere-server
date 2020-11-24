@@ -46,7 +46,7 @@ public class ProxyRoom implements RoomManagerInterface {
 	 */
 	@Override
 	public void sendGrid(String grid) throws IOException {
-		out.println("<GRID>" + grid);
+		out.println("<GRID> " + grid);
 	}
 
 	@Override
