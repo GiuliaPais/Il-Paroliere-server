@@ -11,6 +11,7 @@ module server.core {
     requires com.jfoenix;
     requires java.prefs;
     requires server.dictionary;
+    requires server.email;
 
     opens uninsubria.server.gui to javafx.fxml;
     exports uninsubria.server.gui;

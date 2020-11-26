@@ -6,6 +6,7 @@ package uninsubria.server.db.api;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -13,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
+ * @version 0.9.1
  */
 public class ConnectionPool {
 	/**
@@ -109,6 +111,27 @@ public class ConnectionPool {
 			c.close();
 		}
 		instance.connectionPool.clear();
+	}
+
+	/**
+	 * Regenerates a connection. This method is called when there is no other choice but aborting
+	 * the current connection to the database (mainly because it's not responding and blocking tables).
+	 * The connection is not put back in the pool but closed and a new one is created and offered to the pool instead.
+	 *
+	 * @param connection the connection
+	 */
+	public static void regenConnection(Connection connection) {
+		try {
+			connection.abort(Executors.newSingleThreadExecutor());
+		} catch (SQLException throwables) {
+		}
+		try {
+			Connection con = null;
+			con = DriverManager.getConnection(getInstance().dburl, getInstance().user, getInstance().password);
+			getInstance().connectionPool.offer(con);
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+		}
 	}
 
 }

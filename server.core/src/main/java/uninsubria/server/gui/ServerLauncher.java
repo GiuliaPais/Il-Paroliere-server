@@ -9,6 +9,8 @@ import uninsubria.server.core.MasterServer;
 import java.util.prefs.Preferences;
 
 /**
+ * Entry point of the server-side application. Instantiates the GUI.
+ *
  * @author Giulia Pais
  * @version 0.9.0
  */

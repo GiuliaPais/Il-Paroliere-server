@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 
 /**
+ * Controller class for the credentials at server startup.
  * @author Giulia Pais
  * @version 0.9.0
  */

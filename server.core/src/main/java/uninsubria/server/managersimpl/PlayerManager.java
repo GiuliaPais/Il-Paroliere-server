@@ -3,17 +3,18 @@ package uninsubria.server.managersimpl;
 import uninsubria.server.services.api.AbstractServiceFactory;
 import uninsubria.server.services.api.Service;
 import uninsubria.server.services.api.ServiceFactoryImpl;
+import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
-import uninsubria.utils.serviceResults.Result;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
-import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
 
-import java.io.Serializable;
+import java.io.IOException;
 
 /**
+ * Class responsible for creating and executing player requested services.
+ *
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
@@ -25,6 +26,8 @@ public class PlayerManager implements PlayerManagerInterface {
         this.serviceFactory = new ServiceFactoryImpl();
     }
 
+
+
     /*---Methods---*/
     @Override
     public Player login(String user, String pw) {
@@ -35,7 +38,9 @@ public class PlayerManager implements PlayerManagerInterface {
     }
 
     @Override
-    public Player registerUser() {
-        return null;
+    public ServiceResultInterface requestActivationCode(String name, String lastname, String userID, String email, String password) throws IOException {
+        Service activCodeService = serviceFactory.getService(PlayerServiceType.ACTIVATION_CODE, userID, email, name, lastname, password);
+        ServiceResultInterface serviceResult = activCodeService.execute();
+        return serviceResult;
     }
 }

@@ -1,6 +1,8 @@
 package uninsubria.server.gui;
 
 /**
+ * Maps the tipe of message to print on the GUI.
+ *
  * @author Giulia Pais
  * @version 0.9.0
  */

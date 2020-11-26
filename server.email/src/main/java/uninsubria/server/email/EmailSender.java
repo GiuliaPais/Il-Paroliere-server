@@ -10,12 +10,19 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class EmailSender{
+/**
+ * Class that provides static methods for the actual process of mail delivery.
+ *
+ * @author Alessandro Lerro
+ * @author Giulia Pais
+ * @version 0.9.1
+ */
+class EmailSender{
 	/*(le propriet� sono state prese dal sito:
-	 						https://support.microsoft.com/it-it/office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
+	 https://support.microsoft.com/it-it/office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
 
-    private String username = "Il_Paroliere@outlook.it";
-    private String password = "Paroliere21";
+    private String username;
+    private String password;
     private static EmailSender emailSender;
 
     /**
@@ -24,14 +31,10 @@ public class EmailSender{
     private EmailSender() {
     }
 
-    public static EmailSender Instance(){
-
+    public static EmailSender getInstance(){
         if (emailSender != null){
-
             return emailSender;
-
-        }else {
-
+        } else {
             emailSender = new EmailSender();
             return emailSender;
         }
@@ -43,12 +46,9 @@ public class EmailSender{
      * @param psw
      */
     public static void initializeEmailSender(String usr, String psw) {
-
-        EmailSender instance = Instance();
-
+        EmailSender instance = getInstance();
         instance.setUsername(usr);
         instance.setPassword(psw);
-
     }
 
     //Password getter and setter
@@ -76,27 +76,15 @@ public class EmailSender{
      * @throws MessagingException
      */
     public static void sendEmail(Email email) throws SendFailedException, MessagingException{
-
-        String password = email.getPassword();
-        String username = email.getUsername();
-
-        String from = username;
-        String provider = username.substring(username.indexOf("@") + 1, username.indexOf("."));
-
-        System.out.println(provider);
+        String provider = getInstance().username.substring(getInstance().username.indexOf("@") + 1, getInstance().username.indexOf("."));
         Properties props = getProperties(provider);
-
         Session session = Session.getInstance(props, null);
-
         Message msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(from));
+        msg.setFrom(new InternetAddress(getInstance().username));
         msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo(), false));
         msg.setSubject(email.getSubject());
-        msg.setText(email.getBody());
-
-
-        Transport.send(msg,username,password);
-        System.out.println("\nMail was sent successfully.");
+        msg.setContent(email.getBody(), "text/html; charset=UTF-8");
+        Transport.send(msg,getInstance().username,getInstance().password);
     }
 
     /**

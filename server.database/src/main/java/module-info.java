@@ -8,4 +8,6 @@ module server.database {
 	requires utils.business;
 	requires utils.languages;
     requires server.dice;
+    requires server.email;
+    requires java.mail;
 }

@@ -19,7 +19,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class GameInfoDAOImpl implements GameInfoDAO {
 	private Connection connection;
@@ -65,6 +65,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		statement.setString(4, gameInfo.getRuleset());
 		statement.setString(5, gameInfo.getLanguage().name());
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override
@@ -81,6 +82,8 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 			curr.setLanguage(Language.valueOf(rs.getString(TableAttributes.Language.getColumn_index())));
 			gameInfoList.add(curr);
 		}
+		rs.close();
+		statement.close();
 		return gameInfoList;
 	}
 
@@ -97,6 +100,8 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 			gameinfo.setRuleset(rs.getString(TableAttributes.Ruleset.getColumn_index()));
 			gameinfo.setLanguage(Language.valueOf(rs.getString(TableAttributes.Language.getColumn_index())));
 		}
+		rs.close();
+		statement.close();
 		return gameinfo;
 	}
 
@@ -149,6 +154,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		query += "WHERE " + TableAttributes.GameID + "='" + gameID + "'";
 		PreparedStatement statement = connection.prepareStatement(query);
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override
@@ -156,6 +162,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		PreparedStatement statement = connection.prepareStatement(delete);
 		statement.setObject(1, gameID);
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override

@@ -1,107 +1,86 @@
 package uninsubria.server.email;
-public class Email {
 
-    private String username, password, to, subject, body;
-    private EmailSender emailSender;
+/**
+ * Represents an email object.
+ *
+ * @author Alessandro Lerro
+ * @author Giulia Pais
+ * @version 0.9.1
+ */
+class Email {
+
+    private String to, subject, body;
 
     /**
-     * costruttore vuoto
+     * Instantiates a new Email.
      */
-    public Email() {
-
-    }
+    public Email() {}
 
     /**
-     * costruttore
-     * @param usr						The admin email adress
-     * @param pwd						The password of the admin email
-     * @param to						The Destination adress
-     * @param subject					The Object of the email
-     * @param body						The text of the email
+     * Instantiates a new Email.
+     *
+     * @param to      the recipient of the email
+     * @param subject the subject of the email
+     * @param body    the body of the email
      */
-    public Email(String username, String password, String to, String subject, String body) {
-        super();
-        this.username = username;
-        this.password = password;
+    public Email(String to, String subject, String body) {
         this.to = to;
         this.subject = subject;
         this.body = body;
     }
 
     /**
-     * costruttore
-     * @param usr						The admin email adress
-     * @param pwd						The password of the admin email
-     * @param to						The Destination adress
-     * @param subject					The Object of the email
-     * @param body						The text of the email
-     */
-    public Email(EmailSender emailSender, String to, String subject, String body) {
-        super();
-        this.setEmailSender(emailSender);
-        this.to = to;
-        this.subject = subject;
-        this.body = body;
-    }
-
-    /**
-     * username getter and setter
-     */
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    /**
-     * password getter and setter
-     */
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    /**
-     * to getter and setter
+     * Gets the value of to.
+     *
+     * @return the to value
      */
     public String getTo() {
         return to;
     }
+
+    /**
+     * Sets to value.
+     *
+     * @param to the to value
+     */
     public void setTo(String to) {
         this.to = to;
     }
 
     /**
-     * subject getter and setter
+     * Gets the value of subject.
+     *
+     * @return the subject value
      */
     public String getSubject() {
         return subject;
     }
+
+    /**
+     * Sets subject value.
+     *
+     * @param subject the subject value
+     */
     public void setSubject(String subject) {
         this.subject = subject;
     }
 
     /**
-     * body getter and setter
+     * Gets the value of body
+     *
+     * @return the body value
      */
     public String getBody() {
         return body;
     }
+
+    /**
+     * Sets body value.
+     *
+     * @param body the body value
+     */
     public void setBody(String body) {
         this.body = body;
     }
 
-    /**
-     * EmailSender getter and setter
-     */
-    public EmailSender getEmailSender() {
-        return emailSender;
-    }
-
-    public void setEmailSender(EmailSender emailSender) {
-        this.emailSender = emailSender;
-    }
 }

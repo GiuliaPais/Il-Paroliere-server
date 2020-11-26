@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class PlayerDAOImpl implements PlayerDAO{
 
@@ -43,6 +43,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 		statement.setString(6, player.getPassword());
 		statement.setInt(7, player.getProfileImage());;
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override
@@ -61,6 +62,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
 			playerList.add(player);
 		}
+		rs.close();
+		statement.close();
 		return playerList;
 	}
 
@@ -80,6 +83,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
 		}
+		rs.close();
+		statement.close();
 		return player;
 	}
 
@@ -99,6 +104,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
 		}
+		rs.close();
+		statement.close();
 		return player;
 	}
 
@@ -118,6 +125,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
 		}
+		rs.close();
+		statement.close();
 		return player;
 	}
 
@@ -137,6 +146,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
 		}
+		rs.close();
+		statement.close();
 		return player;
 	}
 
@@ -176,6 +187,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 		}
 		PreparedStatement statement = connection.prepareStatement(query);
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override
@@ -183,6 +195,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 		PreparedStatement statement = connection.prepareStatement(deletePlayer);
 		statement.setString(1, userID);
 		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override

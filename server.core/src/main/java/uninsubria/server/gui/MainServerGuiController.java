@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
+ * Controller class for the main portion of the server side GUI,
+ * mainly composed of a console and a few options to start/stop the server and exit.
+ *
  * @author Giulia Pais
  * @version 0.9.1
  */

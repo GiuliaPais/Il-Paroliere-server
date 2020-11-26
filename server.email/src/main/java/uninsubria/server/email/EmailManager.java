@@ -2,7 +2,14 @@ package uninsubria.server.email;
 
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
+import java.util.UUID;
 
+/**
+ * Entry point of the email module, offers API to other modules.
+ * @author Alessandro Lerro
+ * @author Giulia Pais
+ * @version 0.9.1
+ */
 public class EmailManager{
 	
 	private final int passwordSize = 12;//abbastanza improvbabile che un codice di 12 crifre di un alfabeto
@@ -36,28 +43,40 @@ public class EmailManager{
 	public int getPasswordSize() {
 		return passwordSize;
 	}
-	
+
 	/**
-	 * Il metodo invia un codice di attivazione ad un player che vuole effettuare l'operazione di registrazione
-	 * @param email						The Email (the Object of the Email class)
-	 * 
-	 * @return code						The activation code that allows the player to register
-	 * 
+	 * Sends an email to the selected recipient with the activation code for the user registration process.
+	 *
+	 * @param recipient the recipient
+	 * @param code      the code
 	 * @throws SendFailedException
 	 * @throws MessagingException
 	 */
-	public boolean sendActivationCode(Email email, String code) throws SendFailedException, MessagingException {
-		
-		String subject = "Activation Code";
-		String body = "Code: " + code;
-		
+	public void sendActivationCode(String recipient, UUID code) throws SendFailedException, MessagingException {
+		String subject = "Il Paroliere - Activation Code";
+		String body_ita = "<b>Hai ricevuto questa email in seguito alla richiesta di registrazione per 'Il Paroliere'.</b><br>" +
+				"Se non hai effettuato nessuna richiesta ti preghiamo di ignorare questa email.<br>" +
+				"Se hai effettuato la richiesta inserisci questo codice di attivazione nell'apposita schermata.<br>" +
+				"Il codice scadr\u00e0 dopo 10 minuti dall'invio di questa mail" +
+				"<hr>";
+		String body_eng = "<b>You received this email for the registration procedure of 'Il Paroliere'.</b><br>" +
+				"If you did not send any request, please ignore this email.<br>" +
+				"If you sent the request, please insert this activation code in the appropriate window<br>" +
+				"The code will expire after 10 minutes this email was sent" +
+				"<br><br>";
+		String body_code = "<p style=\"text-align:center\">"+ code +"</p>";
+		String body = body_ita + body_eng + body_code;
+		Email email = new Email();
 		email.setSubject(subject);
 		email.setBody(body);
+		email.setTo(recipient);
 		EmailSender.sendEmail(email);
-		
-		return false;
 	}
-	
+
+	public static void initializeEmailManager(String email, String password) {
+		EmailSender.initializeEmailSender(email, password);
+	}
+
 	/**
 	 * Il metodo invia una notifica riguardo alla modifica della password
 	 * @param email						The Email (the Object of the Email class)

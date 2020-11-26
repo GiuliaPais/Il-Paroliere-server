@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class GameEntryDAOImpl implements GameEntryDAO {
 
@@ -69,6 +69,7 @@ public class GameEntryDAOImpl implements GameEntryDAO {
         statement.setBoolean(7, gameEntry.isWrong());
         statement.setShort(8, gameEntry.getPoints());
         statement.executeUpdate();
+        statement.close();
     }
 
     @Override
@@ -88,6 +89,8 @@ public class GameEntryDAOImpl implements GameEntryDAO {
             gameEntry.setPoints(rs.getShort(TableAttributes.Points.getColumn_index()));
             gameEntries.add(gameEntry);
         }
+        rs.close();
+        statement.close();
         return gameEntries;
     }
 
@@ -110,6 +113,8 @@ public class GameEntryDAOImpl implements GameEntryDAO {
             gameEntry.setWrong(rs.getBoolean(TableAttributes.Wrong.getColumn_index()));
             gameEntry.setPoints(rs.getShort(TableAttributes.Points.getColumn_index()));
         }
+        rs.close();
+        statement.close();
         return gameEntry;
     }
 
@@ -160,6 +165,7 @@ public class GameEntryDAOImpl implements GameEntryDAO {
         System.out.println(query);
         PreparedStatement statement = connection.prepareStatement(query);
         statement.executeUpdate();
+        statement.close();
     }
 
     @Override
@@ -170,6 +176,7 @@ public class GameEntryDAOImpl implements GameEntryDAO {
         statement.setShort(3, match);
         statement.setString(4, word);
         statement.executeUpdate();
+        statement.close();
     }
 
     @Override
