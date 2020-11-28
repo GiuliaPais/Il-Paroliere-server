@@ -2,11 +2,7 @@ package uninsubria.server.email;
 
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -15,7 +11,7 @@ import javax.mail.internet.MimeMessage;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 class EmailSender{
 	/*(le propriet� sono state prese dal sito:
@@ -78,13 +74,17 @@ class EmailSender{
     public static void sendEmail(Email email) throws SendFailedException, MessagingException{
         String provider = getInstance().username.substring(getInstance().username.indexOf("@") + 1, getInstance().username.indexOf("."));
         Properties props = getProperties(provider);
-        Session session = Session.getInstance(props, null);
+        Session session = Session.getInstance(props,  new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(getInstance().username, getInstance().password);
+            }
+        });
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(getInstance().username));
-        msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo(), false));
+        msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo()));
         msg.setSubject(email.getSubject());
         msg.setContent(email.getBody(), "text/html; charset=UTF-8");
-        Transport.send(msg,getInstance().username,getInstance().password);
+        Transport.send(msg);
     }
 
     /**
@@ -102,7 +102,8 @@ class EmailSender{
             props.put("mail.smtp.host",getHost(provider));
             props.put("mail.smtp.ssl/tls.enable", "true");
             props.put("mail.smtp.port",465);
-
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
             return props;
         }
 
@@ -112,7 +113,8 @@ class EmailSender{
             props.put("mail.smtp.host", getHost(provider));
             props.put("mail.smtp.starttls.enable", "true");
             props.put("mail.smtp.port",587);
-
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
             return props;
         }
 
@@ -122,6 +124,8 @@ class EmailSender{
             props.put("mail.smtp.host",getHost(provider));
             props.put("mail.smtp.tls/starttls.enable", "true");
             props.put("mail.smtp.port",587);
+            props.put("mail.debug", "true");
+            props.put("mail.smtp.auth", "true");
 
             return props;
         }
