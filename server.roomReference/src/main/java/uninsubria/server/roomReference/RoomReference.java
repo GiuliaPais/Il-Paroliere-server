@@ -1,6 +1,7 @@
 package uninsubria.server.roomReference;
 
 import uninsubria.utils.business.Player;
+import uninsubria.utils.languages.Language;
 
 import java.util.ArrayList;
 
@@ -10,6 +11,7 @@ public class RoomReference {
     private RoomState state;
     private int maxPlayer;
     private int actualPlayer;
+    private Language language;
 
     private ArrayList<Player> slots;
 
@@ -23,6 +25,7 @@ public class RoomReference {
         slots = new ArrayList<>();
         maxPlayer = 6;
         actualPlayer = 0;
+        language = Language.ITALIAN;
 
         this.joinRoom(player);
     }
@@ -41,6 +44,22 @@ public class RoomReference {
         if(actualPlayer == maxPlayer) {
             state = RoomState.FULL;
         }
+    }
+
+    /**
+     * Setta una nuova lingua da utilizzare, passata come parametro.
+     * @param newLanguage la nuova lingua da utilizzare.
+     */
+    public void setLanguage(Language newLanguage) {
+        language = newLanguage;
+    }
+
+    /**
+     * Restituisce la lingua attualmente utilizzata. Di Default è italiano.
+     * @return la lingua attualmente utilizzata.
+     */
+    public Language getLanguage() {
+        return language;
     }
 
     /**
@@ -63,7 +82,7 @@ public class RoomReference {
 
     /**
      * Permette di settare il numero attuale di giocatori col valore passato come parametro.
-     * @param i
+     * @param i il nuovo numero di player
      */
     public void setActualPlayer(int i) {
         actualPlayer = i;
@@ -117,7 +136,7 @@ public class RoomReference {
      */
     public boolean newGameIsPossible() {
         if(actualPlayer == maxPlayer) {
-            manager = new RoomManager(slots);
+            manager = new RoomManager(slots, language);
             state = RoomState.GAMEON;
             return true;
 

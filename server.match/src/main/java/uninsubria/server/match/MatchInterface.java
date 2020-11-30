@@ -7,5 +7,5 @@ public interface MatchInterface {
     public Grid getGrid();
     public int getMatchNo();
     public Player[] getParticipants();
-    public int[] getScores();
+    void calculateScore();
 }

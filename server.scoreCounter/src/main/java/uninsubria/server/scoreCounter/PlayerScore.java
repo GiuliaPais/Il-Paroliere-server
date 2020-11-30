@@ -5,6 +5,7 @@ import uninsubria.utils.languages.Language;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PlayerScore {
 
@@ -67,6 +68,10 @@ public class PlayerScore {
      */
     public Player getPlayer() {
         return player;
+    }
+
+    public String toString() {
+        return player.getName() + " " + Arrays.toString(words);
     }
 
     /*-----Private methods-----*/

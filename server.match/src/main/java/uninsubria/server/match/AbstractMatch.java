@@ -6,7 +6,6 @@ public abstract class AbstractMatch implements MatchInterface {
 
     protected Grid grid;
     protected int matchNo;
-    protected int[] scores;
     protected Player[] participants;
 
     @Override
@@ -22,11 +21,6 @@ public abstract class AbstractMatch implements MatchInterface {
     @Override
     public Player[] getParticipants() {
         return participants;
-    }
-
-    @Override
-    public int[] getScores() {
-        return scores;
     }
 
 }

@@ -24,5 +24,14 @@ public enum DiceSetStandard {
 	public String toString() {
 		return language + " dices";
 	}
+
+	public static DiceSetStandard getByLanguage(String language) {
+		for(DiceSetStandard dss : DiceSetStandard.values()) {
+			if(language.equals(dss.getLanguage()))
+				return dss;
+		}
+
+		return null;
+	}
 	
 }

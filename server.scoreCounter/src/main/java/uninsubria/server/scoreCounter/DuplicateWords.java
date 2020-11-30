@@ -49,6 +49,15 @@ public class DuplicateWords {
         return list;
     }
 
+    public String[] getWordsAsString() {
+        String[] array = new String[list.size()];
+
+        for(int i = 0; i < array.length; i++)
+            array[i] = list.get(i).getWord();
+
+        return array;
+    }
+
     /**
      * Restituisce tutte le doppie attualmente trovate, senza ripetizioni.
      * @return la lista di doppie.
@@ -56,6 +65,20 @@ public class DuplicateWords {
     public ArrayList<WordAnalyzer> getDuplicatedWords() {
         setDuplicatedWords();
         return duplicatedWords;
+    }
+
+    /**
+     * Restituisce le parole doppie come un array di stringhe.
+     * @return Un array di stringhe contenente le parole doppie.
+     */
+    public String[] getDuplicateAsString() {
+        setDuplicatedWords();
+        String[] array = new String[list.size()];
+
+        for(int i = 0; i < array.length; i++)
+            array[i] = duplicatedWords.get(i).getWord();
+
+        return array;
     }
 
     /**

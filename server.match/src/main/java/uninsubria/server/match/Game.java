@@ -1,6 +1,5 @@
 package uninsubria.server.match;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,29 +11,33 @@ public class Game {
 
     private RoomReference reference;
     private RoomManager roomManager;
-    private ArrayList<MatchInterface> matches;
+    private ArrayList<ActiveMatch> matches;
     private Player winner;
     private Player[] participants;
     private GameState state;
     private int numMatch;
+    private Grid grid;
     private boolean exists;
 
     public Game(RoomReference r) {
         reference = r;
         roomManager = r.getRoomManager();
+        grid = new Grid(roomManager.getLanguage());
         state = GameState.ONGOING;
         numMatch = 0;
         exists = true;
-
-        setParticipants(r.getSlots());
+        participants = r.getSlots().toArray(new Player[0]);
     }
 
+    /**
+     * Avvia un nuovo match sincronizzando i timer dei player.
+     */
     public void newMatch() {
-        try {
-            roomManager.setSyncTimer();
-            roomManager.synchronizeClocks(0,5,0);
-        } catch (IOException ignored) { }
+        roomManager.setSyncTimer();
         addMatch();
+        playMatch();
+        calculateScore();
+        endMatch();
     }
 
     /**
@@ -56,14 +59,14 @@ public class Game {
     public void abandon(Player player) {
         reference.leaveRoom(player);
         state = GameState.INTERRUPTED;
-        roomManager.getChronometer().interrupt();
+        roomManager.close();
     }
 
     /**
      * Restituisce i match fino ad ora avvenuti nella partita.
      * @return i match già avvenuti in partita.
      */
-    public List<MatchInterface> getMatches() {
+    public List<ActiveMatch> getMatches() {
         return matches;
     }
 
@@ -99,27 +102,29 @@ public class Game {
         return state;
     }
 
-    // Trasforma l'ArrayList di player passato come argomento nell'array di Player.
-    private void setParticipants(ArrayList<Player> p) {
-        participants = new Player[p.size()];
-
-        for(int i = 0; i < p.size(); i++) {
-            participants[i] = p.get(i);
-        }
-    }
-
-    // Aggiunge un nuovo match al game in corso e manda la griglia corrispondente ai player.
+    // Aggiunge un nuovo match al game in corso.
     private void addMatch() {
         numMatch++;
-        ActiveMatch match = new ActiveMatch(numMatch, participants);
+        ActiveMatch match = new ActiveMatch(numMatch, participants, grid, roomManager);
         matches.add(match);
+    }
 
-        try {
-            String strGrid = match.getGrid().toString();
-            roomManager.sendGrid(strGrid);
-            roomManager.synchronizeClocks(3,0,0);
- //           roomManager.sendScores();
-        } catch (IOException e) { }
+    // Manda ai player, dal match corrente, la grid.
+    private void playMatch() {
+        String[] grid = matches.get(numMatch).getGrid().toStringArray();
+        roomManager.sendGrid(grid);
+    }
+
+    // Attende le parole e, una volta ottenute, calcola i punteggi.
+    private void calculateScore() {
+        roomManager.waitWords();
+        matches.get(numMatch).calculateScore();
+    }
+
+    // Termina il match calcolando i punteggi e resetta la griglia per il match successivo.
+    private void endMatch() {
+        roomManager.sendScores(matches.get(numMatch).getScores());
+        matches.get(numMatch).Conclude();
     }
 
 }

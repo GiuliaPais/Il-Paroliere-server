@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 
 import uninsubria.server.dice.DiceSet;
+import uninsubria.server.dice.DiceSetStandard;
+import uninsubria.utils.languages.Language;
 
 public class Grid {
 
@@ -14,6 +16,11 @@ public class Grid {
 
 	public Grid() {
 		dices = new DiceSet();
+		diceNumb = dices.getResultNumb();
+	}
+
+	public Grid(Language l) {
+		dices = new DiceSet(DiceSetStandard.getByLanguage(l.getLanguage()));
 		diceNumb = dices.getResultNumb();
 	}
 
@@ -59,5 +66,13 @@ public class Grid {
 	public String toString() {
 		String tmp = "";
 		return dices.toString();
+	}
+
+	/**
+	 * Restituisce i dadi come stringhe posizionati all'interno di un array di stringhe.
+	 * @return un array di stringhe contenenti i dadi.
+	 */
+	public String[] toStringArray() {
+		return dices.toStringArray();
 	}
 }

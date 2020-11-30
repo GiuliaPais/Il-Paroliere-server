@@ -1,70 +1,60 @@
 package uninsubria.server.roomReference;
 
+import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.utils.business.Player;
-import uninsubria.utils.chronometer.Chronometer;
-import uninsubria.utils.chronometer.Counter;
-import uninsubria.utils.serviceResults.ServiceResultInterface;
+import uninsubria.utils.languages.Language;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class RoomManager implements RoomManagerInterface {
 
-	private Player[] players;
+	private final Player[] players;
 	private ProxyRoom[] proxy;
 	private final boolean exists;
-	private Chronometer chronometer;
+	private final Language language;
 
-	public RoomManager(ArrayList<Player> players) {
-		setPlayers(players);
+	public RoomManager(ArrayList<Player> players, Language language) {
+		this.players = players.toArray(new Player[0]);
+		this.language = language;
 		setProxy();
 		exists = true;
 	}
 
+	/*---Methods---*/
 	@Override
-	public void sendScores(Map<Player, Integer> scores) throws IOException {
-		// TODO Auto-generated method stub
+	public void sendScores(PlayerScore[] scores) {
+		for(ProxyRoom p : proxy)
+			p.sendScores(scores);
 
 	}
 
 	/**
 	 * Manda ai player la griglia sotto forma di stringa anticipato dal tag "<GRID>".
 	 * @param grid la stringa da mandare
-	 * @throws IOException
 	 */
 	@Override
-	public void sendGrid(String grid) throws IOException {
+	public void sendGrid(String[] grid) {
 		for(ProxyRoom p : proxy)
 			p.sendGrid(grid);
-	}
-
-	@Override
-	public ServiceResultInterface areValidWord(String[] words) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**
 	 * Manda ai player il proprio system.currentTimeMillis() sotto forma
 	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
-	 * @throws IOException
 	 */
 	@Override
-	public void setSyncTimer() throws IOException {
+	public void setSyncTimer() {
 		for(ProxyRoom p : proxy)
 			p.setSyncTimer();
 	}
 
+	/**
+	 * Chiude tutte le connessioni coi giocatori.
+	 */
 	@Override
-	public void synchronizeClocks(int m, int s, int ml) throws IOException {
-		Counter c = new Counter(m, s, ml);
-		chronometer = new Chronometer(c);
-		try {
-			chronometer.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public void close() {
+		for(ProxyRoom p : proxy)
+			p.close();
 	}
 
 	/**
@@ -84,27 +74,42 @@ public class RoomManager implements RoomManagerInterface {
 	}
 
 	/**
-	 * Restituisce l'attuale cronometro se avviato. Null altrimenti.
-	 * @return l'attuale cronometro in uso.
+	 * Restituisce l'attuale lingua utilizzata.
+	 * @return la lingua utilizzata.
 	 */
-	public Chronometer getChronometer() {
-		return chronometer;
+	public Language getLanguage() {
+		return language;
 	}
 
+	/**
+	 * Attende che vengano inviate le parole alla fine del match.
+	 */
+	public void waitWords() {
+		for(ProxyRoom p : proxy)
+			p.waitWords();
+	}
+
+	/**
+	 * Restituisce i PlayerScore di tutti i player come array.
+	 * @return PlayerScore come array.
+	 */
+	public PlayerScore[] getPlayersScore() {
+		PlayerScore[] array = new PlayerScore[proxy.length];
+
+		for(int i = 0; i < array.length; i++)
+			array[i] = proxy[i].getPlayerScore();
+
+		return array;
+	}
+
+	/*---Private methods---*/
 	// Genera i proxy necessari per la comunicazione col singolo player.
 	private void setProxy() {
 		proxy = new ProxyRoom[players.length];
+
 		for(int i = 0; i < players.length; i++) {
-			proxy[i] = new ProxyRoom(players[i]);
+			proxy[i] = new ProxyRoom(players[i], language);
 		}
-	}
-
-	// Trasforma l'ArrayList di player in un semplice array.
-	private void setPlayers(ArrayList<Player> p) {
-		players = new Player[p.size()];
-
-		for(int i = 0; i < p.size(); i++)
-			players[i] = p.get(i);
 	}
 
 }

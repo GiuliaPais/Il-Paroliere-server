@@ -40,4 +40,5 @@ class PlayerScoreTest {
         // Casa = 1, Abbaiare = 11, Ho = 0
         assertEquals(12, test.getTotalScore());
     }
+
 }

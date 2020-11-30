@@ -143,6 +143,20 @@ public class DiceSet {
 
 		return tmp;
 	}
+
+	/**
+	 * Restituisce un array di stringhe contenente il dado in forma di stringa per posizione.
+	 * @return array di stringhe contenente i dadi in forma di stringa.
+	 */
+	public String[] toStringArray() {
+		String[] array = new String[dices.length];
+
+		for(int i = 0; i < array.length; i++) {
+			array[i] = dices[i].toString();
+		}
+
+		return array;
+	}
 	
 	/**
 	 * Randomizza la posizione dei dadi lanciati.

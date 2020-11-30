@@ -7,6 +7,7 @@ import uninsubria.server.match.GameState;
 import uninsubria.utils.business.Player;
 import uninsubria.server.roomReference.*;
 import tmpClasses.RuleSet;
+import uninsubria.utils.languages.Language;
 
 public class Room extends Thread{
 
@@ -35,6 +36,22 @@ public class Room extends Thread{
 
 
 		}
+	}
+
+	/**
+	 * Restituisce la lingua attualmente utilizzata. Di Default è italiano.
+	 * @return la lingua attualmente utilizzata.
+	 */
+	public Language getLanguage() {
+		return reference.getLanguage();
+	}
+
+	/**
+	 * Setta una nuova lingua da utilizzare, passata come parametro.
+	 * @param newLanguage la nuova lingua da utilizzare.
+	 */
+	public void setLanguage(Language newLanguage) {
+		reference.setLanguage(newLanguage);
 	}
 
 	/**
