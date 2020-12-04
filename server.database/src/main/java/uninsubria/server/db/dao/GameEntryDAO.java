@@ -30,7 +30,7 @@ public interface GameEntryDAO {
         Wrong(7),
         Points(8);
 
-        private int column_index;
+        private final int column_index;
 
         TableAttributes(int i) {
             this.column_index = i;
@@ -52,7 +52,7 @@ public interface GameEntryDAO {
      * @param gameEntry the game entry
      * @throws SQLException
      */
-    public void create(GameEntry gameEntry) throws SQLException;
+    void create(GameEntry gameEntry) throws SQLException;
 
     /**
      * Gets all rows in the GameEntry table.
@@ -60,7 +60,7 @@ public interface GameEntryDAO {
      * @return the all
      * @throws SQLException
      */
-    public List<GameEntry> getAll() throws SQLException;
+    List<GameEntry> getAll() throws SQLException;
 
     /**
      * Gets a row in GameEntry by its primary key.
@@ -72,7 +72,7 @@ public interface GameEntryDAO {
      * @return the by pk
      * @throws SQLException
      */
-    public GameEntry getByPK(UUID gameID, String playerID, short match, String word) throws SQLException;
+    GameEntry getByPK(UUID gameID, String playerID, short match, String word) throws SQLException;
 
     /**
      * Updates a row of GameEntry given the appropriate parameters.
@@ -85,8 +85,8 @@ public interface GameEntryDAO {
      * @param values     the values to associate with the attributes
      * @throws SQLException
      */
-    public void update(UUID gameID, String playerID, short match, String word,
-                       TableAttributes[] attributes, Object[] values) throws SQLException;
+    void update(UUID gameID, String playerID, short match, String word,
+                TableAttributes[] attributes, Object[] values) throws SQLException;
 
     /**
      * Deletes a row from GameEntry given the primary key.
@@ -97,20 +97,20 @@ public interface GameEntryDAO {
      * @param word     the word
      * @throws SQLException
      */
-    public void delete(UUID gameID, String playerID, short match, String word) throws SQLException;
+    void delete(UUID gameID, String playerID, short match, String word) throws SQLException;
 
     /**
      * Gets connection.
      *
      * @return the connection
      */
-    public Connection getConnection();
+    Connection getConnection();
 
     /**
      * Sets connection.
      *
      * @param connection the connection
      */
-    public void setConnection(Connection connection);
+    void setConnection(Connection connection);
 	
 }

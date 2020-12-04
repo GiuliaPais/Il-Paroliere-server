@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.db.api;
 
 import java.sql.Connection;
@@ -27,7 +24,6 @@ public class ConnectionPool {
 	private String dburl;
 	private String dbhost;
 	private String dbName;
-	private final int POOL_SIZE = 90;
 	private LinkedBlockingQueue<Connection> connectionPool;
 
 	private ConnectionPool() {}
@@ -39,12 +35,10 @@ public class ConnectionPool {
 	 * @return the instance
 	 */
 	public static ConnectionPool getInstance() {
-		if (instance != null) {
-			return instance;
-		} else {
+		if (instance == null) {
 			instance = new ConnectionPool();
-			return instance;
 		}
+		return instance;
 	}
 
 	/**
@@ -72,10 +66,9 @@ public class ConnectionPool {
 	 * connection is available in the queue.
 	 *
 	 * @return the connection
-	 * @throws SQLException         the sql exception
 	 * @throws InterruptedException the interrupted exception
 	 */
-	public static Connection getConnection() throws SQLException, InterruptedException {
+	public static Connection getConnection() throws InterruptedException {
 		return instance.connectionPool.take();
 	}
 
@@ -93,6 +86,7 @@ public class ConnectionPool {
 	 * @throws SQLException
 	 */
 	private void initPool() throws SQLException {
+		int POOL_SIZE = 90;
 		this.connectionPool = new LinkedBlockingQueue<>(POOL_SIZE);
 		for(int i = 0; i < POOL_SIZE; i++) {
 			Connection con = DriverManager.getConnection(dburl, user, password);
@@ -123,10 +117,10 @@ public class ConnectionPool {
 	public static void regenConnection(Connection connection) {
 		try {
 			connection.abort(Executors.newSingleThreadExecutor());
-		} catch (SQLException throwables) {
+		} catch (SQLException ignored) {
 		}
 		try {
-			Connection con = null;
+			Connection con;
 			con = DriverManager.getConnection(getInstance().dburl, getInstance().user, getInstance().password);
 			getInstance().connectionPool.offer(con);
 		} catch (SQLException throwables) {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.db.api;
 
 import uninsubria.server.db.businesslayer.UserToken;
@@ -13,6 +10,7 @@ import javax.mail.MessagingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,14 +21,14 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class TransactionManager {
 	/*---Fields---*/
-	private PlayerDAO playerDAO;
-	private GameInfoDAO gameInfoDAO;
-	private GameEntryDAO gameEntryDAO;
-	private UserTokenDAO userTokenDAO;
+	private final PlayerDAO playerDAO;
+	private final GameInfoDAO gameInfoDAO;
+	private final GameEntryDAO gameEntryDAO;
+	private final UserTokenDAO userTokenDAO;
 
 	/**
 	 * Instantiates a new Transaction manager.
@@ -57,15 +55,11 @@ public class TransactionManager {
 	public void obtainActivationCode(String userID, String name, String lastname, String email, String password,
 									 List<ErrorMsgType> errorCode) {
 		/* Obtain a connection first */
-		Connection connection = null;
+		Connection connection;
 		try {
 			connection = ConnectionPool.getConnection();
-		} catch (SQLException throwables) {
+		} catch (InterruptedException throwables) {
 			throwables.printStackTrace();
-			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
-			return;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
 			return;
 		}
@@ -91,7 +85,6 @@ public class TransactionManager {
 			}
 		} catch (SQLException throwables) {
 			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
-			throwables.printStackTrace();
 			resetConnections(connection);
 			return;
 		}
@@ -100,6 +93,11 @@ public class TransactionManager {
 		userTokenDAO.setConnection(connection);
 		try {
 			if (userTokenDAO.getByPk(userID, "ACTIVATION") != null) {
+				errorCode.add(ErrorMsgType.REG_DUPL_REQUEST);
+				connection.rollback();
+				return;
+			}
+			if (userTokenDAO.getByEmail(email, "ACTIVATION") != null) {
 				errorCode.add(ErrorMsgType.REG_DUPL_REQUEST);
 				connection.rollback();
 				return;
@@ -122,8 +120,123 @@ public class TransactionManager {
 		}
 	}
 
-	public void confirmActivationCode() {
-		//TODO
+	/**
+	 * Confirm activation code for the user registration procedure.
+	 *
+	 * @param email     the email
+	 * @param code      the code
+	 * @param errorCode a list where to add possible errors
+	 */
+	public Player confirmActivationCode(String email, String code, List<ErrorMsgType> errorCode) {
+		/* Obtain a connection first */
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException throwables) {
+			throwables.printStackTrace();
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return null;
+		}
+		/* Begin transaction */
+		try {
+			connection.setAutoCommit(false);
+			PreparedStatement statement = connection.prepareStatement("LOCK PLAYER, USERTOKEN IN ROW EXCLUSIVE MODE");
+			statement.executeUpdate();
+			userTokenDAO.setConnection(connection);
+			UserToken userToken = userTokenDAO.getByEmail(email, "ACTIVATION");
+			if (userToken == null) {
+				errorCode.add(ErrorMsgType.REG_NO_REQUEST_FOUND);
+				connection.rollback();
+				resetConnections(connection);
+				return null;
+			}
+			if (!userToken.getToken().equals(UUID.fromString(code))) {
+				System.out.println("CODE: " + code);
+				System.out.println("TOKEN: "+userToken.getToken());
+				errorCode.add(ErrorMsgType.REG_CODE_WRONG);
+				connection.rollback();
+				resetConnections(connection);
+				return null;
+			}
+			if (userToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+				errorCode.add(ErrorMsgType.REG_CODE_EXPIRED);
+				userTokenDAO.delete(userToken.getUserID(), userToken.getRequestType());
+				userToken.setExpiryTime(null);
+				userToken.setGenTime(null);
+				userToken.setToken(UUID.randomUUID());
+				userTokenDAO.create(userToken);
+				connection.commit();
+				EmailManager emailManager = new EmailManager();
+				try {
+					emailManager.sendActivationCode(email, userToken.getToken());
+				} catch (MessagingException e) {
+					errorCode.add(ErrorMsgType.REG_EMAIL_FAILURE);
+				}
+				resetConnections(connection);
+				return null;
+			}
+			playerDAO.setConnection(connection);
+			Player player = new Player(userToken.getUserID(), userToken.getEmail(), userToken.getName(),
+					userToken.getLastname(), userToken.getPassword(), 1, true, null, null);
+			playerDAO.create(player);
+			userTokenDAO.delete(userToken.getUserID(), userToken.getRequestType());
+			connection.commit();
+			resetConnections(connection);
+			return player;
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			throwables.printStackTrace();
+			resetConnections(connection);
+			return null;
+		}
+	}
+
+	/**
+	 * Resends a code via email.
+	 *
+	 * @param email       the email
+	 * @param requestType the request type
+	 * @param errorCode   a list where to add possible errors
+	 */
+	public void resendCode(String email, String requestType,  List<ErrorMsgType> errorCode) {
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException throwables) {
+			throwables.printStackTrace();
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return;
+		}
+		try {
+			userTokenDAO.setConnection(connection);
+			UserToken userToken = userTokenDAO.getByEmail(email, requestType);
+			if (userToken == null) {
+				errorCode.add(ErrorMsgType.REG_NO_REQUEST_FOUND);
+				resetConnections(connection);
+				return;
+			}
+			if (userToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+				connection.setAutoCommit(false);
+				PreparedStatement preparedStatement = connection.prepareStatement("LOCK USERTOKEN IN ROW EXCLUSIVE MODE");
+				preparedStatement.executeUpdate();
+				userTokenDAO.delete(userToken.getUserID(), userToken.getRequestType());
+				userToken.setExpiryTime(null);
+				userToken.setGenTime(null);
+				userToken.setToken(UUID.randomUUID());
+				userTokenDAO.create(userToken);
+				connection.commit();
+				resetConnections(connection);
+			}
+			EmailManager emailManager = new EmailManager();
+			try {
+				emailManager.sendActivationCode(email, userToken.getToken());
+			} catch (MessagingException e) {
+				errorCode.add(ErrorMsgType.REG_EMAIL_FAILURE);
+			}
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			resetConnections(connection);
+		}
 	}
 
 	/**
@@ -134,10 +247,12 @@ public class TransactionManager {
 	 * @param errorCode  a list where the function can add error codes
 	 * @return A player object or null
 	 */
-	public Player loginPlayer(String identifier, String password, List<Byte> errorCode) {
+	public Player loginPlayer(String identifier, String password, List<ErrorMsgType> errorCode) {
 		Player player;
+		Connection connection = null;
 		try {
-			playerDAO.setConnection(ConnectionPool.getConnection());
+			connection = ConnectionPool.getConnection();
+			playerDAO.setConnection(connection);
 			playerDAO.setAutocommit(false);
 			boolean email = identifier.contains("@");
 			if (email) {
@@ -146,36 +261,35 @@ public class TransactionManager {
 				player = playerDAO.getByUserIdForUpdate(identifier);
 			}
 			if (player == null) {
-				errorCode.add((byte) 2);
+				errorCode.add(ErrorMsgType.LOGIN_ERR_NOMATCH);
 				playerDAO.getConnection().rollback();
-				playerDAO.setAutocommit(true);
+				resetConnections(connection);
 				return null;
 			}
 			if (!player.getPassword().equals(password)) {
-				errorCode.add((byte) 3);
+				errorCode.add(ErrorMsgType.LOGIN_ERR_PW);
 				playerDAO.getConnection().rollback();
-				playerDAO.setAutocommit(true);
+				resetConnections(connection);
 				return null;
 			}
 			if (player.isLogStatus()) {
-				errorCode.add((byte) 4);
+				errorCode.add(ErrorMsgType.LOGIN_ERR_USER_ONLINE);
 				playerDAO.getConnection().rollback();
-				playerDAO.setAutocommit(true);
+				resetConnections(connection);
 				return null;
 			}
 			playerDAO.update(player.getPlayerID(),
 					new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Log_Status},
-					new Boolean[] {Boolean.valueOf(true)});
+					new Boolean[] {Boolean.TRUE});
 			playerDAO.getConnection().commit();
-			playerDAO.setAutocommit(true);
+			resetConnections(connection);
 			player.setLogStatus(true);
 			return player;
 		} catch (SQLException | InterruptedException e) {
-			errorCode.add((byte) 1);
-//			e.printStackTrace();
-		} finally {
-			if (playerDAO.getConnection() != null) {
-				ConnectionPool.releaseConnection(playerDAO.getConnection());
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			if (connection != null) {
+				resetConnections(connection);
+
 			}
 		}
 		return null;
@@ -185,31 +299,40 @@ public class TransactionManager {
 	 * Manages player logout.
 	 *
 	 * @param id The userID
-	 * @throws SQLException
-	 * @throws InterruptedException
 	 */
-	public void logoutPlayer(String id) throws SQLException, InterruptedException {
-		playerDAO.setConnection(ConnectionPool.getConnection());
-		playerDAO.update(id, new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Log_Status},
-				new Boolean[] {Boolean.valueOf(false)});
-		if (playerDAO.getConnection() != null) {
-			ConnectionPool.releaseConnection(playerDAO.getConnection());
+	public void logoutPlayer(String id) {
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			return;
+		}
+		playerDAO.setConnection(connection);
+		try {
+			playerDAO.update(id, new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Log_Status},
+					new Boolean[] {Boolean.FALSE});
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+		} finally {
+			resetConnections(connection);
 		}
 	}
 
-	/**
-	 * Manages player registration.
-	 *
-	 * @param userId   the user id
-	 * @param email    the email
-	 * @param password the password
-	 * @param name     the name
-	 * @param surname  the surname
-	 * @return the player
-	 */
-	public Player registerPlayer(String userId, String email, String password, String name, String surname) {
-		//TODO
-		return null;
+	public void logoutEveryone() {
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			return;
+		}
+		playerDAO.setConnection(connection);
+		try {
+			playerDAO.updateAll(new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Log_Status}, new Boolean[] {Boolean.FALSE});
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+		} finally {
+			resetConnections(connection);
+		}
 	}
 
 	private void resetConnections(Connection connection) {

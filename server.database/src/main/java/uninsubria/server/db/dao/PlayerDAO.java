@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.db.dao;
 
 import uninsubria.utils.business.Player;
@@ -14,7 +11,7 @@ import java.util.List;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public interface PlayerDAO {
 	/**
@@ -27,9 +24,11 @@ public interface PlayerDAO {
 		Name(4),
 		Surname(5),
 		Password(6),
-		ProfileImage(7);
+		ProfileImage(7),
+		ImageColor(8),
+		BgColor(9);
 
-		private int column_index;
+		private final int column_index;
 
 		TableAttributes(int i) {
 			this.column_index = i;
@@ -46,7 +45,7 @@ public interface PlayerDAO {
 	 * @param player the player
 	 * @throws SQLException
 	 */
-	public void create(Player player) throws SQLException;
+	void create(Player player) throws SQLException;
 
 	/**
 	 * Gets all rows in the Player table.
@@ -54,7 +53,7 @@ public interface PlayerDAO {
 	 * @return All the players registered
 	 * @throws SQLException
 	 */
-	public List<Player> getAll() throws SQLException;
+	List<Player> getAll() throws SQLException;
 
 	/**
 	 * Gets a player by user id.
@@ -63,7 +62,7 @@ public interface PlayerDAO {
 	 * @return A Player object if the id exists in the table, null otherwise
 	 * @throws SQLException
 	 */
-	public Player getByUserId(String id) throws SQLException;
+	Player getByUserId(String id) throws SQLException;
 
 	/**
 	 * Gets a player by email.
@@ -72,7 +71,7 @@ public interface PlayerDAO {
 	 * @return A Player object if the email exists in the table, null otherwise
 	 * @throws SQLException
 	 */
-	public Player getByEmail(String email) throws SQLException;
+	Player getByEmail(String email) throws SQLException;
 
 	/**
 	 * Gets a player row by user id for update. It differs from the method {@link #getByUserId(String)}
@@ -83,7 +82,7 @@ public interface PlayerDAO {
 	 * @return A Player object if the id exists in the table, null otherwise
 	 * @throws SQLException
 	 */
-	public Player getByUserIdForUpdate(String id) throws SQLException;
+	Player getByUserIdForUpdate(String id) throws SQLException;
 
 	/**
 	 * Gets a player row by email for update. It differs from the method {@link #getByEmail(String)}
@@ -94,7 +93,7 @@ public interface PlayerDAO {
 	 * @return A Player object if the id exists in the table, null otherwise
 	 * @throws SQLException
 	 */
-	public Player getByEmailForUpdate(String email) throws SQLException;
+	Player getByEmailForUpdate(String email) throws SQLException;
 
 	/**
 	 * Updates a row corresponding to the userID in the Player table.
@@ -105,7 +104,17 @@ public interface PlayerDAO {
 	 * @param values     The value to assign to the attribute
 	 * @throws SQLException
 	 */
-	public void update(String userID, TableAttributes[] attributes, Object[] values) throws SQLException;
+	void update(String userID, TableAttributes[] attributes, Object[] values) throws SQLException;
+
+	/**
+	 * Updates all rows in the Player table.
+	 * The method supports the update of multiple attributes.
+	 *
+	 * @param attributes The attribute in the table that should be changed
+	 * @param values     The value to assign to the attribute
+	 * @throws SQLException
+	 */
+	void updateAll(TableAttributes[] attributes, Object[] values) throws SQLException;
 
 	/**
 	 * Deletes a row from the Player table.
@@ -113,7 +122,7 @@ public interface PlayerDAO {
 	 * @param userID the user id
 	 * @throws SQLException
 	 */
-	public void delete(String userID) throws SQLException;
+	void delete(String userID) throws SQLException;
 
 	/**
 	 * Wrapper for connection.setAutocommit() method.
@@ -122,19 +131,19 @@ public interface PlayerDAO {
 	 * @param value true or false
 	 * @throws SQLException
 	 */
-	public void setAutocommit(boolean value) throws SQLException;
+	void setAutocommit(boolean value) throws SQLException;
 
 	/**
 	 * Gets the connection being used by this DAO object.
 	 *
 	 * @return A Connection object
 	 */
-	public Connection getConnection();
+	Connection getConnection();
 
 	/**
 	 * Sets connection for this DAO object.
 	 *
 	 * @param connection the connection
 	 */
-	public void setConnection(Connection connection);
+	void setConnection(Connection connection);
 }

@@ -26,7 +26,7 @@ public interface GameInfoDAO {
 		Ruleset(4),
 		Language(5);
 
-		private int column_index;
+		private final int column_index;
 
 		TableAttributes(int i) {
 			this.column_index = i;
@@ -48,7 +48,7 @@ public interface GameInfoDAO {
 	 * @param gameInfo the GameInfo object to insert
 	 * @throws SQLException
 	 */
-	public void create(GameInfo gameInfo) throws SQLException;
+	void create(GameInfo gameInfo) throws SQLException;
 
 	/**
 	 * Gets all rows in the GameInfo table.
@@ -56,7 +56,7 @@ public interface GameInfoDAO {
 	 * @return A list of all the rows in the GameInfo table
 	 * @throws SQLException
 	 */
-	public List<GameInfo> getAll() throws SQLException;
+	List<GameInfo> getAll() throws SQLException;
 
 	/**
 	 * Gets a row by game id.
@@ -65,7 +65,7 @@ public interface GameInfoDAO {
 	 * @return The row with the corresponding gameID (null if none was found)
 	 * @throws SQLException
 	 */
-	public GameInfo getByGameId(UUID gameId) throws SQLException;
+	GameInfo getByGameId(UUID gameId) throws SQLException;
 
 	/**
 	 * Updates a row in the GameInfo table.
@@ -76,7 +76,7 @@ public interface GameInfoDAO {
 	 * @param values     the values
 	 * @throws SQLException
 	 */
-	public void update(UUID gameID, TableAttributes[] attributes, Object[] values) throws SQLException;
+	void update(UUID gameID, TableAttributes[] attributes, Object[] values) throws SQLException;
 
 	/**
 	 * Deletes the row with the corresponding game id.
@@ -84,20 +84,20 @@ public interface GameInfoDAO {
 	 * @param gameID the game id
 	 * @throws SQLException
 	 */
-	public void delete(UUID gameID) throws SQLException;
+	void delete(UUID gameID) throws SQLException;
 
 	/**
 	 * Gets the connection being used by this DAO object.
 	 *
 	 * @return A Connection object
 	 */
-	public Connection getConnection();
+	Connection getConnection();
 
 	/**
 	 * Sets connection for this DAO object.
 	 *
 	 * @param connection the connection
 	 */
-	public void setConnection(Connection connection);
+	void setConnection(Connection connection);
 	
 }

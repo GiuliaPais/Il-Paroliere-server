@@ -15,14 +15,14 @@ import java.util.List;
  * Implementation of the service that manages the user login.
  *
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class LoginService implements Service {
 	
 	private final PlayerServiceType serviceType = PlayerServiceType.LOGIN;
 	private String userid;
 	private String pw;
-	private List<Byte> errorList;
+	private List<ErrorMsgType> errorList;
 
 	public LoginService(String id, String password) {
 		this.userid = id;
@@ -38,34 +38,17 @@ public class LoginService implements Service {
 	public ServiceResultInterface execute() {
 		ServiceResultInterface sr = new ServiceResult("LOGIN");
 		Player player;
-		TransactionManager tm = new TransactionManager(); // valutare se mettere unico tm per player
-		player = tm.loginPlayer(userid, pw, this.errorList);
-		Result<Player> pres = new Result<>("Player", player);
-		sr.addResult(pres);
-		if (player == null) {
-			int errorN = 1;
-			for (Byte code : errorList) {
-				Result<ErrorMsgType> error;
-				switch(code) {
-					case 1:
-						error = new Result<>("Error" + errorN, ErrorMsgType.GENERIC_DB_ERROR);
-						sr.addResult(error);
-						break;
-					case 2:
-						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_NOMATCH);
-						sr.addResult(error);
-						break;
-					case 3:
-						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_PW);
-						sr.addResult(error);
-						break;
-					case 4:
-						error = new Result<>("Error" + errorN, ErrorMsgType.LOGIN_ERR_USER_ONLINE);
-						sr.addResult(error);
-						break;
-				}
-			}
+		TransactionManager tm = new TransactionManager();
+		player = tm.loginPlayer(userid, pw, errorList);
+		Result<Player> pres = new Result<>("Profile", player);
+		if (errorList.isEmpty()) {
+			sr.addResult(pres);
+			return sr;
 		}
+		ErrorMsgType[] errArr = new ErrorMsgType[errorList.size()];
+		Result<ErrorMsgType[]> errors = new Result<>("Errors", errorList.toArray(errArr));
+		sr.addResult(pres);
+		sr.addResult(errors);
 		return sr;
 	}
 	

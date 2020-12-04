@@ -22,8 +22,7 @@ public class GameEntryDAOImpl implements GameEntryDAO {
 
     private Connection connection;
 
-	private final String selectAll = "SELECT * FROM GameEntry";
-	private final String selectByPK = "SELECT * FROM GameEntry WHERE " + TableAttributes.Game + "=? AND " +
+    private final String selectByPK = "SELECT * FROM GameEntry WHERE " + TableAttributes.Game + "=? AND " +
             TableAttributes.PlayerId + "=? AND " + TableAttributes.Match + "=? AND " +
             TableAttributes.Word + "=?";
 	private final String delete = "DELETE FROM GameEntry WHERE " + TableAttributes.Game + "=? AND " +
@@ -37,24 +36,24 @@ public class GameEntryDAOImpl implements GameEntryDAO {
     public GameEntryDAOImpl() {}
 
     private String createInsertQuery() {
-        String query = "INSERT INTO GameEntry(";
+        StringBuilder query = new StringBuilder("INSERT INTO GameEntry(");
         TableAttributes[] fields = TableAttributes.values();
         for (int i = 0; i < fields.length; i++) {
             if (i < fields.length - 1) {
-                query += fields[i] + ", ";
+                query.append(fields[i]).append(", ");
             } else {
-                query += fields[i];
+                query.append(fields[i]);
             }
         }
-        query += ") VALUES(";
+        query.append(") VALUES(");
         for (int i = 0; i < fields.length; i++) {
             if (i < fields.length - 1) {
-                query += "?, ";
+                query.append("?, ");
             } else {
-                query += "?)";
+                query.append("?)");
             }
         }
-        return query;
+        return query.toString();
     }
 
     @Override
@@ -75,6 +74,7 @@ public class GameEntryDAOImpl implements GameEntryDAO {
     @Override
     public List<GameEntry> getAll() throws SQLException {
         List<GameEntry> gameEntries = new ArrayList<>();
+        String selectAll = "SELECT * FROM GameEntry";
         PreparedStatement statement = connection.prepareStatement(selectAll);
         ResultSet rs = statement.executeQuery();
         while(rs.next()) {
@@ -121,49 +121,18 @@ public class GameEntryDAOImpl implements GameEntryDAO {
     @Override
     public void update(UUID gameID, String playerID, short match, String word,
                        TableAttributes[] attributes, Object[] values) throws SQLException {
-        String query = "UPDATE GameEntry SET ";
+        StringBuilder query = new StringBuilder("UPDATE GameEntry SET ");
         for (int i = 0; i < attributes.length; i++) {
-            query += (attributes[i].name() + "=");
-            switch (attributes[i]) {
-                case Game:
-                    if (i < values.length-1) {
-                        query += ((UUID) values[i] + ", ");
-                    } else {
-                        query += ((UUID) values[i] + " ");
-                    }
-                    break;
-                case PlayerId:
-                case Word:
-                    if (i < values.length-1) {
-                        query += ((String) values[i] + ", ");
-                    } else {
-                        query += ((String) values[i] + " ");
-                    }
-                    break;
-                case Match:
-                case Points:
-                    if (i < values.length-1) {
-                        query += ((Short) values[i] + ", ");
-                    } else {
-                        query += ((Short) values[i] + " ");
-                    }
-                    break;
-                case Duplicated:
-                case Requested:
-                case Wrong:
-                    if (i < values.length-1) {
-                        query += ((Boolean) values[i] + ", ");
-                    } else {
-                        query += ((Boolean) values[i] + " ");
-                    }
-                    break;
+            query.append(attributes[i].name()).append("=");
+            if (i < values.length-1) {
+                query.append(values[i]).append(", ");
+            } else {
+                query.append(values[i]).append(" ");
             }
         }
-        query += "WHERE " + TableAttributes.Game + "='" + gameID + "' AND " + TableAttributes.PlayerId + "='" +
-        playerID + "' AND " + TableAttributes.Match + "=" + match + " AND " + TableAttributes.Word + "='" + word +
-        "'";
+        query.append("WHERE " + TableAttributes.Game + "='").append(gameID).append("' AND ").append(TableAttributes.PlayerId).append("='").append(playerID).append("' AND ").append(TableAttributes.Match).append("=").append(match).append(" AND ").append(TableAttributes.Word).append("='").append(word).append("'");
         System.out.println(query);
-        PreparedStatement statement = connection.prepareStatement(query);
+        PreparedStatement statement = connection.prepareStatement(query.toString());
         statement.executeUpdate();
         statement.close();
     }

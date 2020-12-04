@@ -26,180 +26,6 @@ public class StatisticsManager {
     /*---Fields---*/
     private Connection connection;
 
-    /**
-     * Query for selecting the player with the top score per match.
-     */
-    private final String topPlayerPerMatch = "SELECT PLAYERID, SUM_MATCH AS MAX_MATCH_SCORE " +
-                                             "FROM " +
-                                             "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
-                                             "FROM GAMEENTRY " +
-                                             "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH" +
-                                             ") MATCH_TOTALS " +
-                                             "WHERE SUM_MATCH = ("+
-                                             "SELECT MAX(SUM_MATCH) " +
-                                             "FROM (SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
-                                             "FROM GAMEENTRY " +
-                                             "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH" +
-                                             ") MATCH_TOTALS)";
-    /**
-     * Query for selecting the player with the top score per game.
-     */
-    private final String topPlayerPerGame = "SELECT PLAYERID, SUM_GAME AS MAX_GAME_SCORE " +
-                                            "FROM " +
-                                            "(SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
-                                            ") GAME_TOTALS " +
-                                            "WHERE SUM_GAME = (SELECT MAX(SUM_GAME) " +
-                                            "FROM (SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
-                                            ") GAME_TOTALS)";
-    /**
-     * Query for selecting the player with the highest average score per match.
-     */
-    private final String topPlayerAvgMatch = "SELECT PLAYERID, AVG_SCORE_MATCH " +
-                                             "FROM " +
-                                             "(SELECT PLAYERID, AVG(SUM_MATCH) AS AVG_SCORE_MATCH " +
-                                             "FROM " +
-                                             "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
-                                             "FROM GAMEENTRY " +
-                                             "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH) MATCH_TOTALS " +
-                                             "GROUP BY PLAYERID) MATCH_AVG " +
-                                             "WHERE AVG_SCORE_MATCH = (SELECT MAX(AVG_SCORE_MATCH) " +
-                                             "FROM (SELECT PLAYERID, AVG(SUM_MATCH) AS AVG_SCORE_MATCH " +
-                                             "FROM " +
-                                             "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
-                                             "FROM GAMEENTRY " +
-                                             "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH) MATCH_TOTALS " +
-                                             "GROUP BY PLAYERID) MATCH_AVG)";
-    /**
-     * Query for selecting the player with the highest average score per game.
-     */
-    private final String topPlayerAvgGame = "SELECT PLAYERID, AVG_SCORE_GAME " +
-                                            "FROM " +
-                                            "(SELECT PLAYERID, AVG(SUM_GAME) AS AVG_SCORE_GAME " +
-                                            "FROM " +
-                                            "(SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
-                                            ") GAME_TOTALS " +
-                                            "GROUP BY PLAYERID) GAME_AVG " +
-                                            "WHERE AVG_SCORE_GAME = (SELECT MAX(AVG_SCORE_GAME) " +
-                                            "FROM (SELECT PLAYERID, AVG(SUM_GAME) AS AVG_SCORE_GAME " +
-                                            "FROM (SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME " +
-                                            ") GAME_TOTALS " +
-                                            "GROUP BY PLAYERID) GAME_AVG)";
-    /**
-     * Query for selecting the player with the highest number of games played.
-     */
-    private final String topPlayerNGames = "SELECT PLAYERID, TOTAL_GAMES " +
-                                            "FROM " +
-                                            "(SELECT DISTINCT PLAYERID, COUNT(DISTINCT GAME) AS TOTAL_GAMES " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY PLAYERID) GAMES_PER_PLAYER " +
-                                            "WHERE TOTAL_GAMES = (SELECT MAX(TOTAL_GAMES) " +
-                                            "FROM (SELECT DISTINCT PLAYERID, COUNT(DISTINCT GAME) as TOTAL_GAMES " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY PLAYERID) GAMES_PER_PLAYER)";
-    /**
-     * Query for selecting the player with the highest record of duplicated words.
-     */
-    private final String topDuplicated = "SELECT PLAYERID, DUPL_OCCURR AS DUPLICATED_RECORD " +
-                                        "FROM " +
-                                        "(SELECT PLAYERID, COUNT(*) AS DUPL_OCCURR " +
-                                        "FROM GAMEENTRY " +
-                                        "WHERE DUPLICATED=TRUE " +
-                                        "GROUP BY PLAYERID, GAME) DUPL " +
-                                        "WHERE DUPL_OCCURR = (SELECT MAX(DUPL_OCCURR) " +
-                                        "FROM (SELECT PLAYERID, COUNT(*) AS DUPL_OCCURR " +
-                                        "FROM GAMEENTRY " +
-                                        "WHERE DUPLICATED=TRUE " +
-                                        "GROUP BY PLAYERID, GAME) DUPL)";
-    /**
-     * Query for selecting the player with the highest record of wrong words.
-     */
-    private final String topWrong = "SELECT PLAYERID, WRONG_OCCURR WRONG_RECORD " +
-                                    "FROM " +
-                                    "(SELECT PLAYERID, COUNT(*) AS WRONG_OCCURR " +
-                                    "FROM GAMEENTRY " +
-                                    "WHERE WRONG=TRUE " +
-                                    "GROUP BY PLAYERID) WRONG " +
-                                    "WHERE WRONG_OCCURR = (SELECT MAX(WRONG_OCCURR) " +
-                                    "FROM (SELECT PLAYERID, COUNT(*) AS WRONG_OCCURR " +
-                                    "FROM GAMEENTRY " +
-                                    "WHERE WRONG=TRUE " +
-                                    "GROUP BY PLAYERID) WRONG)";
-    /**
-     * Query for obtaining a ranking of the valid word occurrences.
-     */
-    private final String validWordsRanking = "SELECT DISTINCT Word, COUNT(*) as word_occurences " +
-                                             "FROM GAMEENTRY " +
-                                             "WHERE Duplicated='0' AND Wrong='0' " +
-                                             "GROUP BY Word " +
-                                             "ORDER BY COUNT(*) DESC";
-    /**
-     * Query for obtaining a ranking of the requested word occurrences.
-     */
-    private final String requestedWordsRanking = "SELECT DISTINCT word, COUNT(*) as Definition_Request " +
-                                                 "FROM GameEntry " +
-                                                 "WHERE Requested='1' " +
-                                                 "GROUP BY word " +
-                                                 "ORDER BY COUNT(*) DESC";
-    /**
-     * Query for getting all the games where a specified word was requested.
-     */
-    private final String getGamesWhereRequested = "SELECT DISTINCT Game " +
-                                                  "FROM GAMEENTRY " +
-                                                  "WHERE word=? AND Requested=TRUE";
-    /**
-     * Query that returns for each class of number of players in a game the minimum and maximum number of matches.
-     */
-    private final String minMaxMatches = "SELECT NUM_PLAYERS, MIN(NUM_MATCHES) AS MIN_NUMBER_MATCHES," +
-                                         "MAX(NUM_MATCHES) AS MAX_NUMBER_MATCHES " +
-                                         "FROM " +
-                                         "(SELECT GAME_NPLAYERS.GAMEID, NUM_MATCHES, NUM_PLAYERS " +
-                                         "FROM " +
-                                         "(SELECT DISTINCT GAME, COUNT(DISTINCT MATCH) AS NUM_MATCHES " +
-                                         "FROM GAMEENTRY " +
-                                         "GROUP BY GAME) GAME_NMATCH " +
-                                         "INNER JOIN " +
-                                         "(SELECT GAMEID, NUM_PLAYERS " +
-                                         "FROM GAMEINFO) GAME_NPLAYERS " +
-                                         "ON GAME_NMATCH.GAME = GAME_NPLAYERS.GAMEID) MATCHES_PLAYERS " +
-                                         "GROUP BY NUM_PLAYERS";
-    /**
-     * Query that returns for each class of number of players in a game the average number of matches.
-     */
-    private final String avgMatches = "SELECT NUM_PLAYERS, AVG(NUM_MATCHES) AS AVG_NUMBER_MATCHES " +
-                                      "FROM " +
-                                      "(SELECT GAME_NPLAYERS.GAMEID, NUM_MATCHES, NUM_PLAYERS " +
-                                      "FROM " +
-                                      "(SELECT DISTINCT GAME, COUNT(DISTINCT MATCH) AS NUM_MATCHES " +
-                                      "FROM GAMEENTRY " +
-                                      "GROUP BY GAME) GAME_NMATCH " +
-                                      "INNER JOIN " +
-                                      "(SELECT GAMEID, NUM_PLAYERS " +
-                                      "FROM GAMEINFO) GAME_NPLAYERS " +
-                                      "ON GAME_NMATCH.GAME = GAME_NPLAYERS.GAMEID) MATCHES_PLAYERS " +
-                                      "GROUP BY NUM_PLAYERS";
-    /**
-     * Query that returns the words with the maximum number of points associated and corresponding games.
-     */
-    private final String gameWordMaxPoints = "SELECT GAME, WORD, POINTS " +
-                                            "FROM GAMEENTRY " +
-                                            "WHERE (GAME, POINTS) IN " +
-                                            "(SELECT GAME, MAX(Points) AS MAX_POINTS " +
-                                            "FROM GAMEENTRY " +
-                                            "GROUP BY Game)";
-    /**
-     * Query that returns all grids associated with the given language in the GameInfo table.
-     */
-    private final String allGridsPerLanguage = "SELECT GRID " + "FROM GAMEINFO " +
-                                                "WHERE LANGUAGE=?";
-
     /*---Constructors---*/
     /**
      * Instantiates a new StatisticsManager.
@@ -233,6 +59,18 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerMatch() throws SQLException {
+        String topPlayerPerMatch = "SELECT PLAYERID, SUM_MATCH AS MAX_MATCH_SCORE " +
+                "FROM " +
+                "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH" +
+                ") MATCH_TOTALS " +
+                "WHERE SUM_MATCH = (" +
+                "SELECT MAX(SUM_MATCH) " +
+                "FROM (SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH" +
+                ") MATCH_TOTALS)";
         PreparedStatement statement = connection.prepareStatement(topPlayerPerMatch);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest score per match");
@@ -241,8 +79,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Integer>("Score" + i, rs.getInt(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Score" + i, rs.getInt(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -257,6 +95,17 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerGame() throws SQLException {
+        String topPlayerPerGame = "SELECT PLAYERID, SUM_GAME AS MAX_GAME_SCORE " +
+                "FROM " +
+                "(SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
+                ") GAME_TOTALS " +
+                "WHERE SUM_GAME = (SELECT MAX(SUM_GAME) " +
+                "FROM (SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
+                ") GAME_TOTALS)";
         PreparedStatement statement = connection.prepareStatement(topPlayerPerGame);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest score per game");
@@ -265,8 +114,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Integer>("Score" + i, rs.getInt(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Score" + i, rs.getInt(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -281,6 +130,21 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerMatchAvg() throws SQLException {
+        String topPlayerAvgMatch = "SELECT PLAYERID, AVG_SCORE_MATCH " +
+                "FROM " +
+                "(SELECT PLAYERID, AVG(SUM_MATCH) AS AVG_SCORE_MATCH " +
+                "FROM " +
+                "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH) MATCH_TOTALS " +
+                "GROUP BY PLAYERID) MATCH_AVG " +
+                "WHERE AVG_SCORE_MATCH = (SELECT MAX(AVG_SCORE_MATCH) " +
+                "FROM (SELECT PLAYERID, AVG(SUM_MATCH) AS AVG_SCORE_MATCH " +
+                "FROM " +
+                "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME, GAMEENTRY.MATCH) MATCH_TOTALS " +
+                "GROUP BY PLAYERID) MATCH_AVG)";
         PreparedStatement statement = connection.prepareStatement(topPlayerAvgMatch);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest average score per match");
@@ -289,8 +153,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Double>("Score" + i, rs.getDouble(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Score" + i, rs.getDouble(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -305,6 +169,22 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerGameAvg() throws SQLException {
+        String topPlayerAvgGame = "SELECT PLAYERID, AVG_SCORE_GAME " +
+                "FROM " +
+                "(SELECT PLAYERID, AVG(SUM_GAME) AS AVG_SCORE_GAME " +
+                "FROM " +
+                "(SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME" +
+                ") GAME_TOTALS " +
+                "GROUP BY PLAYERID) GAME_AVG " +
+                "WHERE AVG_SCORE_GAME = (SELECT MAX(AVG_SCORE_GAME) " +
+                "FROM (SELECT PLAYERID, AVG(SUM_GAME) AS AVG_SCORE_GAME " +
+                "FROM (SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAMEENTRY.PLAYERID, GAMEENTRY.GAME " +
+                ") GAME_TOTALS " +
+                "GROUP BY PLAYERID) GAME_AVG)";
         PreparedStatement statement = connection.prepareStatement(topPlayerAvgGame);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest average score per game");
@@ -313,8 +193,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Double>("Score" + i, rs.getDouble(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Score" + i, rs.getDouble(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -329,6 +209,15 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerGamesN() throws SQLException {
+        String topPlayerNGames = "SELECT PLAYERID, TOTAL_GAMES " +
+                "FROM " +
+                "(SELECT DISTINCT PLAYERID, COUNT(DISTINCT GAME) AS TOTAL_GAMES " +
+                "FROM GAMEENTRY " +
+                "GROUP BY PLAYERID) GAMES_PER_PLAYER " +
+                "WHERE TOTAL_GAMES = (SELECT MAX(TOTAL_GAMES) " +
+                "FROM (SELECT DISTINCT PLAYERID, COUNT(DISTINCT GAME) as TOTAL_GAMES " +
+                "FROM GAMEENTRY " +
+                "GROUP BY PLAYERID) GAMES_PER_PLAYER)";
         PreparedStatement statement = connection.prepareStatement(topPlayerNGames);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Games played record");
@@ -337,8 +226,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Integer>("Games" + i, rs.getInt(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Games" + i, rs.getInt(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -353,6 +242,17 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerDuplicated() throws SQLException {
+        String topDuplicated = "SELECT PLAYERID, DUPL_OCCURR AS DUPLICATED_RECORD " +
+                "FROM " +
+                "(SELECT PLAYERID, COUNT(*) AS DUPL_OCCURR " +
+                "FROM GAMEENTRY " +
+                "WHERE DUPLICATED=TRUE " +
+                "GROUP BY PLAYERID, GAME) DUPL " +
+                "WHERE DUPL_OCCURR = (SELECT MAX(DUPL_OCCURR) " +
+                "FROM (SELECT PLAYERID, COUNT(*) AS DUPL_OCCURR " +
+                "FROM GAMEENTRY " +
+                "WHERE DUPLICATED=TRUE " +
+                "GROUP BY PLAYERID, GAME) DUPL)";
         PreparedStatement statement = connection.prepareStatement(topDuplicated);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Record duplicated words");
@@ -361,8 +261,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Integer>("Duplicated" + i, rs.getInt(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Duplicated" + i, rs.getInt(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -377,6 +277,17 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface topPlayerWrong() throws SQLException {
+        String topWrong = "SELECT PLAYERID, WRONG_OCCURR WRONG_RECORD " +
+                "FROM " +
+                "(SELECT PLAYERID, COUNT(*) AS WRONG_OCCURR " +
+                "FROM GAMEENTRY " +
+                "WHERE WRONG=TRUE " +
+                "GROUP BY PLAYERID) WRONG " +
+                "WHERE WRONG_OCCURR = (SELECT MAX(WRONG_OCCURR) " +
+                "FROM (SELECT PLAYERID, COUNT(*) AS WRONG_OCCURR " +
+                "FROM GAMEENTRY " +
+                "WHERE WRONG=TRUE " +
+                "GROUP BY PLAYERID) WRONG)";
         PreparedStatement statement = connection.prepareStatement(topWrong);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Record wrong words");
@@ -385,8 +296,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<String>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<Integer>("Wrong" + i, rs.getInt(2));
+            player_name = new Result<>("Player_ID" + i, rs.getString(1));
+            player_score = new Result<>("Wrong" + i, rs.getInt(2));
             result.addResult(player_name);
             result.addResult(player_score);
         }
@@ -400,6 +311,11 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface validWordsRanking() throws SQLException {
+        String validWordsRanking = "SELECT DISTINCT Word, COUNT(*) as word_occurences " +
+                "FROM GAMEENTRY " +
+                "WHERE Duplicated='0' AND Wrong='0' " +
+                "GROUP BY Word " +
+                "ORDER BY COUNT(*) DESC";
         PreparedStatement statement = connection.prepareStatement(validWordsRanking);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Ranking of valid words occurrences");
@@ -408,8 +324,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            word = new Result<String>("Word" + i, rs.getString(1));
-            occurrences = new Result<Integer>("Occurrences" + i, rs.getInt(2));
+            word = new Result<>("Word" + i, rs.getString(1));
+            occurrences = new Result<>("Occurrences" + i, rs.getInt(2));
             result.addResult(word);
             result.addResult(occurrences);
         }
@@ -423,6 +339,11 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface requestedWordsRanking() throws SQLException {
+        String requestedWordsRanking = "SELECT DISTINCT word, COUNT(*) as Definition_Request " +
+                "FROM GameEntry " +
+                "WHERE Requested='1' " +
+                "GROUP BY word " +
+                "ORDER BY COUNT(*) DESC";
         PreparedStatement statement = connection.prepareStatement(requestedWordsRanking);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Ranking of requested words occurrences");
@@ -431,8 +352,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            word = new Result<String>("Word" + i, rs.getString(1));
-            occurrences = new Result<Integer>("Occurrences" + i, rs.getInt(2));
+            word = new Result<>("Word" + i, rs.getString(1));
+            occurrences = new Result<>("Occurrences" + i, rs.getInt(2));
             result.addResult(word);
             result.addResult(occurrences);
         }
@@ -447,6 +368,9 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface getGameByRequestedWord(String word) throws SQLException {
+        String getGamesWhereRequested = "SELECT DISTINCT Game " +
+                "FROM GAMEENTRY " +
+                "WHERE word=? AND Requested=TRUE";
         PreparedStatement statement = connection.prepareStatement(getGamesWhereRequested);
         statement.setString(1, word);
         ResultSet rs = statement.executeQuery();
@@ -455,7 +379,7 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            games = new Result<UUID>("GameID" + i, rs.getObject(1, UUID.class));
+            games = new Result<>("GameID" + i, rs.getObject(1, UUID.class));
             result.addResult(games);
         }
         return result;
@@ -468,6 +392,19 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface minMaxMatchesPerNPlayers() throws SQLException {
+        String minMaxMatches = "SELECT NUM_PLAYERS, MIN(NUM_MATCHES) AS MIN_NUMBER_MATCHES," +
+                "MAX(NUM_MATCHES) AS MAX_NUMBER_MATCHES " +
+                "FROM " +
+                "(SELECT GAME_NPLAYERS.GAMEID, NUM_MATCHES, NUM_PLAYERS " +
+                "FROM " +
+                "(SELECT DISTINCT GAME, COUNT(DISTINCT MATCH) AS NUM_MATCHES " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAME) GAME_NMATCH " +
+                "INNER JOIN " +
+                "(SELECT GAMEID, NUM_PLAYERS " +
+                "FROM GAMEINFO) GAME_NPLAYERS " +
+                "ON GAME_NMATCH.GAME = GAME_NPLAYERS.GAMEID) MATCHES_PLAYERS " +
+                "GROUP BY NUM_PLAYERS";
         PreparedStatement statement = connection.prepareStatement(minMaxMatches);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Minimum and maximum matches for games with different number of players");
@@ -477,9 +414,9 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            n_players = new Result<Short>("PlayersN" + i, rs.getShort(1));
-            min_matches = new Result<Integer>("Min matches" + i, rs.getInt(2));
-            max_matches = new Result<Integer>("Max matches" + i, rs.getInt(3));
+            n_players = new Result<>("PlayersN" + i, rs.getShort(1));
+            min_matches = new Result<>("Min matches" + i, rs.getInt(2));
+            max_matches = new Result<>("Max matches" + i, rs.getInt(3));
             result.addResult(n_players);
             result.addResult(min_matches);
             result.addResult(max_matches);
@@ -494,6 +431,18 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface avgMatchesPerNPlayers() throws SQLException {
+        String avgMatches = "SELECT NUM_PLAYERS, AVG(NUM_MATCHES) AS AVG_NUMBER_MATCHES " +
+                "FROM " +
+                "(SELECT GAME_NPLAYERS.GAMEID, NUM_MATCHES, NUM_PLAYERS " +
+                "FROM " +
+                "(SELECT DISTINCT GAME, COUNT(DISTINCT MATCH) AS NUM_MATCHES " +
+                "FROM GAMEENTRY " +
+                "GROUP BY GAME) GAME_NMATCH " +
+                "INNER JOIN " +
+                "(SELECT GAMEID, NUM_PLAYERS " +
+                "FROM GAMEINFO) GAME_NPLAYERS " +
+                "ON GAME_NMATCH.GAME = GAME_NPLAYERS.GAMEID) MATCHES_PLAYERS " +
+                "GROUP BY NUM_PLAYERS";
         PreparedStatement statement = connection.prepareStatement(avgMatches);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Average matches for games with different number of players");
@@ -502,8 +451,8 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            n_players = new Result<Short>("PlayersN" + i, rs.getShort(1));
-            avg_matches = new Result<Double>("Avg matches" + i, rs.getDouble(2));
+            n_players = new Result<>("PlayersN" + i, rs.getShort(1));
+            avg_matches = new Result<>("Avg matches" + i, rs.getDouble(2));
             result.addResult(n_players);
             result.addResult(avg_matches);
         }
@@ -517,6 +466,12 @@ public class StatisticsManager {
      * @throws SQLException
      */
     public ServiceResultInterface getGameMaxPointWords() throws SQLException {
+        String gameWordMaxPoints = "SELECT GAME, WORD, POINTS " +
+                "FROM GAMEENTRY " +
+                "WHERE (GAME, POINTS) IN " +
+                "(SELECT GAME, MAX(Points) AS MAX_POINTS " +
+                "FROM GAMEENTRY " +
+                "GROUP BY Game)";
         PreparedStatement statement = connection.prepareStatement(gameWordMaxPoints);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Game words with highest points");
@@ -526,9 +481,9 @@ public class StatisticsManager {
         int i = 0;
         while (rs.next()) {
             i++;
-            game = new Result<UUID>("Game" + i, rs.getObject(1, UUID.class));
-            word = new Result<String>("Word" + i, rs.getString(2));
-            points = new Result<Integer>("Points" + i, rs.getInt(3));
+            game = new Result<>("Game" + i, rs.getObject(1, UUID.class));
+            word = new Result<>("Word" + i, rs.getString(2));
+            points = new Result<>("Points" + i, rs.getInt(3));
             result.addResult(game);
             result.addResult(word);
             result.addResult(points);
@@ -544,13 +499,15 @@ public class StatisticsManager {
      * @throws IOException
      * @throws URISyntaxException
      */
-    public ServiceResultInterface avgLetterOnGridOccurrences() throws SQLException, IOException, URISyntaxException {
+    public ServiceResultInterface avgLetterOnGridOccurrences() throws SQLException {
         ServiceResult avg_occurrences = new ServiceResult("Average letter occurrences");
         /* For every language supported by the application do */
         for (Language lang : Language.values()) {
             /* Retrieve from the database all the grids of games with the current language.
             * This is necessary since grids generated can differ based on different dice sets
             * for different languages. */
+            String allGridsPerLanguage = "SELECT GRID " + "FROM GAMEINFO " +
+                    "WHERE LANGUAGE=?";
             PreparedStatement statement = connection.prepareStatement(allGridsPerLanguage);
             statement.setString(1, lang.name());
             ResultSet rs = statement.executeQuery();

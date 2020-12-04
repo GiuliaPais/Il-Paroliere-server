@@ -2,6 +2,7 @@ package uninsubria.server.core;
 
 import javafx.application.Platform;
 import uninsubria.server.db.api.ConnectionPool;
+import uninsubria.server.db.api.TransactionManager;
 import uninsubria.server.dictionary.loader.DictionaryException;
 import uninsubria.server.dictionary.manager.DictionaryManager;
 import uninsubria.server.email.EmailManager;
@@ -14,18 +15,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Represents the server side logic of the application. Initializes main components and listens on server socket
  * for clients. For each client connected launches a reserved Skeleton thread.
  *
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class MasterServer extends Thread {
     /*---Fields---*/
     private MainServerGuiController controllerReference;
     private ServerSocket serverSocket;
+    private ConcurrentLinkedQueue<Skeleton> connected_clients;
 
     /* -- For DB connections -- */
     private String dbHost;
@@ -40,6 +44,7 @@ public class MasterServer extends Thread {
      * Instantiates a new MasterServer.
      */
     public MasterServer() {
+        connected_clients = new ConcurrentLinkedQueue<>();
     }
 
     /**
@@ -50,12 +55,14 @@ public class MasterServer extends Thread {
      */
     public MasterServer(MasterServer old) {
         this.controllerReference = old.controllerReference;
+        this.serverSocket = null;
         this.dbName = old.dbName;
         this.dbHost = old.dbHost;
         this.dbAdmin = old.dbAdmin;
         this.dbPw = old.dbPw;
         this.serverEmail = old.serverEmail;
         this.serverEmailPassword = old.serverEmailPassword;
+        this.connected_clients = new ConcurrentLinkedQueue<>();
     }
 
     /*---Methods---*/
@@ -65,19 +72,18 @@ public class MasterServer extends Thread {
             Platform.runLater(() -> controllerReference.printToConsole("Initializing connection pool...", MessageType.MESSAGE));
             ConnectionPool.initializeConnectionPool(dbAdmin, dbPw, dbHost, dbName);
         } catch (SQLException throwables) {
-            Platform.runLater(() -> controllerReference.printToConsole(throwables.getStackTrace().toString(), MessageType.ERROR));
+            Platform.runLater(() -> controllerReference.printToConsole(Arrays.toString(throwables.getStackTrace()), MessageType.ERROR));
         }
         EmailManager.initializeEmailManager(serverEmail, serverEmailPassword);
         try {
             Platform.runLater(() -> controllerReference.printToConsole("Loading dictionaries...", MessageType.MESSAGE));
             DictionaryManager.getInstance();
-        } catch (IOException e) {
-            Platform.runLater(() -> controllerReference.printToConsole(e.getStackTrace().toString(), MessageType.ERROR));
-        } catch (DictionaryException e) {
-            Platform.runLater(() -> controllerReference.printToConsole(e.getStackTrace().toString(), MessageType.ERROR));
-        } catch (URISyntaxException e) {
-            Platform.runLater(() -> controllerReference.printToConsole(e.getStackTrace().toString(), MessageType.ERROR));
+        } catch (IOException | DictionaryException | URISyntaxException e) {
+            Platform.runLater(() -> controllerReference.printToConsole(Arrays.deepToString(e.getStackTrace()), MessageType.ERROR));
         }
+        /* Needed to reset potential errors if server process was killed abruptly */
+        TransactionManager transactionManager = new TransactionManager();
+        transactionManager.logoutEveryone();
         //Initialize room list TODO
         try {
             this.serverSocket = new ServerSocket(CommHolder.SERVER_PORT);
@@ -87,18 +93,23 @@ public class MasterServer extends Thread {
                 Socket client = serverSocket.accept();
                 Platform.runLater(() -> controllerReference.printToConsole("Client connected at: "+ client.getInetAddress(), MessageType.MESSAGE));
                 client.setKeepAlive(true);
-                new Skeleton(client);
+                Skeleton skeleton = new Skeleton(client);
+                connected_clients.add(skeleton);
                 if (isInterrupted()) {
                     terminate();
                 }
             }
         } catch (IOException | SQLException e) {
-            Platform.runLater(() -> controllerReference.printToConsole(e.getStackTrace().toString(), MessageType.ERROR));
+            Platform.runLater(() -> controllerReference.printToConsole(Arrays.deepToString(e.getStackTrace()), MessageType.ERROR));
         }
     }
 
     private void terminate() throws IOException, SQLException {
         Platform.runLater(() -> controllerReference.printToConsole("Server shutting down...", MessageType.MESSAGE));
+        for (Skeleton s : connected_clients) {
+            s.terminate();
+            connected_clients.remove(s);
+        }
         ConnectionPool.clearPool();
         serverSocket.close();
         Platform.runLater(() -> controllerReference.printToConsole("Server closed", MessageType.MESSAGE));

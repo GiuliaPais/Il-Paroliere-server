@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.db.dao;
 
 import uninsubria.server.db.businesslayer.GameInfo;
@@ -24,7 +21,6 @@ import java.util.UUID;
 public class GameInfoDAOImpl implements GameInfoDAO {
 	private Connection connection;
 
-	private final String selectAll = "SELECT * FROM GameInfo";
 	private final String selectById = "SELECT * FROM GameInfo WHERE " + TableAttributes.GameID + "=?";
 	private final String create = createInsertQuery();
 	private final String delete = "DELETE FROM GameInfo WHERE " + TableAttributes.GameID + "=?";
@@ -36,24 +32,24 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 	}
 
 	private String createInsertQuery() {
-		String query = "INSERT INTO GameInfo(";
+		StringBuilder query = new StringBuilder("INSERT INTO GameInfo(");
 		TableAttributes[] fields = TableAttributes.values();
 		for (int i = 0; i < fields.length; i++) {
 			if (i < fields.length - 1) {
-				query += fields[i] + ", ";
+				query.append(fields[i]).append(", ");
 			} else {
-				query += fields[i];
+				query.append(fields[i]);
 			}
 		}
-		query += ") VALUES(";
+		query.append(") VALUES(");
 		for (int i = 0; i < fields.length; i++) {
 			if (i < fields.length - 1) {
-				query += "?, ";
+				query.append("?, ");
 			} else {
-				query += "?)";
+				query.append("?)");
 			}
 		}
-		return query;
+		return query.toString();
 	}
 
 	@Override
@@ -71,6 +67,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 	@Override
 	public List<GameInfo> getAll() throws SQLException {
 		List<GameInfo> gameInfoList = new ArrayList<>();
+		String selectAll = "SELECT * FROM GameInfo";
 		PreparedStatement statement = connection.prepareStatement(selectAll);
 		ResultSet rs = statement.executeQuery();
 		while(rs.next()) {
@@ -107,52 +104,46 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 
 	@Override
 	public void update(UUID gameID, TableAttributes[] attributes, Object[] values) throws SQLException {
-		String query = "UPDATE GameInfo SET ";
+		StringBuilder query = new StringBuilder("UPDATE GameInfo SET ");
 		for (int i = 0; i < attributes.length; i++) {
-			query += (attributes[i].name() + "=");
+			query.append(attributes[i].name()).append("=");
 			switch (attributes[i]) {
 				case GameID:
+				case Num_players:
 					if (i < values.length-1) {
-						query += ((UUID) values[i] + ", ");
+						query.append(values[i]).append(", ");
 					} else {
-						query += ((UUID) values[i] + " ");
+						query.append(values[i]).append(" ");
 					}
 					break;
 				case Ruleset:
 				case Language:
 					if (i < values.length-1) {
-						query += ((String) values[i] + ", ");
+						query.append((String) values[i]).append(", ");
 					} else {
-						query += ((String) values[i] + " ");
-					}
-					break;
-				case Num_players:
-					if (i < values.length-1) {
-						query += ((Byte) values[i] + ", ");
-					} else {
-						query += ((Byte) values[i] + " ");
+						query.append((String) values[i]).append(" ");
 					}
 					break;
 				case Grid:
 					String[] value = (String[]) values[i];
-					String value_to_write = "'{";
+					StringBuilder value_to_write = new StringBuilder("'{");
 					for (int j = 0; j < value.length; j++) {
 						if (j < value.length-1) {
-							value_to_write += "\"" + value[j] + "\", ";
+							value_to_write.append("\"").append(value[j]).append("\", ");
 						} else {
-							value_to_write += "\"" + value[j] + "\"}'";
+							value_to_write.append("\"").append(value[j]).append("\"}'");
 						}
 					}
 					if (i < values.length-1) {
-						query += (value_to_write + ", ");
+						query.append(value_to_write).append(", ");
 					} else {
-						query += (value_to_write + " ");
+						query.append(value_to_write).append(" ");
 					}
 					break;
 			}
 		}
-		query += "WHERE " + TableAttributes.GameID + "='" + gameID + "'";
-		PreparedStatement statement = connection.prepareStatement(query);
+		query.append("WHERE " + TableAttributes.GameID + "='").append(gameID).append("'");
+		PreparedStatement statement = connection.prepareStatement(query.toString());
 		statement.executeUpdate();
 		statement.close();
 	}

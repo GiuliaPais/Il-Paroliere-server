@@ -6,12 +6,15 @@ import uninsubria.server.services.playerServicesImpl.*;
 /**
  * Collection of all the possible services that can be requested by a player.
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public enum PlayerServiceType implements ServiceType {
 	CREATE_ROOM (CreateRoomService.class),
 	LOGIN (LoginService.class),
-	ACTIVATION_CODE(ActivationCodeService.class);
+	LOGOUT(LogoutService.class),
+	ACTIVATION_CODE(ActivationCodeService.class),
+	CONFIRM_ACTIVATION_CODE(ConfirmActivationCodeService.class),
+	RESEND_CODE(ResendCodeService.class);
 	
 	private final Class<?> value;
 	

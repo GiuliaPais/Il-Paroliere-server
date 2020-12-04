@@ -1,6 +1,3 @@
-/**
- * 
- */
 package uninsubria.server.db.dao;
 
 import uninsubria.utils.business.Player;
@@ -14,13 +11,12 @@ import java.util.List;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class PlayerDAOImpl implements PlayerDAO{
 
 	private Connection connection;
-	
-	private final String selectAllPlayers = "SELECT * FROM Player";
+
 	private final String selectPlayer = "SELECT * FROM Player WHERE "+ TableAttributes.UserID +"=?";
 	private final String selectPlayerbyEmail = "SELECT * FROM Player WHERE " + TableAttributes.Email + "=?";
 	private final String createPlayer = createInsertQuery();
@@ -41,7 +37,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 		statement.setString(4, player.getName());
 		statement.setString(5, player.getSurname());
 		statement.setString(6, player.getPassword());
-		statement.setInt(7, player.getProfileImage());;
+		statement.setInt(7, player.getProfileImage());
 		statement.executeUpdate();
 		statement.close();
 	}
@@ -49,6 +45,7 @@ public class PlayerDAOImpl implements PlayerDAO{
 	@Override
 	public List<Player> getAll() throws SQLException {
 		List<Player> playerList = new ArrayList<>();
+		String selectAllPlayers = "SELECT * FROM Player";
 		PreparedStatement statement = connection.prepareStatement(selectAllPlayers);
 		ResultSet rs = statement.executeQuery();
 		while(rs.next()) {
@@ -60,6 +57,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setSurname(rs.getString(TableAttributes.Surname.getColumn_index()));
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
+			player.setImgColor(rs.getString(TableAttributes.ImageColor.getColumn_index()));
+			player.setBgColor(rs.getString(TableAttributes.BgColor.getColumn_index()));
 			playerList.add(player);
 		}
 		rs.close();
@@ -82,6 +81,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setSurname(rs.getString(TableAttributes.Surname.getColumn_index()));
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
+			player.setImgColor(rs.getString(TableAttributes.ImageColor.getColumn_index()));
+			player.setBgColor(rs.getString(TableAttributes.BgColor.getColumn_index()));
 		}
 		rs.close();
 		statement.close();
@@ -103,6 +104,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setSurname(rs.getString(TableAttributes.Surname.getColumn_index()));
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
+			player.setImgColor(rs.getString(TableAttributes.ImageColor.getColumn_index()));
+			player.setBgColor(rs.getString(TableAttributes.BgColor.getColumn_index()));
 		}
 		rs.close();
 		statement.close();
@@ -124,6 +127,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setSurname(rs.getString(TableAttributes.Surname.getColumn_index()));
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
+			player.setImgColor(rs.getString(TableAttributes.ImageColor.getColumn_index()));
+			player.setBgColor(rs.getString(TableAttributes.BgColor.getColumn_index()));
 		}
 		rs.close();
 		statement.close();
@@ -145,6 +150,8 @@ public class PlayerDAOImpl implements PlayerDAO{
 			player.setSurname(rs.getString(TableAttributes.Surname.getColumn_index()));
 			player.setPassword(rs.getString(TableAttributes.Password.getColumn_index()));
 			player.setProfileImage(rs.getShort(TableAttributes.ProfileImage.getColumn_index()));
+			player.setImgColor(rs.getString(TableAttributes.ImageColor.getColumn_index()));
+			player.setBgColor(rs.getString(TableAttributes.BgColor.getColumn_index()));
 		}
 		rs.close();
 		statement.close();
@@ -153,39 +160,33 @@ public class PlayerDAOImpl implements PlayerDAO{
 
 	@Override
 	public void update(String userID, TableAttributes[] attributes, Object[] values) throws SQLException {
-		String query = "UPDATE Player SET ";
+		StringBuilder query = new StringBuilder("UPDATE Player SET ");
 		for (int i = 0; i < attributes.length; i++) {
-			query += (attributes[i].name() + "=");
-			switch (attributes[i]) {
-				case UserID:
-				case Email:
-				case Name:
-				case Surname:
-				case Password:
-					if (i < values.length-1) {
-						query += ((String) values[i] + ", ");
-					} else {
-						query += ((String) values[i] + " ");
-					}
-					break;
-				case Log_Status:
-					if (i < values.length-1) {
-						query += ((Boolean) values[i] + ", ");
-					} else {
-						query += ((Boolean) values[i] + " ");
-					}
-					break;
-				case ProfileImage:
-					if (i < values.length-1) {
-						query += ((Integer) values[i] + ", ");
-					} else {
-						query += ((Integer) values[i] + " ");
-					}
-					break;
+			query.append(attributes[i].name()).append("=");
+			if (i < values.length - 1) {
+				query.append(values[i]).append(", ");
+			} else {
+				query.append(values[i]).append(" ");
 			}
-			query += "WHERE userID='" + userID + "'";
 		}
-		PreparedStatement statement = connection.prepareStatement(query);
+		query.append("WHERE userID='").append(userID).append("'");
+		PreparedStatement statement = connection.prepareStatement(query.toString());
+		statement.executeUpdate();
+		statement.close();
+	}
+
+	@Override
+	public void updateAll(TableAttributes[] attributes, Object[] values) throws SQLException {
+		StringBuilder query = new StringBuilder("UPDATE Player SET ");
+		for (int i = 0; i < attributes.length; i++) {
+			query.append(attributes[i].name()).append("=");
+			if (i < values.length - 1) {
+				query.append(values[i]).append(", ");
+			} else {
+				query.append(values[i]).append(" ");
+			}
+		}
+		PreparedStatement statement = connection.prepareStatement(query.toString());
 		statement.executeUpdate();
 		statement.close();
 	}
@@ -214,23 +215,26 @@ public class PlayerDAOImpl implements PlayerDAO{
 	}
 
 	private String createInsertQuery() {
-		String query = "INSERT INTO Player(";
+		StringBuilder query = new StringBuilder("INSERT INTO Player(");
 		TableAttributes[] fields = TableAttributes.values();
 		for (int i = 0; i < fields.length; i++) {
+			if (fields[i].equals(TableAttributes.ImageColor) | fields[i].equals(TableAttributes.BgColor)) {
+				continue;
+			}
 			if (i < fields.length - 1) {
-				query += fields[i] + ", ";
+				query.append(fields[i]).append(", ");
 			} else {
-				query += fields[i];
+				query.append(fields[i]);
 			}
 		}
-		query += ") VALUES(";
+		query.append(") VALUES(");
 		for (int i = 0; i < fields.length; i++) {
 			if (i < fields.length - 1) {
-				query += "?, ";
+				query.append("?, ");
 			} else {
-				query += "?)";
+				query.append("?)");
 			}
 		}
-		return query;
+		return query.toString();
 	}
 }
