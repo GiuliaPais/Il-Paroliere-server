@@ -1,6 +1,7 @@
 package uninsubria.server.core;
 
 import uninsubria.server.managersimpl.PlayerManager;
+import uninsubria.utils.business.Player;
 import uninsubria.utils.connection.CommProtocolCommands;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.managersAPI.ProxySkeletonInterface;
@@ -8,23 +9,29 @@ import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
+import java.util.Objects;
 
 /**
  * A class representing the Skeleton component in the pattern Proxy-Skeleton.
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
-    private Socket client;
+    private final Socket client;
     private PlayerManagerInterface playerManager;
-    private ObjectOutputStream out;
+    private final ObjectOutputStream out;
     private ObjectInputStream in;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Skeleton.
+     *
+     * @param c The client socket
+     * @throws IOException if there are problems opening streams
+     */
     public Skeleton(Socket c) throws IOException {
         this.client = c;
         this.client.setKeepAlive(true);
@@ -44,7 +51,7 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                command = in.readUTF();
            }
            terminate();
-       } catch (IOException e) {
+       } catch (IOException | ClassNotFoundException e) {
            terminate();
        }
     }
@@ -64,9 +71,9 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
     }
 
     @Override
-    public void readCommand(String command) throws IOException {
+    public void readCommand(String command) throws IOException, ClassNotFoundException {
         CommProtocolCommands com = CommProtocolCommands.getByCommand(command);
-        switch (com) {
+        switch (Objects.requireNonNull(com)) {
             case ACTIVATION_CODE -> {
                 String name = in.readUTF();
                 String lastname = in.readUTF();
@@ -98,9 +105,30 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                 String id = in.readUTF();
                 playerManager.logout(id);
             }
+            case UPDATE_PLAYER_INFO -> {
+                Player player = (Player) in.readObject();
+                playerManager.updatePlayerInfo(player);
+            }
+            case CHANGE_USER_ID -> {
+                String oldID = in.readUTF();
+                String newID = in.readUTF();
+                ServiceResultInterface res = playerManager.changeUserId(oldID, newID);
+                writeCommand(CommProtocolCommands.CHANGE_USER_ID, res);
+            }
+            case CHANGE_PW -> {
+                String email = in.readUTF();
+                String oldPw = in.readUTF();
+                String newPw = in.readUTF();
+                ServiceResultInterface res = playerManager.changePassword(email, oldPw, newPw);
+                writeCommand(CommProtocolCommands.CHANGE_PW, res);
+            }
         }
     }
 
+    /**
+     * Correctly terminates the thread by trying to close open resources
+     * and if a player is logged it logs out.
+     */
     public void terminate() {
         if (in != null) {
             try {

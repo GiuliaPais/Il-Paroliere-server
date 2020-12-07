@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class GameEntryDAOImpl implements GameEntryDAO {
 
@@ -124,13 +124,21 @@ public class GameEntryDAOImpl implements GameEntryDAO {
         StringBuilder query = new StringBuilder("UPDATE GameEntry SET ");
         for (int i = 0; i < attributes.length; i++) {
             query.append(attributes[i].name()).append("=");
-            if (i < values.length-1) {
-                query.append(values[i]).append(", ");
+            if (i < values.length - 1) {
+                if (values[i] instanceof String) {
+                    query.append("'").append(values[i]).append("', ");
+                } else {
+                    query.append(values[i]).append(", ");
+                }
             } else {
-                query.append(values[i]).append(" ");
+                if (values[i] instanceof String) {
+                    query.append("'").append(values[i]).append("' ");
+                } else {
+                    query.append(values[i]).append(" ");
+                }
             }
         }
-        query.append("WHERE " + TableAttributes.Game + "='").append(gameID).append("' AND ").append(TableAttributes.PlayerId).append("='").append(playerID).append("' AND ").append(TableAttributes.Match).append("=").append(match).append(" AND ").append(TableAttributes.Word).append("='").append(word).append("'");
+        query.append("WHERE ").append(TableAttributes.Game).append("='").append(gameID).append("' AND ").append(TableAttributes.PlayerId).append("='").append(playerID).append("' AND ").append(TableAttributes.Match).append("=").append(match).append(" AND ").append(TableAttributes.Word).append("='").append(word).append("'");
         System.out.println(query);
         PreparedStatement statement = connection.prepareStatement(query.toString());
         statement.executeUpdate();

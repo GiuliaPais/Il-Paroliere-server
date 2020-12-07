@@ -21,7 +21,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class TransactionManager {
 	/*---Fields---*/
@@ -30,10 +30,10 @@ public class TransactionManager {
 	private final GameEntryDAO gameEntryDAO;
 	private final UserTokenDAO userTokenDAO;
 
+	/*---Constructors---*/
 	/**
 	 * Instantiates a new Transaction manager.
 	 */
-	/*---Constructors---*/
 	public TransactionManager() {
 		this.playerDAO = new PlayerDAOImpl();
 		this.gameInfoDAO = new GameInfoDAOImpl();
@@ -180,6 +180,7 @@ public class TransactionManager {
 					userToken.getLastname(), userToken.getPassword(), 1, true, null, null);
 			playerDAO.create(player);
 			userTokenDAO.delete(userToken.getUserID(), userToken.getRequestType());
+			player = playerDAO.getByUserId(player.getPlayerID());
 			connection.commit();
 			resetConnections(connection);
 			return player;
@@ -318,6 +319,9 @@ public class TransactionManager {
 		}
 	}
 
+	/**
+	 * Logouts out every player in the player table.
+	 */
 	public void logoutEveryone() {
 		Connection connection;
 		try {
@@ -330,6 +334,125 @@ public class TransactionManager {
 			playerDAO.updateAll(new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Log_Status}, new Boolean[] {Boolean.FALSE});
 		} catch (SQLException throwables) {
 			throwables.printStackTrace();
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Updates the player info (only non-critical attributes).
+	 *
+	 * @param player the player
+	 */
+	public void updatePlayerInfo(Player player) {
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			return;
+		}
+		playerDAO.setConnection(connection);
+		PlayerDAO.TableAttributes[] attributes = new PlayerDAO.TableAttributes[] {
+				PlayerDAO.TableAttributes.Name,
+				PlayerDAO.TableAttributes.Surname,
+				PlayerDAO.TableAttributes.ProfileImage,
+				PlayerDAO.TableAttributes.ImageColor,
+				PlayerDAO.TableAttributes.BgColor
+		};
+		Object[] values = new Object[] {
+				player.getName(),
+				player.getSurname(),
+				player.getProfileImage(),
+				player.getImgColor(),
+				player.getBgColor()
+		};
+		try {
+			playerDAO.update(player.getPlayerID(), attributes, values);
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Changes the userID for a player.
+	 *
+	 * @param oldId     the old id
+	 * @param newId     the new id
+	 * @param errorCode a list where the function can add error codes
+	 * @return A player object if the procedure succeeds, null otherwise
+	 */
+	public Player changeUserID(String oldId, String newId, List<ErrorMsgType> errorCode) {
+		Connection connection;
+		Player player;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return null;
+		}
+		try {
+			connection.setAutoCommit(false);
+			PreparedStatement statement = connection.prepareStatement("LOCK PLAYER IN ROW EXCLUSIVE MODE");
+			statement.executeUpdate();
+			playerDAO.setConnection(connection);
+			Player available = playerDAO.getByUserId(newId);
+			if (available != null) {
+				errorCode.add(ErrorMsgType.REG_ERR_USERID);
+				connection.rollback();
+				return null;
+			}
+			playerDAO.update(oldId, new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.UserID}, new Object[] {newId});
+			player = playerDAO.getByUserId(newId);
+			connection.commit();
+			return player;
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return null;
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Changes the password for a player.
+	 *
+	 * @param email     the email
+	 * @param oldPw     the old pw
+	 * @param newPw     the new pw
+	 * @param errorCode a list where the function can add error codes
+	 * @return true if the password was changed, false otherwise
+	 */
+	public boolean changePassword(String email, String oldPw, String newPw, List<ErrorMsgType> errorCode) {
+		Connection connection;
+		Player player;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return false;
+		}
+		try {
+			connection.setAutoCommit(false);
+			playerDAO.setConnection(connection);
+			player = playerDAO.getByEmailForUpdate(email);
+			if (!player.getPassword().equals(oldPw)) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_PW);
+				connection.rollback();
+				return false;
+			}
+			playerDAO.update(player.getPlayerID(), new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Password},
+					new Object[]{newPw});
+			connection.commit();
+			EmailManager emailManager = new EmailManager();
+			emailManager.sendModNotification(email);
+			return true;
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return false;
+		} catch (MessagingException ignored) {
+			return true;
 		} finally {
 			resetConnections(connection);
 		}

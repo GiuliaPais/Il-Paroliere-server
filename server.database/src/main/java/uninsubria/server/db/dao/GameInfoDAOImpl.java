@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class GameInfoDAOImpl implements GameInfoDAO {
 	private Connection connection;
@@ -107,42 +107,39 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		StringBuilder query = new StringBuilder("UPDATE GameInfo SET ");
 		for (int i = 0; i < attributes.length; i++) {
 			query.append(attributes[i].name()).append("=");
-			switch (attributes[i]) {
-				case GameID:
-				case Num_players:
-					if (i < values.length-1) {
+			if (attributes[i] == TableAttributes.Grid) {
+				String[] value = (String[]) values[i];
+				StringBuilder value_to_write = new StringBuilder("'{");
+				for (int j = 0; j < value.length; j++) {
+					if (j < value.length - 1) {
+						value_to_write.append("\"").append(value[j]).append("\", ");
+					} else {
+						value_to_write.append("\"").append(value[j]).append("\"}'");
+					}
+				}
+				if (i < values.length - 1) {
+					query.append(value_to_write).append(", ");
+				} else {
+					query.append(value_to_write).append(" ");
+				}
+			} else {
+				query.append(attributes[i].name()).append("=");
+				if (i < values.length - 1) {
+					if (values[i] instanceof String) {
+						query.append("'").append(values[i]).append("', ");
+					} else {
 						query.append(values[i]).append(", ");
+					}
+				} else {
+					if (values[i] instanceof String) {
+						query.append("'").append(values[i]).append("' ");
 					} else {
 						query.append(values[i]).append(" ");
 					}
-					break;
-				case Ruleset:
-				case Language:
-					if (i < values.length-1) {
-						query.append((String) values[i]).append(", ");
-					} else {
-						query.append((String) values[i]).append(" ");
-					}
-					break;
-				case Grid:
-					String[] value = (String[]) values[i];
-					StringBuilder value_to_write = new StringBuilder("'{");
-					for (int j = 0; j < value.length; j++) {
-						if (j < value.length-1) {
-							value_to_write.append("\"").append(value[j]).append("\", ");
-						} else {
-							value_to_write.append("\"").append(value[j]).append("\"}'");
-						}
-					}
-					if (i < values.length-1) {
-						query.append(value_to_write).append(", ");
-					} else {
-						query.append(value_to_write).append(" ");
-					}
-					break;
+				}
 			}
 		}
-		query.append("WHERE " + TableAttributes.GameID + "='").append(gameID).append("'");
+		query.append("WHERE ").append(TableAttributes.GameID).append("='").append(gameID).append("'");
 		PreparedStatement statement = connection.prepareStatement(query.toString());
 		statement.executeUpdate();
 		statement.close();

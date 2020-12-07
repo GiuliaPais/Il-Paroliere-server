@@ -8,29 +8,20 @@ import java.util.UUID;
  * Entry point of the email module, offers API to other modules.
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class EmailManager{
 	
-	private final int passwordSize = 12;//abbastanza improvbabile che un codice di 12 crifre di un alfabeto
+	private final int passwordSize = 12;
 	private String new_psw;
-	
+
+
 	/**
-	 * create EmailManger
-	 *
+	 * Instantiates a new Email manager.
 	 */
 	public EmailManager() {
 	}
-	
-	/**
-	 * create a Thread and start
-	 * @param psw 				The new password of a player 
-	 */
-	public EmailManager(String psw) {
-		this.new_psw = psw;
-	}
-	
-	// new_psw getter and setter
+
 	public String getNew_psw() {
 		return new_psw;
 	}
@@ -49,10 +40,9 @@ public class EmailManager{
 	 *
 	 * @param recipient the recipient
 	 * @param code      the code
-	 * @throws SendFailedException
 	 * @throws MessagingException
 	 */
-	public void sendActivationCode(String recipient, UUID code) throws SendFailedException, MessagingException {
+	public void sendActivationCode(String recipient, UUID code) throws MessagingException {
 		String subject = "Il Paroliere - Activation Code";
 		String body_ita = "<b>Hai ricevuto questa email in seguito alla richiesta di registrazione per 'Il Paroliere'.</b><br>" +
 				"Se non hai effettuato nessuna richiesta ti preghiamo di ignorare questa email.<br>" +
@@ -78,22 +68,25 @@ public class EmailManager{
 	}
 
 	/**
-	 * Il metodo invia una notifica riguardo alla modifica della password
-	 * @param email						The Email (the Object of the Email class)
-	 * 						
-	 * @throws SendFailedException
+	 * Sends a notification email for password changed.
+	 * @param recipient The email recipient
 	 * @throws MessagingException
 	 */
-	public void sendModNotification(Email email) throws SendFailedException, MessagingException {
-		
-		String subject = "Password has been changed";
-		String body = "Password has been changed";
-		
-		//bisogna salvare la password
+	public void sendModNotification(String recipient) throws MessagingException {
+		String subject = "Il Paroliere - Password changed";
+		String body_ita = "<b>Hai ricevuto questa email in seguito alla richiesta di cambio password per 'Il Paroliere'.</b><br>" +
+				"La password è stata modificata con successo." +
+				"<hr>";
+		String body_eng = "<b>You received this email for the password change procedure of 'Il Paroliere'.</b><br>" +
+				"The password was correctly modified." +
+				"<br><br>";
+
+		String body = body_ita + body_eng;
+		Email email = new Email();
 		email.setSubject(subject);
 		email.setBody(body);
+		email.setTo(recipient);
 		EmailSender.sendEmail(email);
-		
 	}
 	
 	/**

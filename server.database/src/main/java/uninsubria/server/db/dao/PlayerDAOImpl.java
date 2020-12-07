@@ -11,8 +11,9 @@ import java.util.List;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
+@SuppressWarnings("SpellCheckingInspection")
 public class PlayerDAOImpl implements PlayerDAO{
 
 	private Connection connection;
@@ -164,9 +165,17 @@ public class PlayerDAOImpl implements PlayerDAO{
 		for (int i = 0; i < attributes.length; i++) {
 			query.append(attributes[i].name()).append("=");
 			if (i < values.length - 1) {
-				query.append(values[i]).append(", ");
+				if (values[i] instanceof String) {
+					query.append("'").append(values[i]).append("', ");
+				} else {
+					query.append(values[i]).append(", ");
+				}
 			} else {
-				query.append(values[i]).append(" ");
+				if (values[i] instanceof String) {
+					query.append("'").append(values[i]).append("' ");
+				} else {
+					query.append(values[i]).append(" ");
+				}
 			}
 		}
 		query.append("WHERE userID='").append(userID).append("'");
@@ -221,15 +230,15 @@ public class PlayerDAOImpl implements PlayerDAO{
 			if (fields[i].equals(TableAttributes.ImageColor) | fields[i].equals(TableAttributes.BgColor)) {
 				continue;
 			}
-			if (i < fields.length - 1) {
+			if (i < fields.length - 3) {
 				query.append(fields[i]).append(", ");
 			} else {
 				query.append(fields[i]);
 			}
 		}
 		query.append(") VALUES(");
-		for (int i = 0; i < fields.length; i++) {
-			if (i < fields.length - 1) {
+		for (int i = 0; i < fields.length-2; i++) {
+			if (i < fields.length - 3) {
 				query.append("?, ");
 			} else {
 				query.append("?)");

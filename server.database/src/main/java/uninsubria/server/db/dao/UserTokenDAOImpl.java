@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Class implementing the DAO (Data Access Object) for the "UserToken" table in the database.
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class UserTokenDAOImpl implements UserTokenDAO {
     /*---Fields---*/
@@ -101,12 +101,20 @@ public class UserTokenDAOImpl implements UserTokenDAO {
         for (int i = 0; i < attributes.length; i++) {
             query.append(attributes[i].name()).append("=");
             if (i < values.length - 1) {
-                query.append((String) values[i]).append(", ");
+                if (values[i] instanceof String) {
+                    query.append("'").append(values[i]).append("', ");
+                } else {
+                    query.append(values[i]).append(", ");
+                }
             } else {
-                query.append((String) values[i]).append(" ");
+                if (values[i] instanceof String) {
+                    query.append("'").append(values[i]).append("' ");
+                } else {
+                    query.append(values[i]).append(" ");
+                }
             }
         }
-        query.append("WHERE " + TableAttributes.USERID + "='").append(userID).append("' AND ").append(TableAttributes.REQUEST_TYPE).append("=").append(requestType);
+        query.append("WHERE ").append(TableAttributes.USERID).append("='").append(userID).append("' AND ").append(TableAttributes.REQUEST_TYPE).append("=").append(requestType);
         PreparedStatement statement = connection.prepareStatement(query.toString());
         statement.executeUpdate();
         statement.close();
