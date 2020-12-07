@@ -8,6 +8,8 @@ public interface RoomManagerInterface {
 
 	void sendScores(PlayerScore[] scores);
 	void sendGrid(String[] grid);
-	void setSyncTimer();
+	void setSyncTimer(Long millis);
+	void pingServer();
+	void endGame(String winner, int score);
 	void close();
 }

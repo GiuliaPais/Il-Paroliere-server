@@ -5,6 +5,7 @@ import uninsubria.server.scoreCounter.DuplicateWords;
 import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.utils.business.Player;
 
+import java.util.HashMap;
 
 public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
 
@@ -12,12 +13,14 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     private String[] duplicatedWords;
     private PlayerScore[] scores;
     private RoomManager roomManager;
+    private HashMap<Player, Integer> playersScore;
 
     public ActiveMatch(int numMatch, Player[] p, Grid grid, RoomManager rm) {
         super.matchNo = numMatch;
         super.participants = p;
         roomManager = rm;
         super.grid = grid;
+        playersScore = new HashMap<>();
     }
 
     /**
@@ -25,7 +28,9 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
      */
     @Override
     public void throwDices() {
+        super.grid.resetDices();
         super.grid.throwDices();
+        roomManager.sendGrid(super.grid.toStringArray());
     }
 
     /**
@@ -33,7 +38,9 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
      */
     @Override
     public void calculateScore() {
+        roomManager.waitWords();
         scores = roomManager.getPlayersScore();
+
         DuplicateWords dp = new DuplicateWords(roomManager.getLanguage());
 
         for(PlayerScore ps : scores)
@@ -56,11 +63,24 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     }
 
     /**
-     * Conclude il turno e resetta i dadi.
+     * Conclude il turno.
      */
     @Override
-    public void Conclude() {
-        super.grid.resetDices();
+    public void conclude() {
+        roomManager.sendScores(scores);
+
+        for(int i = 0; i < super.participants.length; i++) {
+            PlayerScore score = scores[i];
+            playersScore.put(score.getPlayer(), score.getTotalScore());
+        }
+    }
+
+    /**
+     * Restituisce l'HashMap contenente il player ed il suo attuale punteggio.
+     * @return l'HashMap contenente il player ed il suo attuale punteggio.
+     */
+    public HashMap<Player, Integer> getPlayersScore() {
+        return playersScore;
     }
 
 }

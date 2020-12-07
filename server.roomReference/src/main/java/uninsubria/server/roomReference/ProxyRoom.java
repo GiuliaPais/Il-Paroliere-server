@@ -2,8 +2,6 @@ package uninsubria.server.roomReference;
 
 import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.utils.business.Player;
-import uninsubria.utils.chronometer.Chronometer;
-import uninsubria.utils.chronometer.Counter;
 import uninsubria.utils.connection.*;
 import uninsubria.utils.languages.Language;
 
@@ -23,10 +21,14 @@ public class ProxyRoom implements RoomManagerInterface {
 	private final Player player;
 	private Language language;
 	private PlayerScore playerScore;
+	private Long ping;
+
+	private final Long waitABit = 50L; // Tempo di attesa per il metodo privato waitABit. Richiamato anche in setSync.
 
 	public ProxyRoom(Player player, Language language) {
 		this.player = player;
 		this.language = language;
+		ping = 0L;
 		setInOut();
 	}
 
@@ -70,14 +72,48 @@ public class ProxyRoom implements RoomManagerInterface {
 	}
 
 	/**
-	 * Manda al player identificato come server, il proprio system.currentTimeMillis() sotto forma
-	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
+	 * Manda al player identificato come server, il tempo di attesa prima dell'inizio della partita.
 	 */
 	@Override
-	public void setSyncTimer() {
+	public void setSyncTimer(Long millis) {
 		out.println(CommProtocolCommands.SET_SYNC.getCommand());
 		waitABit();
-		out.println(System.currentTimeMillis() + "");
+		Long timeToWait = millis - ping - waitABit; // Necessario sottrarre waitABit per eliminare la latenza del metodo.
+		out.println(timeToWait + "");
+	}
+
+	/**
+	 * Manda un ping al server del player per stabilire la latenza tra client del Room e player, settando il valore ping.
+	 */
+	@Override
+	public void pingServer() {
+		Long startTime = System.currentTimeMillis();
+		String command = CommProtocolCommands.PING_SERVER.getCommand();
+		out.println(command);
+
+		try {
+			if(in.readLine().equals(command)) {
+				Long endTime = System.currentTimeMillis();
+				ping = (endTime - startTime) /2;
+
+			} else
+				ping = 0L;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Manda al player il nome del vincitore ed il suo punteggio.
+	 * @param winner Il nome del vincitore.
+	 * @param score Il suo punteggio.
+	 */
+	@Override
+	public void endGame(String winner, int score) {
+		out.println(CommProtocolCommands.END_GAME.getCommand());
+		waitABit();
+		out.println(winner + " " + score);
 	}
 
 	/**
@@ -112,6 +148,10 @@ public class ProxyRoom implements RoomManagerInterface {
 	 */
 	public Player getPlayer() {
 		return player;
+	}
+
+	public Long getPing() {
+		return ping;
 	}
 
 	/*-----Private methods-----*/
@@ -150,7 +190,7 @@ public class ProxyRoom implements RoomManagerInterface {
 	// Da inserire quando si mandano due o più stringhe di seguito per evitare che vengano mandate in un unico messaggio
 	private void waitABit() {
 		try {
-			Thread.sleep(50);
+			Thread.sleep(waitABit);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

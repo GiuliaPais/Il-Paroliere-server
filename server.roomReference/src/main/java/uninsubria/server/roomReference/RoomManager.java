@@ -43,9 +43,29 @@ public class RoomManager implements RoomManagerInterface {
 	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
 	 */
 	@Override
-	public void setSyncTimer() {
+	public void setSyncTimer(Long millis) {
 		for(ProxyRoom p : proxy)
-			p.setSyncTimer();
+			p.setSyncTimer(millis);
+	}
+
+	/**
+	 * Setta la latenza dei proxy tra player e room.
+	 */
+	@Override
+	public void pingServer() {
+		for(ProxyRoom p : proxy)
+			p.pingServer();
+	}
+
+	/**
+	 * Manda a tutti i giocatori il nome del vincitore ed il suo punteggio.
+	 * @param winner il nome del vincitore.
+	 * @param score il punteggio del vincitore.
+	 */
+	@Override
+	public void endGame(String winner, int score) {
+		for(ProxyRoom p : proxy)
+			p.endGame(winner, score);
 	}
 
 	/**

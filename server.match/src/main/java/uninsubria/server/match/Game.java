@@ -1,11 +1,13 @@
 package uninsubria.server.match;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import uninsubria.server.roomReference.RoomManager;
 import uninsubria.server.roomReference.RoomReference;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.chronometer.*;
 
 public class Game {
 
@@ -18,6 +20,7 @@ public class Game {
     private int numMatch;
     private Grid grid;
     private boolean exists;
+    private HashMap<Player, Integer> playersScore;
 
     public Game(RoomReference r) {
         reference = r;
@@ -27,17 +30,29 @@ public class Game {
         numMatch = 0;
         exists = true;
         participants = r.getSlots().toArray(new Player[0]);
+
+        setPlayerScore();
     }
 
     /**
      * Avvia un nuovo match sincronizzando i timer dei player.
      */
     public void newMatch() {
-        roomManager.setSyncTimer();
-        addMatch();
-        playMatch();
-        calculateScore();
-        endMatch();
+        if(!state.equals(GameState.FINISHED)) {
+
+            roomManager.setSyncTimer(5000L);
+            addMatch();
+
+            ActiveMatch matchTmp = matches.get(numMatch);
+            matchTmp.throwDices();
+
+            waitTheEnd(3, 0, 0);
+
+            matchTmp.calculateScore();
+            matchTmp.conclude();
+
+            controlScore(matchTmp);
+        }
     }
 
     /**
@@ -109,22 +124,65 @@ public class Game {
         matches.add(match);
     }
 
-    // Manda ai player, dal match corrente, la grid.
-    private void playMatch() {
-        String[] grid = matches.get(numMatch).getGrid().toStringArray();
-        roomManager.sendGrid(grid);
+    // Tempo di attesa per la fine del turno o di un caricamento.
+    private void waitTheEnd(int min, int sec, int millis) {
+        Counter counter = new Counter(min, sec, millis);
+        Chronometer chronometer = new Chronometer(counter);
+        try {
+            chronometer.join();
+        } catch (InterruptedException ignored) { }
     }
 
-    // Attende le parole e, una volta ottenute, calcola i punteggi.
-    private void calculateScore() {
-        roomManager.waitWords();
-        matches.get(numMatch).calculateScore();
+    // Setta l'attuale punteggio di tutti i player a 0.
+    private void setPlayerScore() {
+        playersScore = new HashMap<>();
+
+        for(int i = 0; i < participants.length; i++) {
+            playersScore.put(participants[i], 0);
+        }
     }
 
-    // Termina il match calcolando i punteggi e resetta la griglia per il match successivo.
-    private void endMatch() {
-        roomManager.sendScores(matches.get(numMatch).getScores());
-        matches.get(numMatch).Conclude();
+    // Somma i valori delle due hashMap e li aggionra in playersScore.
+    private void addScore(HashMap<Player, Integer> matchScores) {
+        for(int i = 0; i < matchScores.size(); i++) {
+            Player player = participants[i];
+            int matchScore = matchScores.get(player);
+            int gameScore = playersScore.get(player);
+            int sum = matchScore + gameScore;
+            playersScore.put(player, sum);
+        }
+    }
+
+    // Controlla i punteggi e se ci sia o meno un vincitore.
+    private void controlScore(ActiveMatch match) {
+        addScore(match.getPlayersScore());
+        controlWinner();
+
+    }
+
+    // Controlla che ci sia un vincitore e, se c'è ed è unico, termina il game.
+    private void controlWinner() {
+        boolean moreThanOne = false;
+        int max = 0;
+
+        for(int i = 0; i < participants.length; i++) {
+            Player player = participants[i];
+            int score = playersScore.get(player);
+
+            if(score > max) {
+                max = score;
+                winner = player;
+            } else if(score == max) {
+                moreThanOne = true;
+            }
+        }
+
+        if(max >= 50 && !moreThanOne) {
+           state = GameState.FINISHED;
+           roomManager.endGame(winner.getName(), max);
+           roomManager.close();
+        }
+
     }
 
 }
