@@ -8,23 +8,31 @@ import uninsubria.utils.business.Player;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
+import java.net.InetAddress;
+import java.util.UUID;
+
 /**
  * Class responsible for creating and executing player requested services.
  *
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
     private final AbstractServiceFactory serviceFactory;
+    private final InetAddress playerAddress;
     private Player player;
 
     /*---Constructors---*/
-    public PlayerManager() {
+    /**
+     * Instantiates a new Player manager.
+     *
+     * @param ipAddress the player ip address
+     */
+    public PlayerManager(InetAddress ipAddress) {
+        this.playerAddress = ipAddress;
         this.serviceFactory = new ServiceFactoryImpl();
     }
-
-
 
     /*---Methods---*/
     @Override
@@ -37,7 +45,7 @@ public class PlayerManager implements PlayerManagerInterface {
 
     @Override
     public ServiceResultInterface requestActivationCode(String name, String lastname, String userID, String email, String password) {
-        @SuppressWarnings("SpellCheckingInspection") Service activCodeService = serviceFactory.getService(PlayerServiceType.ACTIVATION_CODE, userID, email, name, lastname, password);
+        Service activCodeService = serviceFactory.getService(PlayerServiceType.ACTIVATION_CODE, userID, email, name, lastname, password);
         return activCodeService.execute();
     }
 
@@ -50,7 +58,7 @@ public class PlayerManager implements PlayerManagerInterface {
     }
 
     @Override
-    public ServiceResultInterface resendConde(String email, String requestType) {
+    public ServiceResultInterface resendCode(String email, String requestType) {
         Service service = serviceFactory.getService(PlayerServiceType.RESEND_CODE, email, requestType);
         return service.execute();
     }
@@ -91,9 +99,23 @@ public class PlayerManager implements PlayerManagerInterface {
         return serviceResult;
     }
 
-    public void disconnect() {
+    @Override
+    public void quit() {
         if (this.player != null) {
            logout(player.getPlayerID());
         }
+    }
+
+    @Override
+    public ServiceResultInterface resetPassword(String email) {
+        UUID generatedPw = UUID.randomUUID();
+        Service service = serviceFactory.getService(PlayerServiceType.RESET_PW, email, generatedPw);
+        return service.execute();
+    }
+
+    @Override
+    public ServiceResultInterface deleteProfile(String id, String password) {
+        Service service = serviceFactory.getService(PlayerServiceType.DELETE_PROFILE, id, password);
+        return service.execute();
     }
 }

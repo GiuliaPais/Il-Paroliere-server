@@ -10,4 +10,5 @@ module server.database {
     requires server.dice;
     requires server.email;
     requires java.mail;
+    requires utils.security;
 }

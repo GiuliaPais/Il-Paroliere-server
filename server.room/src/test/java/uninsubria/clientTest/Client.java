@@ -60,7 +60,7 @@ public class Client extends Thread {
 
     private void setPlayer(String name) {
         player = new Player("Default", "Default", name,
-                "Default", "Default", 0, true);
+                "Default", "Default", 0, true, "DEF", "DEF");
     }
 
     private void selectCommand() {

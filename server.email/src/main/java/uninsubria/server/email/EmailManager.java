@@ -1,20 +1,15 @@
 package uninsubria.server.email;
 
 import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
 import java.util.UUID;
 
 /**
  * Entry point of the email module, offers API to other modules.
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class EmailManager{
-	
-	private final int passwordSize = 12;
-	private String new_psw;
-
 
 	/**
 	 * Instantiates a new Email manager.
@@ -22,25 +17,13 @@ public class EmailManager{
 	public EmailManager() {
 	}
 
-	public String getNew_psw() {
-		return new_psw;
-	}
-
-	public void setNew_psw(String new_psw) {
-		this.new_psw = new_psw;
-	}
-	
-	// get the passwordSize
-	public int getPasswordSize() {
-		return passwordSize;
-	}
 
 	/**
 	 * Sends an email to the selected recipient with the activation code for the user registration process.
 	 *
 	 * @param recipient the recipient
 	 * @param code      the code
-	 * @throws MessagingException
+	 * @throws MessagingException the messaging exception
 	 */
 	public void sendActivationCode(String recipient, UUID code) throws MessagingException {
 		String subject = "Il Paroliere - Activation Code";
@@ -63,6 +46,12 @@ public class EmailManager{
 		EmailSender.sendEmail(email);
 	}
 
+	/**
+	 * Initialize email manager.
+	 *
+	 * @param email    the email
+	 * @param password the password
+	 */
 	public static void initializeEmailManager(String email, String password) {
 		EmailSender.initializeEmailSender(email, password);
 	}
@@ -70,7 +59,7 @@ public class EmailManager{
 	/**
 	 * Sends a notification email for password changed.
 	 * @param recipient The email recipient
-	 * @throws MessagingException
+	 * @throws MessagingException the messaging exception
 	 */
 	public void sendModNotification(String recipient) throws MessagingException {
 		String subject = "Il Paroliere - Password changed";
@@ -88,46 +77,29 @@ public class EmailManager{
 		email.setTo(recipient);
 		EmailSender.sendEmail(email);
 	}
-	
+
+
 	/**
-	 * Il metodo invia una notifica riguardo alla modifica della password temporanea
-	 * @param email						The Email (the Object of the Email class)
-	 * 
-	 * @throws SendFailedException
-	 * @throws MessagingException
-	 * 
-	 * @return da modificare
+	 * Sends a temporary password when user requests password reset.
+	 *
+	 * @param recipient the recipient
+	 * @param newPw     the new pw
+	 * @throws MessagingException the messaging exception
 	 */
-	public String sendTemporaryPassword(Email email) throws SendFailedException, MessagingException {
-		
-		String tmp_psw = getNewAlphaNumeric();
-		
-		String subject = "Temporary password";
-		String body = "You only have 10 minutes to complete registration whit this temporary password: " + tmp_psw;
-		
+	public void sendTemporaryPassword(String recipient, UUID newPw) throws MessagingException {
+		String subject = "Il Paroliere - Password reset";
+		String body_ita = "<b>Hai ricevuto questa email in seguito alla richiesta di reset della password per 'Il Paroliere'.</b><br>" +
+				"Di seguito trovi la password generata automaticamente, è fortemente consigliato cambiarla al primo accesso." +
+				"<hr>";
+		String body_eng = "<b>You received this email for the password reset procedure of 'Il Paroliere'.</b><br>" +
+				"You can find the automatically generated new password below, we strongly reccommend to change it at the first login." +
+				"<br><br>";
+		String body = body_ita + body_eng + newPw;
+		Email email = new Email();
 		email.setSubject(subject);
 		email.setBody(body);
+		email.setTo(recipient);
 		EmailSender.sendEmail(email);
-		
-		System.out.println(tmp_psw);
-		
-		return tmp_psw;
 	}
-	
-	/**
-	 * Il metodo restituisce una stringa alfanumerica casuale
-	 * @return una stringa randomica
-	 */
-	synchronized public String getNewAlphaNumeric() {
-	    //alphabet contiene tutti i possibili caratteri che comporranno la Password
-		String alphabet = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!<>-*[]{}/";
-		int alphabetLength = alphabet.length();
-		String randomSting = "";
-		for (int i = 0; i < getPasswordSize(); i++) {
-		    // Scelgo una delle lettere dell'alfabeto.
-		    int randomIndexCharInAlphabet = (int)(Math.random()*alphabetLength);
-		    randomSting += alphabet.charAt(randomIndexCharInAlphabet);
-		}
-		return randomSting;
-	}
+
 }

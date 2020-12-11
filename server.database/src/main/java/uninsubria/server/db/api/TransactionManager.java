@@ -4,9 +4,11 @@ import uninsubria.server.db.businesslayer.UserToken;
 import uninsubria.server.db.dao.*;
 import uninsubria.server.email.EmailManager;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.security.PasswordEncryptor;
 import uninsubria.utils.serviceResults.ErrorMsgType;
 
 import javax.mail.MessagingException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -21,7 +23,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class TransactionManager {
 	/*---Fields---*/
@@ -453,6 +455,106 @@ public class TransactionManager {
 			return false;
 		} catch (MessagingException ignored) {
 			return true;
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Resets password for a user.
+	 *
+	 * @param email       the email
+	 * @param generatedPw the generated pw
+	 * @param errorCode   a list where the function can add error codes
+	 */
+	public void resetPassword(String email, UUID generatedPw, List<ErrorMsgType> errorCode) {
+		Connection connection;
+		Player player;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return;
+		}
+		try {
+			connection.setAutoCommit(false);
+			playerDAO.setConnection(connection);
+			player = playerDAO.getByEmailForUpdate(email);
+			if (player == null) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_NOMATCH);
+				connection.rollback();
+				return;
+			}
+			if (player.isLogStatus()) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_USER_ONLINE);
+				connection.rollback();
+				return;
+			}
+			String hashedPw = PasswordEncryptor.hashPassword(generatedPw.toString());
+			playerDAO.update(player.getPlayerID(), new PlayerDAO.TableAttributes[] {PlayerDAO.TableAttributes.Password},
+					new Object[] {hashedPw});
+			EmailManager emailManager = new EmailManager();
+			emailManager.sendTemporaryPassword(email, generatedPw);
+			connection.commit();
+			return;
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return;
+		} catch (MessagingException ignored) {
+			errorCode.add(ErrorMsgType.REG_EMAIL_FAILURE);
+			return;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Deletes a player.
+	 *
+	 * @param id        the id
+	 * @param password  the password
+	 * @param errorCode a list where the function can add error codes
+	 */
+	public void deletePlayer(String id, String password, List<ErrorMsgType> errorCode) {
+		Connection connection;
+		Player player;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException e) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return;
+		}
+		try {
+			connection.setAutoCommit(false);
+			playerDAO.setConnection(connection);
+			if (id.contains("@")) {
+				player = playerDAO.getByEmail(id);
+			} else {
+				player = playerDAO.getByUserId(id);
+			}
+			if (player == null) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_NOMATCH);
+				connection.rollback();
+				return;
+			}
+			if (player.isLogStatus()) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_USER_ONLINE);
+				connection.rollback();
+				return;
+			}
+			if (!player.getPassword().equals(password)) {
+				errorCode.add(ErrorMsgType.LOGIN_ERR_PW);
+				connection.rollback();
+				return;
+			}
+			playerDAO.delete(player.getPlayerID());
+			connection.commit();
+			return;
+		} catch (SQLException throwables) {
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return;
 		} finally {
 			resetConnections(connection);
 		}

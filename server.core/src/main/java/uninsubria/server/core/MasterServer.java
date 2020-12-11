@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * for clients. For each client connected launches a reserved Skeleton thread.
  *
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class MasterServer extends Thread {
     /*---Fields---*/
@@ -113,6 +113,15 @@ public class MasterServer extends Thread {
         ConnectionPool.clearPool();
         serverSocket.close();
         Platform.runLater(() -> controllerReference.printToConsole("Server closed", MessageType.MESSAGE));
+    }
+
+    /**
+     * Removes a Skeleton object from the connected client queue.
+     *
+     * @param skeleton the skeleton
+     */
+    public void quitConnectedClient(Skeleton skeleton) {
+        connected_clients.remove(skeleton);
     }
 
     /**

@@ -1,5 +1,6 @@
 package uninsubria.server.core;
 
+import uninsubria.server.gui.ServerLauncher;
 import uninsubria.server.managersimpl.PlayerManager;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.connection.CommProtocolCommands;
@@ -16,7 +17,7 @@ import java.util.Objects;
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
@@ -35,7 +36,7 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
     public Skeleton(Socket c) throws IOException {
         this.client = c;
         this.client.setKeepAlive(true);
-        this.playerManager = new PlayerManager();
+        this.playerManager = new PlayerManager(client.getInetAddress());
         this.out = new ObjectOutputStream(new BufferedOutputStream(client.getOutputStream()));
         start();
     }
@@ -92,7 +93,7 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
             case RESEND_CODE -> {
                 String email = in.readUTF();
                 String requestType = in.readUTF();
-                ServiceResultInterface res = playerManager.resendConde(email, requestType);
+                ServiceResultInterface res = playerManager.resendCode(email, requestType);
                 writeCommand(CommProtocolCommands.RESEND_CODE, res);
             }
             case LOGIN -> {
@@ -122,6 +123,17 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                 ServiceResultInterface res = playerManager.changePassword(email, oldPw, newPw);
                 writeCommand(CommProtocolCommands.CHANGE_PW, res);
             }
+            case RESET_PW -> {
+                String email = in.readUTF();
+                ServiceResultInterface res = playerManager.resetPassword(email);
+                writeCommand(CommProtocolCommands.RESET_PW, res);
+            }
+            case DELETE_PROFILE -> {
+                String id = in.readUTF();
+                String pw = in.readUTF();
+                ServiceResultInterface res = playerManager.deleteProfile(id, pw);
+                writeCommand(CommProtocolCommands.DELETE_PROFILE, res);
+            }
         }
     }
 
@@ -140,14 +152,15 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
             out.close();
         } catch (IOException ignored) {
         }
-        if (playerManager != null) {
-            ((PlayerManager) playerManager).disconnect();
-            playerManager = null;
-        }
         try {
+            if (playerManager != null) {
+                playerManager.quit();
+                playerManager = null;
+            }
             client.close();
         } catch (IOException ignored) {
         }
+        ServerLauncher.masterServer.quitConnectedClient(this);
     }
 
 }
