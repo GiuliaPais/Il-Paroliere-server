@@ -8,4 +8,5 @@ module server.dbpopulator {
     requires server.dice;
     requires server.dictionary;
     requires org.jgrapht.core;
+    requires server.scoreCounter;
 }

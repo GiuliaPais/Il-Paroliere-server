@@ -13,8 +13,8 @@ import javax.mail.internet.MimeMessage;
  * @author Giulia Pais
  * @version 0.9.2
  */
-class EmailSender{
-	/*(le propriet� sono state prese dal sito:
+public class EmailSender{
+	/*(le proprieta' sono state prese dal sito:
 	 https://support.microsoft.com/it-it/office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
 
     private String username;
@@ -88,7 +88,7 @@ class EmailSender{
     }
 
     /**
-     * il metodo restituisce le propriet� delle impostazioni SMTP dei vari provider
+     * il metodo restituisce le proprieta' delle impostazioni SMTP dei vari provider
      * @param provider		The Provider
      * @return props		The properties of the provider(see line 14)
      */
