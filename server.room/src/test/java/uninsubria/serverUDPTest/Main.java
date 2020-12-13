@@ -25,7 +25,7 @@ public class Main {
 
         try {
             InetAddress address = InetAddress.getByName("localhost");
-            int port = 8888;
+            int port = 8889;
             new ClientUDP(address, port).start();
         } catch (UnknownHostException e) {
             System.out.println("Errore col client");

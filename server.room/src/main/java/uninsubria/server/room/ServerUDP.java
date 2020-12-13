@@ -2,6 +2,8 @@ package uninsubria.server.room;
 
 import javafx.beans.property.MapProperty;
 
+import uninsubria.utils.business.Lobby;
+import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 
 import java.io.ByteArrayOutputStream;
@@ -10,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 
 public class ServerUDP extends Thread {
 
@@ -17,19 +20,19 @@ public class ServerUDP extends Thread {
     // Ricezione
     private DatagramSocket datagramSocket;
     private InetAddress address;
-    private int port;
+//    private int port;
     private boolean running;
 
     // Invio
     private ByteArrayOutputStream byteArrayOutputStream;
     private ObjectOutputStream objectOutputStream;
 
-    private RoomList roomList;
+//    private RoomList roomList;
 
     /*---Constructor---*/
-    public ServerUDP(RoomList roomList) {
-        port = 8888;
-        this.roomList = roomList;
+    public ServerUDP() {
+//        port = 8888;
+//        this.roomList = roomList;
         this.initialize();
     }
 
@@ -52,7 +55,7 @@ public class ServerUDP extends Thread {
     /*---Private methods---*/
     private void initialize() {
         try {
-            datagramSocket = new DatagramSocket(port);
+            datagramSocket = new DatagramSocket(CommHolder.SERVER_PORT);
             byteArrayOutputStream = new ByteArrayOutputStream();
             objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
@@ -69,7 +72,7 @@ public class ServerUDP extends Thread {
             datagramSocket.receive(packet);
 
             address = datagramSocket.getInetAddress();
-            port = datagramSocket.getPort();
+//            port = datagramSocket.getPort();
 
             return new String(packet.getData(), 0, packet.getLength());
 
@@ -80,12 +83,12 @@ public class ServerUDP extends Thread {
 
     // Permette di mandare la lista delle attuali stanze
     private void sendList() {
-        MapProperty<Integer, Room> rooms = RoomList.getInstance().getRoomList();
-
+//        MapProperty<Integer, Room> rooms = RoomList.getInstance().getRoomList();
+        ArrayList<Lobby> rooms = RoomList.getRoomsAsLobbies();
         try {
             objectOutputStream.writeObject(rooms);
             byte[] objectBytes = byteArrayOutputStream.toByteArray();
-            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, port);
+            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, CommHolder.SERVER_PORT);
             datagramSocket.send(datagramPacket);
 
         } catch (IOException e) {

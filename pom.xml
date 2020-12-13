@@ -25,6 +25,7 @@
       <module>server.email</module>
       <module>server.dbpopulator</module>
       <module>server.scoreCounter</module>
+      <module>server.wrappers</module>
   </modules>
   
   <build>

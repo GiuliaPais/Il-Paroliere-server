@@ -6,6 +6,7 @@ module server.room {
     requires utils.languages;
     requires utils.ruleset;
     requires utils.connection;
+    requires server.wrappers;
 
     exports uninsubria.server.room;
 }

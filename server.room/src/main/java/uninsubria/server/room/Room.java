@@ -3,6 +3,7 @@ package uninsubria.server.room;
 import java.util.ArrayList;
 
 import uninsubria.server.match.Game;
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
 import uninsubria.server.roomReference.*;
 import uninsubria.utils.languages.Language;
@@ -10,11 +11,14 @@ import uninsubria.utils.ruleset.Ruleset;
 
 public class Room extends Thread{
 
+	private final String roomName;
+	private final Integer playerNumber;
+
 	private RoomReference reference;
 	private Game game;
 
 	private ArrayList<Player> slots;
-	private final int ID;
+//	private final int ID;
 
 	/**
 	 * La stanza viene creata nel momento in cui un player vi entra. Fintanto che la stanza esiste,
@@ -22,9 +26,9 @@ public class Room extends Thread{
 	 * @param id l'id univoco della stanza.
 	 * @param player il primo player ad entrare nella stanza, colui che ne richiede la creazione
 	 */
-	public Room(int id, Player player) {
-		ID = id;
-		reference = new RoomReference(player);
+	public Room(PlayerWrapper player) {
+//		reference = new RoomReference(player); //da modificare
+		//istanziare roomName ecc
 		this.start();
 	}
 

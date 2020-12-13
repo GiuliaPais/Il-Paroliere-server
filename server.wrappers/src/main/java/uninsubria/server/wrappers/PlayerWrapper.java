@@ -1,4 +1,4 @@
-package uninsubria.server.room;
+package uninsubria.server.wrappers;
 
 import uninsubria.utils.business.Player;
 

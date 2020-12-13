@@ -1,12 +1,14 @@
 package uninsubria.server.room;
 
+import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javafx.beans.property.MapProperty;
-import javafx.beans.property.SimpleMapProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
+import uninsubria.server.wrappers.PlayerWrapper;
+import uninsubria.utils.business.Lobby;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 /**
  * Class implementing a list of rooms.
@@ -21,10 +23,11 @@ import uninsubria.utils.business.Player;
  */
 public class RoomList {
 
-	private static final int MAX_ROOMS = 10;
+	private ServerUDP serverUDP;
+//	private static final int MAX_ROOMS = 10;
 	private static RoomList instance;
 
-	private MapProperty<Integer, Room> rooms;
+	private ConcurrentHashMap<UUID, Room> rooms;
 	private int idRoom, actualRooms;
 
 	/**
@@ -33,26 +36,29 @@ public class RoomList {
 	private RoomList() {
 		idRoom = 0;
 		actualRooms = 0;
-		rooms = new SimpleMapProperty<Integer, Room>(FXCollections.observableMap(new ConcurrentHashMap<>()));
+		rooms = new ConcurrentHashMap<>();
+		serverUDP = new ServerUDP();
 	}
 
 	/**
-	 * Istanza un'unica RoomList senza la quale non è possibile eseguire i metodi.
-	 * @return RoomList
+	 * Gets the only instance of RoomList available. If there is no instance active, a new instance is created.
+	 *
+	 * @return the RoomList object
 	 */
 	public static RoomList getInstance() {
-		instance = new RoomList();
-		ServerUDP serverUDP = new ServerUDP(instance);
+		if (instance == null) {
+			instance = new RoomList();
+		}
 		return instance;
 	}
 
-	/**
-	 * Restituisce l'elenco di tutte le stanze attualmente esistenti.
-	 * @return Map<Integer, Room>
-	 */
-	public MapProperty<Integer, Room> getRoomList() {
-		return rooms;
-	}
+//	/**
+//	 * Restituisce l'elenco di tutte le stanze attualmente esistenti.
+//	 * @return Map<Integer, Room>
+//	 */
+//	public ConcurrentHashMap<UUID, Room> getRoomList() {
+//		return rooms;
+//	}
 
 	/**
 	 * Restituisce il numero delle attuali stanze esistenti.
@@ -75,16 +81,14 @@ public class RoomList {
 	 * e generando un nuovo id per le stanze successive.
 	 * @param player
 	 */
-	public void createRoom(Player player) {
-		//Questo metodo va sistemato perchè va chiamato da un servizio con i parametri appropriati,
-		//servono ruleset (appena implementato blandamente) e classe adapter per player contenente l'ip
-		if (roomsFull()) {
-			//send errors
-			return;
-		}
+	public void createRoom(PlayerWrapper player, Lobby lobby) {
+//		if (roomsFull()) {
+//			//send errors
+//			return;
+//		}
 		getInstance().incrementRoom();
-		Room tmp = new Room(idRoom, player); //Anche i costruttori della stanza vanno modificati per includere lingua, set di regole e adapter
-		getInstance().rooms.put(idRoom, tmp);
+		Room tmp = new Room(player, lobby.getRoomName(), lobby.getNumPlayers(), lobby.getLanguage(), lobby.getRuleset());
+		getInstance().rooms.put(lobby.getRoomId(), tmp);
 	}
 
 	/**
@@ -93,7 +97,7 @@ public class RoomList {
 	 * @param id
 	 * @param player
 	 */
-	public synchronized void joinRoom(int id, Player player) {
+	public synchronized void joinRoom(PlayerWrapper player, UUID id) {
 		//Questo metodo va sistemato perchè va chiamato da un servizio con i parametri appropriati,
 		//serve classe adapter per player contenente l'ip
 		if(rooms.containsKey(id)) {
@@ -138,14 +142,22 @@ public class RoomList {
 			idRoom = 0;
 	}
 
-	private synchronized boolean roomsFull() {
-		if (actualRooms >= MAX_ROOMS) {
-			return true;
+	public static ArrayList<Lobby> getRoomsAsLobbies() {
+		ArrayList<Lobby> lobbies = new ArrayList<>();
+		for (UUID key : getInstance().rooms.keySet()) {
+			Room room = getInstance().rooms.get(key);
+			Lobby lobby = new Lobby(room.getName(), room.getMaxPlayer(), room.getLanguage(),
+					room.getRuleSet(), room.isOpen()? Lobby.LobbyStatus.OPEN : Lobby.LobbyStatus.CLOSED);
+			lobbies.add(lobby);
 		}
-		return false;
+		return lobbies;
 	}
 
-	public void addListener(MapChangeListener<? super Integer, ? super Room> listener) {
-		getInstance().rooms.addListener(listener);
-	}
+//	private synchronized boolean roomsFull() {
+//		if (actualRooms >= MAX_ROOMS) {
+//			return true;
+//		}
+//		return false;
+//	}
+
 }
