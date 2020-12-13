@@ -30,12 +30,13 @@ public class RoomManager implements RoomManagerInterface {
 
 	/**
 	 * Manda ai player la griglia sotto forma di stringa anticipato dal tag "<GRID>".
-	 * @param grid la stringa da mandare
+	 * @param gridFaces le facce uscite sulla griglia da mandare.
+	 * @param gridNumbers i numeri usciti sulla griglia da mandare.
 	 */
 	@Override
-	public void sendGrid(String[] grid) {
+	public void sendGrid(String[] gridFaces, Integer[] gridNumbers) {
 		for(ProxyRoom p : proxy)
-			p.sendGrid(grid);
+			p.sendGrid(gridFaces, gridNumbers);
 	}
 
 	/**

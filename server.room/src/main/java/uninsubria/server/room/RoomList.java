@@ -1,6 +1,5 @@
 package uninsubria.server.room;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javafx.beans.property.MapProperty;
@@ -43,6 +42,7 @@ public class RoomList {
 	 */
 	public static RoomList getInstance() {
 		instance = new RoomList();
+		ServerUDP serverUDP = new ServerUDP(instance);
 		return instance;
 	}
 
@@ -50,8 +50,8 @@ public class RoomList {
 	 * Restituisce l'elenco di tutte le stanze attualmente esistenti.
 	 * @return Map<Integer, Room>
 	 */
-	public static Map<Integer, Room> getRoomList() {
-		return getInstance().rooms.get();
+	public MapProperty<Integer, Room> getRoomList() {
+		return rooms;
 	}
 
 	/**

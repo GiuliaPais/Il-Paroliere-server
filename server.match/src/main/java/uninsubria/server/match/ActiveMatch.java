@@ -30,7 +30,7 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     public void throwDices() {
         super.grid.resetDices();
         super.grid.throwDices();
-        roomManager.sendGrid(super.grid.toStringArray());
+        roomManager.sendGrid(super.grid.getDiceFaces(), super.grid.getDiceNumb());
     }
 
     /**

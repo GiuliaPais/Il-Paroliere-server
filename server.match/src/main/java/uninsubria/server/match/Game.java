@@ -63,8 +63,12 @@ public class Game {
         return exists;
     }
 
-    public void totalScore() {
-
+    /**
+     * Restituisce l'attuale punteggio di tutti i player.
+     * @return un HashMap contenente il Player ed il suo attuale punteggio.
+     */
+    public HashMap<Player, Integer> getPlayersScore() {
+        return playersScore;
     }
 
     /**

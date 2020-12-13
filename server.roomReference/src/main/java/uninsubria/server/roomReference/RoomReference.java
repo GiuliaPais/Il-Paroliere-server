@@ -2,6 +2,7 @@ package uninsubria.server.roomReference;
 
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ public class RoomReference {
     private int maxPlayer;
     private int actualPlayer;
     private Language language;
+    private Ruleset ruleset;
 
     private ArrayList<Player> slots;
 
@@ -86,6 +88,22 @@ public class RoomReference {
      */
     public void setActualPlayer(int i) {
         actualPlayer = i;
+    }
+
+    /**
+     * Restituisce la tipologia di regole utilizzate all'interno della stanza.
+     * @return il set di regole utilizzate.
+     */
+    public Ruleset getRuleSet() {
+        return ruleset;
+    }
+
+    /**
+     * Setta col parametro passato, il nuovo set di regole.
+     * @param newRuleset il nuovo set di regole.
+     */
+    public void setRuleset(Ruleset newRuleset) {
+        ruleset = newRuleset;
     }
 
     /**

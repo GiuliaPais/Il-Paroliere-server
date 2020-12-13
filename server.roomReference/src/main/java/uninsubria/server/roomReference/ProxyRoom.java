@@ -23,7 +23,7 @@ public class ProxyRoom implements RoomManagerInterface {
 	private PlayerScore playerScore;
 	private Long ping;
 
-	private final Long waitABit = 50L; // Tempo di attesa per il metodo privato waitABit. Richiamato anche in setSync.
+	private final Long waitABitTime = 50L; // Tempo di attesa per il metodo privato waitABit. Richiamato anche in setSync.
 
 	public ProxyRoom(Player player, Language language) {
 		this.player = player;
@@ -32,8 +32,11 @@ public class ProxyRoom implements RoomManagerInterface {
 		setInOut();
 	}
 
+	/**
+	 * Attende che vengano inviate le parole da analizzare.
+	 */
 	public void waitWords() {
-		String action = null;
+		String action = "";
 
 		try {
 			action = in.readLine();
@@ -63,12 +66,15 @@ public class ProxyRoom implements RoomManagerInterface {
 
 	/**
 	 * Manda al player identificato come server, la griglia sotto forma di array di stringhe anticipato dal tag "<GRID>".
-	 * @param grid l'array da mandare
+	 * @param gridFaces le facce uscite sulla griglia da mandare.
+	 * @param gridNumbers i numeri usciti sulla griglia da mandare.
 	 */
 	@Override
-	public void sendGrid(String[] grid) {
+	public void sendGrid(String[] gridFaces, Integer[] gridNumbers) {
 		out.println(CommProtocolCommands.SEND_GRID.getCommand());
-		sendArray(grid);
+		sendArray(gridFaces);
+		waitABit();
+		sendArray(gridNumbers);
 	}
 
 	/**
@@ -78,7 +84,7 @@ public class ProxyRoom implements RoomManagerInterface {
 	public void setSyncTimer(Long millis) {
 		out.println(CommProtocolCommands.SET_SYNC.getCommand());
 		waitABit();
-		Long timeToWait = millis - ping - waitABit; // Necessario sottrarre waitABit per eliminare la latenza del metodo.
+		Long timeToWait = millis - ping - waitABitTime; // Necessario sottrarre waitABit per eliminare la latenza del metodo.
 		out.println(timeToWait + "");
 	}
 
@@ -190,7 +196,7 @@ public class ProxyRoom implements RoomManagerInterface {
 	// Da inserire quando si mandano due o più stringhe di seguito per evitare che vengano mandate in un unico messaggio
 	private void waitABit() {
 		try {
-			Thread.sleep(waitABit);
+			Thread.sleep(waitABitTime);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

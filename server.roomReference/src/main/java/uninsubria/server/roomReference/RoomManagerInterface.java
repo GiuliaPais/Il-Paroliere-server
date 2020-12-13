@@ -7,7 +7,7 @@ public interface RoomManagerInterface {
 	int ROOM_PORT = 8889;
 
 	void sendScores(PlayerScore[] scores);
-	void sendGrid(String[] grid);
+	void sendGrid(String[] gridFaces, Integer[] gridNumbers);
 	void setSyncTimer(Long millis);
 	void pingServer();
 	void endGame(String winner, int score);

@@ -97,7 +97,7 @@ public class Skeleton implements Runnable{
         else {
 
             for (int i = 1; i < rooms.getRoomList().size(); i++)
-                tmp += rooms.getRoomList().get(i).toSTring();
+                tmp += rooms.getRoomList().get(i).toString();
 
             out.println(tmp);
 

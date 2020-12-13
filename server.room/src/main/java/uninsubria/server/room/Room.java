@@ -3,16 +3,14 @@ package uninsubria.server.room;
 import java.util.ArrayList;
 
 import uninsubria.server.match.Game;
-import uninsubria.server.match.GameState;
 import uninsubria.utils.business.Player;
 import uninsubria.server.roomReference.*;
-import tmpClasses.RuleSet;
 import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 public class Room extends Thread{
 
 	private RoomReference reference;
-	private RuleSet ruleSet;
 	private Game game;
 
 	private ArrayList<Player> slots;
@@ -126,16 +124,16 @@ public class Room extends Thread{
 	 * Restituisce le attuali regole usate.
 	 * @return RuleSet, le regole usate.
 	 */
-	public RuleSet getRuleSet() {
-		return ruleSet;
+	public Ruleset getRuleSet() {
+		return reference.getRuleSet();
 	}
 
 	/**
 	 * Permette di settare le nuove regole, passate come parametro.
 	 * @param ruleSet il nuovo set di regole.
 	 */
-	public void setRuleSet(RuleSet ruleSet) {
-		this.ruleSet = ruleSet;
+	public void setRuleSet(Ruleset ruleSet) {
+		reference.setRuleset(ruleSet);
 	}
 
 	/**
@@ -180,7 +178,7 @@ public class Room extends Thread{
 		reference.setActualPlayer(0);
 	}
 
-	public String toSTring() {
+	public String toString() {
 		return "Room n-" + ID + ", actual player: " + getActualPlayer() + ", max player: " + getMaxPlayer() + ". ";
 	}
 }

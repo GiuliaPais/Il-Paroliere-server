@@ -29,7 +29,7 @@ public class Grid {
 	 * in accordo col loro numero.
 	 * @return un array di stringhe contenente in maniera randomica i risultati del lancio dei dadi
 	 */
-	public String[] generateGridString() {
+	public String[] getDiceFaces() {
 		diceFaces = dices.getResultFaces();
 		return diceFaces;
 	}
@@ -39,7 +39,7 @@ public class Grid {
 	 * col loro risultato.
 	 * @return un Array di int contenente in maniera randomica il numero del lancio dei dadi.
 	 */
-	public Integer[] generateGridNumber() {
+	public Integer[] getDiceNumb() {
 		diceNumb = dices.getResultNumb();
 		return diceNumb;
 	}
