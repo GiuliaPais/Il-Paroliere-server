@@ -1,7 +1,5 @@
 package uninsubria.server.room;
 
-import javafx.beans.property.MapProperty;
-
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
@@ -20,20 +18,16 @@ public class ServerUDP extends Thread {
     // Ricezione
     private DatagramSocket datagramSocket;
     private InetAddress address;
-//    private int port;
     private boolean running;
 
     // Invio
     private ByteArrayOutputStream byteArrayOutputStream;
     private ObjectOutputStream objectOutputStream;
 
-//    private RoomList roomList;
-
     /*---Constructor---*/
     public ServerUDP() {
-//        port = 8888;
-//        this.roomList = roomList;
         this.initialize();
+        this.start();
     }
 
     /*---Methods---*/
@@ -70,9 +64,7 @@ public class ServerUDP extends Thread {
             byte[] stringBytes = new byte[256];
             DatagramPacket packet = new DatagramPacket(stringBytes, stringBytes.length);
             datagramSocket.receive(packet);
-
             address = datagramSocket.getInetAddress();
-//            port = datagramSocket.getPort();
 
             return new String(packet.getData(), 0, packet.getLength());
 
@@ -83,8 +75,7 @@ public class ServerUDP extends Thread {
 
     // Permette di mandare la lista delle attuali stanze
     private void sendList() {
-//        MapProperty<Integer, Room> rooms = RoomList.getInstance().getRoomList();
-        ArrayList<Lobby> rooms = RoomList.getRoomsAsLobbies();
+        ArrayList<Lobby> rooms = RoomListRefactored.getRoomsAsLobbies();
         try {
             objectOutputStream.writeObject(rooms);
             byte[] objectBytes = byteArrayOutputStream.toByteArray();

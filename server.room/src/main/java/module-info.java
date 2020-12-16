@@ -7,6 +7,8 @@ module server.room {
     requires utils.ruleset;
     requires utils.connection;
     requires server.wrappers;
+    requires utils.serviceResults;
+    requires utils.chronometer;
 
     exports uninsubria.server.room;
 }

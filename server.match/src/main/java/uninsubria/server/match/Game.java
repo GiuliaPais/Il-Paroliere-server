@@ -22,6 +22,10 @@ public class Game {
     private boolean exists;
     private HashMap<Player, Integer> playersScore;
 
+    public Game() {
+
+    }
+
     public Game(RoomReference r) {
         reference = r;
         roomManager = r.getRoomManager();

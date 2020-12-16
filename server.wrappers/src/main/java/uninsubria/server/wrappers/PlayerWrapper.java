@@ -39,6 +39,15 @@ public class PlayerWrapper {
     }
 
     /**
+     * Gets player ID.
+     *
+     * @return the player ID
+     */
+    public String getPlayerID() {
+        return player.getPlayerID();
+    }
+
+    /**
      * Sets player.
      *
      * @param player the player
