@@ -16,13 +16,13 @@ class DbPopulatorTest {
         int playerEntries = 10;
         int gameInfoEntries = 1;
         ConnectionPool.initializeConnectionPool("postgres","qwerty","localhost","Il Paroliere");
-        System.out.println("Connessione effettuata");
+        System.out.println("1 Connessione effettuata");
         DbPopulator dbP = new DbPopulator(playerEntries,gameInfoEntries);
-        System.out.println("predisposizione dello script eseguito");
-        //dbP.clearAll();
-        //System.out.println("Database svuotato");
+        System.out.println("2 predisposizione dello script eseguito");
+        dbP.clearAll();
+        System.out.println("3 Database svuotato");
         dbP.populate();
-        System.out.println("Script eseguito con successo");
+        System.out.println("4 Script eseguito con successo");
 
     }
 }
