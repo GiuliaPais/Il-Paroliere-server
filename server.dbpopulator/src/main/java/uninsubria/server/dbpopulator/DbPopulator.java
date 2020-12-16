@@ -54,6 +54,12 @@ public class DbPopulator {
     }
 
     /*---Methods---*/
+
+    /**
+     *
+     * @param length
+     * @return generatedString, usata per la creazione di stringhe alfanumeriche casuali
+     */
     private String generateRandomAlphaNumString(int length) {
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
@@ -66,6 +72,11 @@ public class DbPopulator {
         return generatedString;
     }
 
+    /**
+     * il metodo elimina tutte le tuple del database
+     * @throws SQLException
+     * @throws InterruptedException
+     */
     public void clearAll() throws SQLException, InterruptedException {
         Connection connection = ConnectionPool.getConnection();
         String clearGameEntry = "DELETE FROM GAMEENTRY";
@@ -80,6 +91,15 @@ public class DbPopulator {
         ConnectionPool.releaseConnection(connection);
     }
 
+    /**
+     * il metodo si occupa della popolazione del database
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws SQLException
+     * @throws InterruptedException
+     */
     public void populate() throws NoSuchAlgorithmException, IOException, DictionaryException, URISyntaxException, SQLException, InterruptedException {
         createDummyPlayers();
         createDummyGames();
@@ -259,6 +279,18 @@ public class DbPopulator {
         return generatedGames;
     }
 
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 2 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries2_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -266,7 +298,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID0.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "FINTA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "LISTA", rdm.nextBoolean(),false,false));
@@ -285,7 +316,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID11.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "BEVUTA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "RUDERE", rdm.nextBoolean(),false,false));
@@ -309,7 +339,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID10.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "POETA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "NOVA", rdm.nextBoolean(),false,false));
@@ -344,7 +373,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID6.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "REGIME", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "FINE", rdm.nextBoolean(),false,false));
@@ -382,6 +410,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 2 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries2_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -389,7 +429,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANDARE", rdm.nextBoolean(),false,false));
@@ -421,7 +460,8 @@ public class DbPopulator {
         //MATCH 2
         for (String x: wordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
-        }        //P0
+        }
+        //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MANDARE", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MANDATA", rdm.nextBoolean(),false,false));
@@ -451,6 +491,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 3 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries3_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -458,7 +510,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID4.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TARSIA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "SCIARADA", rdm.nextBoolean(),false,false));
@@ -529,6 +580,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 3 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries3_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -537,7 +600,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID7.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "METTERE", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TEMERE", rdm.nextBoolean(),false,false));
@@ -565,7 +627,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID8.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OLEOSO", rdm.nextBoolean(),false,false));
@@ -647,6 +708,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 4 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries4_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -655,7 +728,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDARE", rdm.nextBoolean(),false,false));
@@ -696,7 +768,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID3.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PIANO", rdm.nextBoolean(),false,false));
@@ -727,7 +798,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID12.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SINCERO", rdm.nextBoolean(),false,false));
@@ -793,7 +863,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita a 5 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries5_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -802,7 +883,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID10.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "POETA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NOVA", rdm.nextBoolean(),false,false));
@@ -844,7 +924,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID11.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "BEVUTA", rdm.nextBoolean(),false,false));
@@ -884,7 +963,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID9.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SPANNA", rdm.nextBoolean(),false,false));
@@ -926,7 +1004,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID3.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "AIUOLA", rdm.nextBoolean(),false,false));
@@ -962,7 +1039,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID7.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "METTERE", rdm.nextBoolean(),false,false));
@@ -1020,7 +1096,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita a 6 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries6_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
@@ -1029,7 +1116,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDARE", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDATA", rdm.nextBoolean(),false,false));
@@ -1070,7 +1156,6 @@ public class DbPopulator {
         for (String x: wordsOfGrid.GRID4.getGrid()) {
             grids.add(x);
         }
-        grids.add("//");
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SCIARADA", rdm.nextBoolean(),false,false));
@@ -1159,7 +1244,18 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-
+    /**
+     *
+     * @param numPlayers
+     * @param gameID
+     * @param lang
+     * @param n
+     * @return grids, le griglie di gioco
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries(int numPlayers, UUID gameID, Language lang, int n) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         List<String> grids = new ArrayList<>();
