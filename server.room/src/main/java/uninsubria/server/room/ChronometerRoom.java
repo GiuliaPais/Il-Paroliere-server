@@ -21,7 +21,7 @@ public class ChronometerRoom extends Chronometer {
      * presenti, il gioco viene avviato.
      */
     public void run() {
-        RoomRefactored room = RoomListRefactored.getRoom(roomId);
+        Room room = RoomList.getRoom(roomId);
         room.setRoomStatus(RoomState.TIMEOUT);
 
         while(!super.isInterrupted()) {
@@ -31,7 +31,7 @@ public class ChronometerRoom extends Chronometer {
 
         }
 
-        if(room.getRoomStatus().equals(RoomState.FULL)) {
+        if(!room.getRoomStatus().equals(RoomState.OPEN)) {
             room.newGame();
             room.setRoomStatus(RoomState.GAMEON);
         }

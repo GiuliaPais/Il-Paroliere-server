@@ -11,7 +11,7 @@ import uninsubria.utils.ruleset.Ruleset;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class RoomRefactored {
+public class Room {
 
     /*---Fields---*/
     private UUID id;
@@ -25,8 +25,8 @@ public class RoomRefactored {
     private Game game;
 
     /*---Constructors---*/
-    public RoomRefactored(UUID roomId, String roomName, Integer numPlayers, Language language, Ruleset ruleset,
-                          PlayerWrapper creator) {
+    public Room(UUID roomId, String roomName, Integer numPlayers, Language language, Ruleset ruleset,
+                PlayerWrapper creator) {
         this.id = roomId;
         this.roomName = roomName;
         this.language = language;
@@ -94,6 +94,10 @@ public class RoomRefactored {
 
     public void newGame() {
         game = new Game();
+    }
+
+    public ArrayList<PlayerWrapper> getPlayerSlots() {
+        return playerSlots;
     }
 
     /*---Private methods---*/

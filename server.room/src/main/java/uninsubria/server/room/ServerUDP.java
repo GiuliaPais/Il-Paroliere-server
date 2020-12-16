@@ -1,5 +1,6 @@
 package uninsubria.server.room;
 
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
@@ -7,10 +8,12 @@ import uninsubria.utils.connection.CommProtocolCommands;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ServerUDP extends Thread {
 
@@ -46,6 +49,16 @@ public class ServerUDP extends Thread {
         this.close();
     }
 
+    public void sendPlayersList(UUID roomId) {
+        ArrayList<PlayerWrapper> playersList = RoomList.getRoom(roomId).getPlayerSlots();
+
+        for(int i = 0; i < playersList.size(); i++) {
+            PlayerWrapper pw = playersList.get(i);
+            address = pw.getIpAddress();
+            this.sendObject(pw.getPlayer().getName());
+        }
+    }
+
     /*---Private methods---*/
     private void initialize() {
         try {
@@ -74,26 +87,20 @@ public class ServerUDP extends Thread {
     }
 
     // Permette di mandare la lista delle attuali stanze
-    private void sendList() {
-        ArrayList<Lobby> rooms = RoomListRefactored.getRoomsAsLobbies();
-        try {
-            objectOutputStream.writeObject(rooms);
-            byte[] objectBytes = byteArrayOutputStream.toByteArray();
-            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, CommHolder.SERVER_PORT);
-            datagramSocket.send(datagramPacket);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void sendRoomList() {
+        ArrayList<Lobby> rooms = RoomList.getRoomsAsLobbies();
+        this.sendObject(rooms);
     }
+
+
 
     // Attende la stringa col comando corrispondente. Se non è quella che si aspetta, non fa nulla.
     private void waitCommand(String string) {
         CommProtocolCommands command = CommProtocolCommands.getByCommand(string);
 
         switch(command) {
-            case SEND_LIST:
-                sendList();
+            case SEND_ROOM_LIST:
+                this.sendRoomList();
                 break;
             default:
                 break;
@@ -109,6 +116,18 @@ public class ServerUDP extends Thread {
         }
 
         datagramSocket.close();
+    }
+
+    private void sendObject(Serializable object) {
+        try {
+            objectOutputStream.writeObject(object);
+            byte[] objectBytes = byteArrayOutputStream.toByteArray();
+            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, CommHolder.SERVER_PORT);
+            datagramSocket.send(datagramPacket);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
