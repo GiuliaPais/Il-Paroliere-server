@@ -44,7 +44,7 @@ public class WordsofGridTest {
     }
 
     public static void validateGrid(wordsOfGrid grid) throws IOException, DictionaryException, URISyntaxException {
-        String gridM = grid.getGrid();
+        String[] gridM = grid.getGrid();
         List<String> words = grid.getWords();
         boolean valid;
         for (String x: words) {

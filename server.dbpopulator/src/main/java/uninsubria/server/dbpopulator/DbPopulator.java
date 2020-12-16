@@ -4,23 +4,19 @@ import uninsubria.server.db.api.ConnectionPool;
 import uninsubria.server.db.businesslayer.GameEntry;
 import uninsubria.server.db.businesslayer.GameInfo;
 import uninsubria.server.db.dao.*;
-import uninsubria.server.dice.DiceSet;
-import uninsubria.server.dice.DiceSetStandard;
 import uninsubria.server.dictionary.loader.DictionaryException;
-import uninsubria.server.dictionary.manager.DictionaryManager;
-import uninsubria.server.scoreCounter.WordAnalyzer;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.security.PasswordEncryptor;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * @author Giulia Pais
@@ -58,6 +54,12 @@ public class DbPopulator {
     }
 
     /*---Methods---*/
+
+    /**
+     *
+     * @param length
+     * @return generatedString, usata per la creazione di stringhe alfanumeriche casuali
+     */
     private String generateRandomAlphaNumString(int length) {
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
@@ -70,6 +72,11 @@ public class DbPopulator {
         return generatedString;
     }
 
+    /**
+     * il metodo elimina tutte le tuple del database
+     * @throws SQLException
+     * @throws InterruptedException
+     */
     public void clearAll() throws SQLException, InterruptedException {
         Connection connection = ConnectionPool.getConnection();
         String clearGameEntry = "DELETE FROM GAMEENTRY";
@@ -84,6 +91,15 @@ public class DbPopulator {
         ConnectionPool.releaseConnection(connection);
     }
 
+    /**
+     * il metodo si occupa della popolazione del database
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws SQLException
+     * @throws InterruptedException
+     */
     public void populate() throws NoSuchAlgorithmException, IOException, DictionaryException, URISyntaxException, SQLException, InterruptedException {
         createDummyPlayers();
         createDummyGames();
@@ -119,7 +135,8 @@ public class DbPopulator {
     private void createDummyPlayers() throws NoSuchAlgorithmException {
         for (int i = 0; i < playerEntries; i++) {
             Player player = new Player();
-            player.setPlayerID(generateRandomAlphaNumString(20));
+            //player.setPlayerID(generateRandomAlphaNumString(20));
+            player.setPlayerID("user" + (i+1));
             player.setEmail(player.getPlayerID() + "@example.com");
             player.setSurname(possibleLastNames[random.nextInt(possibleLastNames.length)]);
             player.setName(possibleNames[random.nextInt(possibleNames.length)]);
@@ -136,12 +153,23 @@ public class DbPopulator {
             GameInfo gameInfo = new GameInfo();
             gameInfo.setGameId(UUID.randomUUID());
             gameInfo.setRuleset("STANDARD");
-            if (generatedPlayers.size() >= 6) {
+            /*if (generatedPlayers.size() >= 6) {
                 gameInfo.setNumPlayers((byte) (random.ints(1,2,6).findFirst().getAsInt()));
             } else {
                 gameInfo.setNumPlayers((byte) (random.ints(1, 2, generatedPlayers.size()).findFirst().getAsInt()));
+            }*/
+            switch (i){
+                case(1) -> gameInfo.setNumPlayers((byte) (2));
+                case(2) -> gameInfo.setNumPlayers((byte) (2));
+                case(3) -> gameInfo.setNumPlayers((byte) (3));
+                case(4) -> gameInfo.setNumPlayers((byte) (3));
+                case(5) -> gameInfo.setNumPlayers((byte) (4));
+                case(6) -> gameInfo.setNumPlayers((byte) (5));
+                case(7) -> gameInfo.setNumPlayers((byte) (6));
             }
-            gameInfo.setLanguage(languages[random.nextInt(languages.length)]);
+            //gameInfo.setLanguage(languages[random.nextInt(languages.length)]);
+            gameInfo.setLanguage(Language.ITALIAN);
+
             short matchesNumber = (short) (random.nextInt(6)+1);
             //String[] grid = createDummyGameEntries(matchesNumber, gameInfo.getNumPlayers(), gameInfo.getGameId(), gameInfo.getLanguage());
 
@@ -151,18 +179,18 @@ public class DbPopulator {
         }
     }
 
-    private String[] createDummyGameEntries(short numberOfMatches, int numPlayers, UUID gameID, Language lang) throws IOException,
+   /* private String[] createDummyGameEntries(short numberOfMatches, int numPlayers, UUID gameID, Language lang) throws IOException,
             DictionaryException, URISyntaxException {
-        /* Randomly extract players from the player list (no duplicates allowed) */
+        /* Randomly extract players from the player list (no duplicates allowed)
         List<Player> chosenPlayers = new ArrayList<>(numPlayers);
         for (int i = 0; i < numPlayers; i++) {
             Player chosen = generatedPlayers.get(random.nextInt(generatedPlayers.size()));
             chosenPlayers.add(chosen);
             generatedPlayers.remove(chosen);
         }
-        /* Put back the players extracted in the original list */
+        /* Put back the players extracted in the original list
         generatedPlayers.addAll(chosenPlayers);
-        /* For each match and each player generate some words - valid and not */
+        /* For each match and each player generate some words - valid and not
         List<GameEntry> gameEntries = new ArrayList<>();
         List<String> validWords = DictionaryManager.getValidWords(lang);
 
@@ -201,14 +229,14 @@ public class DbPopulator {
                     randomWords--;
                 }
             }
-            /* Add all wrong words as game entries for a random player */
+            /* Add all wrong words as game entries for a random player
             for (String wrongW : foundRandomWords) {
                 Player player = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
                 GameEntry gameEntry = new GameEntry(gameID, player.getPlayerID(), (short) matchNo, wrongW,
                         random.nextBoolean(), false, true);
                 gameEntries.add(gameEntry);
             }
-            /* Pick a certain number of valid found words to be duplicated */
+            /* Pick a certain number of valid found words to be duplicated
             if (foundValidWords.size() > 0) {
                 int duplicatedWords = random.nextInt(foundValidWords.size());
                 while (duplicatedWords > 0) {
@@ -227,7 +255,7 @@ public class DbPopulator {
                     gameEntries.add(gameEntry2);
                 }
             }
-            /* Put remaining words */
+            /* Put remaining words
             for (String word: foundValidWords) {
                 Player player = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
                 GameEntry gameEntry = new GameEntry(gameID, player.getPlayerID(), (short) matchNo, word,
@@ -237,7 +265,7 @@ public class DbPopulator {
         }
         generatedEntries.addAll(gameEntries);
         return uniqueGameGrid;
-    }
+    }*/
 
     public List<Player> getGeneratedPlayers() {
         return generatedPlayers;
@@ -251,11 +279,25 @@ public class DbPopulator {
         return generatedGames;
     }
 
-    private void createDummyGameEntries2_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 2 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries2_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
         //MATCH 1
-        grids.add(wordsOfGrid.GRID0.getGrid());
+        for (String x: wordsOfGrid.GRID0.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "FINTA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "LISTA", rdm.nextBoolean(),false,false));
@@ -271,7 +313,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "PENTITI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "FINE", rdm.nextBoolean(),true,false));
         //MATCH 2
-        grids.add(wordsOfGrid.GRID11.getGrid());
+        for (String x: wordsOfGrid.GRID11.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "BEVUTA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "RUDERE", rdm.nextBoolean(),false,false));
@@ -292,7 +336,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "UNTA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "ETERA", rdm.nextBoolean(),true,false));
         //MATCH 3
-        grids.add(wordsOfGrid.GRID10.getGrid());
+        for (String x: wordsOfGrid.GRID10.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "POETA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "NOVA", rdm.nextBoolean(),false,false));
@@ -324,7 +370,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TIPO", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TOT", rdm.nextBoolean(),false,false));
         //MATCH 4
-        grids.add(wordsOfGrid.GRID6.getGrid());
+        for (String x: wordsOfGrid.GRID6.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "REGIME", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "FINE", rdm.nextBoolean(),false,false));
@@ -338,7 +386,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "NERI", rdm.nextBoolean(),false,true));
         //MATCH 5
-        grids.add(wordsOfGrid.GRID1.getGrid());
+        for (String x: wordsOfGrid.GRID1.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 5, "DELEGA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 5, "DAGA", rdm.nextBoolean(),false,false));
@@ -356,13 +406,29 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 5, "OMEGA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 5, "EGO", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 5, "AMAI", rdm.nextBoolean(),false,true));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
     }
 
-    private void createDummyGameEntries2_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 2 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries2_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
         //MATCH 1
-        grids.add(wordsOfGrid.GRID2.getGrid());
+        for (String x: wordsOfGrid.GRID2.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANDARE", rdm.nextBoolean(),false,false));
@@ -392,7 +458,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "STARE", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "MANE", rdm.nextBoolean(),true,false));
         //MATCH 2
-        grids.add(wordsOfGrid.GRID2.getGrid());
+        for (String x: wordsOfGrid.GRID2.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MANDARE", rdm.nextBoolean(),false,false));
@@ -419,13 +487,29 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "ANA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "PALO", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "CLAN", rdm.nextBoolean(),true,false));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
     }
 
-    private void createDummyGameEntries3_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 3 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries3_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
         //MATCH 1
-        grids.add(wordsOfGrid.GRID4.getGrid());
+        for (String x: wordsOfGrid.GRID4.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TARSIA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "SCIARADA", rdm.nextBoolean(),false,false));
@@ -457,7 +541,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "BUFALA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "FASCIA", rdm.nextBoolean(),true,false));
         //MATCH 2
-        grids.add(wordsOfGrid.GRID5.getGrid());
+        for (String x: wordsOfGrid.GRID5.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "CHIOSARE", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "REATO", rdm.nextBoolean(),false,false));
@@ -490,250 +576,313 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "COSTI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "RESTA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "OSTARE", rdm.nextBoolean(),true,false));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
     }
 
-    private void createDummyGameEntries3_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
-        Random rdm = new Random();
-        //MATCH 1
-        grids.add(wordsOfGrid.GRID7.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "METTERE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TEMERE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TECA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TBC", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "METTE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "CATTURE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "ACUME", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "ETERE", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "RETE", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "TETTA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "METTE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "TEMETE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "RETE", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "ACUME", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "METTE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "NUTRE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "TUTTA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "RUTTA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "CATTURE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "ETERE", rdm.nextBoolean(),true,false));
-        //MATCH 2
-        grids.add(wordsOfGrid.GRID8.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "OLEOSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "FAUNO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "DOSSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "ESODO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "LEONE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "SESSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "ESOSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "OSSEO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "LENA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "ANO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "NEO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "AFA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "SOLE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "NUDO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "FUNE", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "LODO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "NODO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "DOLO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "DOSE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "SODO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "NOLO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "DUNE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "DUNA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "ASSOLO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "FUNE", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "DUE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "FAN", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "ASSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "ASSE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "OSSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "LODASSE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "SOLE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "ESSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "NUDO", rdm.nextBoolean(),true,false));
-        //MATCH 3
-        grids.add(wordsOfGrid.GRID9.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "SPANNA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "CANAPO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "POSATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "PANNA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "NASPO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "SPOSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "PASSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "BASSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "CANNA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "TASSO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "TASSA", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "CASSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "RATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "CASA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TANA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "RATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "POSTA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TAPPO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "BANNA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "SANTA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TASSO", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "POSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "ASPO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "ANTA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "CASO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "OSSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "POP", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "BOSS", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "RANA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "OSSA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "TASSO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "TASSA", rdm.nextBoolean(),true,false));
-    }
-
-    private void createDummyGameEntries4_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
-        Random rdm = new Random();
-        //MATCH 1
-        grids.add(wordsOfGrid.GRID2.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANSARDA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANDARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "MANDATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "ANSARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "DURATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "SARDA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "DATA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "SETA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 1, "TENDA", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "STRADA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "AMANTE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "RATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "ARTE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "ANATRE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "STRADE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "RASATA", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "DAMA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "DARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "RADA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "DATE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "RATA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "MANTRA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "RASATA", rdm.nextBoolean(),true,false));
-        //P3
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "DATARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "MADRE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "MANATA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "AURA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "ERTA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "TESA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "SETA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "STRADE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 1, "TENDA", rdm.nextBoolean(),true,false));
-        //MATCH 2
-        grids.add(wordsOfGrid.GRID3.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "PIANO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "PIO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "MAIA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "ANO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 2, "PUOI", rdm.nextBoolean(),false,true));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "CONO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "AIUOLA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "PALCO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "PAIA", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "LANA", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "PIANA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "POI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "PUOI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "ALBO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 2, "LANA", rdm.nextBoolean(),true,false));
-        //P3
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "BOIA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "CLAN", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "PALO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "ALPI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "CON", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 2, "ALBO", rdm.nextBoolean(),true,false));
-        //MATCH 3
-        grids.add(wordsOfGrid.GRID12.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "SINCERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "RESINA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "NERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "RENI", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "CERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "NEO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "REO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "CIFRE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 3, "BICI", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "INFERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "FECI", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "CERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "ROSE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "ORSI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "PERSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "FINE", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "BICI", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "SPINA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "SPIA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "PERSO", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "OREFICI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "PERNICI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 3, "FINE", rdm.nextBoolean(),true,false));
-        //P3
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "PERSO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "SIERO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "PESO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "PANCINE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "FRENI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "FINE", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 3, "BICI", rdm.nextBoolean(),true,false));
-        //MATCH 4
-        grids.add(wordsOfGrid.GRID6.getGrid());
-        //P0
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "REGIME", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "FINE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "RENI", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
-        //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "NERI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "FINGE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "FINGI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
-        //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 4, "REGNI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 4, "NERI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 4, "GENI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 4, "TINGE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
-        //P3
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 4, "NERI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 4, "NEI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 4, "MIE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
-    }
-
-
-    private void createDummyGameEntries5_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 3 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries3_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        grids.add(wordsOfGrid.GRID10.getGrid());
+        for (String x: wordsOfGrid.GRID7.getGrid()) {
+            grids.add(x);
+        }
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "METTERE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TEMERE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TECA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TBC", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "METTE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CATTURE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ACUME", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ETERE", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RETE", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TETTA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "METTE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TEMETE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "RETE", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ACUME", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "METTE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "NUTRE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "TUTTA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RUTTA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "CATTURE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ETERE", rdm.nextBoolean(),true,false));
+        //MATCH 2
+        for (String x: wordsOfGrid.GRID8.getGrid()) {
+            grids.add(x);
+        }
+        n++;
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OLEOSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "FAUNO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DOSSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ESODO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "LEONE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SESSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ESOSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OSSEO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "LENA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ANO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NEO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "AFA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SOLE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NUDO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "FUNE", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "LODO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "NODO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "DOLO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "DOSE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "SODO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "NOLO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "DUNE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "DUNA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ASSOLO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "FUNE", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "DUE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "FAN", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ASSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ASSE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "OSSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "LODASSE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "SOLE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ESSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "NUDO", rdm.nextBoolean(),true,false));
+        //MATCH 3
+        for (String x: wordsOfGrid.GRID9.getGrid()) {
+            grids.add(x);
+        }
+        n++;
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SPANNA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CANAPO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "POSATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PANNA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NASPO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SPOSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PASSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "BASSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CANNA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TASSO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TASSA", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "CASSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "RATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "CASA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TANA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "POSTA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TAPPO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "BANNA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "SANTA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TASSO", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "POSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ASPO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ANTA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "CASO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "OSSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "POP", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "BOSS", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RANA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "OSSA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "TASSO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "TASSA", rdm.nextBoolean(),true,false));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
+    }
+
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita di 4 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries4_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+        Random rdm = new Random();
+        short n=1;
+        //MATCH 1
+        for (String x: wordsOfGrid.GRID2.getGrid()) {
+            grids.add(x);
+        }
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANSARDA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ANSARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DURATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SARDA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DATA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SETA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TENDA", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "STRADA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "AMANTE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "RATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ARTE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ANATRE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "STRADE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "RASATA", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "DAMA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "DARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RADA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "DATE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RATA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "MANTRA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RASATA", rdm.nextBoolean(),true,false));
+        //P3
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "DATARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "MADRE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "MANATA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "AURA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "ERTA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "TESA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "SETA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "STRADE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "TENDA", rdm.nextBoolean(),true,false));
+        //MATCH 2
+        for (String x: wordsOfGrid.GRID3.getGrid()) {
+            grids.add(x);
+        }
+        n++;
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PIANO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PIO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MAIA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ANO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "PUOI", rdm.nextBoolean(),false,true));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "CONO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "AIUOLA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "PALCO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "PAIA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "LANA", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "PIANA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "POI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "PUOI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ALBO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "LANA", rdm.nextBoolean(),true,false));
+        //P3
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "BOIA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "CLAN", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "PALO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "ALPI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "CON", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "ALBO", rdm.nextBoolean(),true,false));
+        //MATCH 3
+        for (String x: wordsOfGrid.GRID12.getGrid()) {
+            grids.add(x);
+        }
+        n++;
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SINCERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RESINA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RENI", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NEO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "REO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CIFRE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "BICI", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "INFERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "FECI", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "CERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ROSE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "ORSI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "PERSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "FINE", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "BICI", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "SPINA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "SPIA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "PERSO", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "OREFICI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "PERNICI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "FINE", rdm.nextBoolean(),true,false));
+        //P3
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "PERSO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "SIERO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "PESO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "PANCINE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "FRENI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "FINE", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "BICI", rdm.nextBoolean(),true,false));
+        //MATCH 4
+        for (String x: wordsOfGrid.GRID6.getGrid()) {
+            grids.add(x);
+        }
+        n++;
+        //P0
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "REGIME", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "FINE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RENI", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "TIR", rdm.nextBoolean(),true,false));
+        //P1
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "NERI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "FINGE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "FINGI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "TIR", rdm.nextBoolean(),true,false));
+        //P2
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "REGNI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "NERI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "GENI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "TINGE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "TIR", rdm.nextBoolean(),true,false));
+        //P3
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "NERI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "NEI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "MIE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "TIR", rdm.nextBoolean(),true,false));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
+    }
+
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita a 5 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries5_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+        Random rdm = new Random();
+        short n=1;
+        //MATCH 1
+        for (String x: wordsOfGrid.GRID10.getGrid()) {
+            grids.add(x);
+        }
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "POETA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NOVA", rdm.nextBoolean(),false,false));
@@ -772,7 +921,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "NOVE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "ATEO", rdm.nextBoolean(),true,false));
         //MATCH 2
-        grids.add(wordsOfGrid.GRID11.getGrid());
+        for (String x: wordsOfGrid.GRID11.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "BEVUTA", rdm.nextBoolean(),false,false));
@@ -809,7 +960,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "AVRETE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "AVERE", rdm.nextBoolean(),true,false));
         //MATCH 3
-        grids.add(wordsOfGrid.GRID9.getGrid());
+        for (String x: wordsOfGrid.GRID9.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SPANNA", rdm.nextBoolean(),false,false));
@@ -848,7 +1001,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "TASSO", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "TASSA", rdm.nextBoolean(),true,false));
         //MATCH 4
-        grids.add(wordsOfGrid.GRID3.getGrid());
+        for (String x: wordsOfGrid.GRID3.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "AIUOLA", rdm.nextBoolean(),false,false));
@@ -881,7 +1036,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "POI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "PUOI", rdm.nextBoolean(),false,true));
         //MATCH 5
-        grids.add(wordsOfGrid.GRID7.getGrid());
+        for (String x: wordsOfGrid.GRID7.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "METTERE", rdm.nextBoolean(),false,false));
@@ -908,7 +1065,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "METTE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "MERE", rdm.nextBoolean(),false,true));
         //MATCH 6
-        grids.add(wordsOfGrid.GRID0.getGrid());
+        for (String x: wordsOfGrid.GRID0.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "LISTA", rdm.nextBoolean(),false,false));
@@ -933,15 +1092,30 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "PETI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "PENTITI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "FINTA", rdm.nextBoolean(),true,false));
+        //return statement
+        return grids.toArray(new String[grids.size()]);
     }
 
-
-    private void createDummyGameEntries6_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
+    /**
+     *
+     * @param players
+     * @param gameID
+     * @param lang
+     * @param grids
+     * @return grids, le griglie di gioco, partita a 6 giocatori
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
+    private String[] createDummyGameEntries6_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        grids.add(wordsOfGrid.GRID2.getGrid());
+        for (String x: wordsOfGrid.GRID2.getGrid()) {
+            grids.add(x);
+        }
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANSARDA", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDARE", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANDATA", rdm.nextBoolean(),false,false));
@@ -979,7 +1153,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "ANSA", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "AURA", rdm.nextBoolean(),true,false));
         //MATCH 2
-        grids.add(wordsOfGrid.GRID4.getGrid());
+        for (String x: wordsOfGrid.GRID4.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SCIARADA", rdm.nextBoolean(),false,false));
@@ -989,7 +1165,6 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "FALSATI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "FLAN", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RADA", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DRASTICA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "BUFALAI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "SALATI", rdm.nextBoolean(),false,true));
         //P1
@@ -1027,7 +1202,9 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "FLAN", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "SLANCIA", rdm.nextBoolean(),false,true));
         //MATCH 3
-        grids.add(wordsOfGrid.GRID5.getGrid());
+        for (String x: wordsOfGrid.GRID5.getGrid()) {
+            grids.add(x);
+        }
         n++;
         //P0
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CHIOSARE", rdm.nextBoolean(),false,false));
@@ -1036,38 +1213,53 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OSTARE", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RASO", rdm.nextBoolean(),true,false));
         //P1
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DOSARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "NITORE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RESTO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "COSTINA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "DOSARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "NITORE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "RESTO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), n, "COSTINA", rdm.nextBoolean(),false,true));
         //P2
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "ROSTA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "COSTA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RASO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MORSE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ROSTA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "COSTA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "RASO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "MORSE", rdm.nextBoolean(),false,true));
         //P3
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MORSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "REATO", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RESTO", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DORATI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "MORSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "REATO", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "RESTO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "DORATI", rdm.nextBoolean(),false,true));
         //P4
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CORSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "STARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OSTARE", rdm.nextBoolean(),true,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RASO", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "CORSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "STARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "OSTARE", rdm.nextBoolean(),true,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "RASO", rdm.nextBoolean(),true,false));
         //P5
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "DOTARE", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CHIOSA", rdm.nextBoolean(),false,false));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "OSTINARE", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "COREANI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "CORANI", rdm.nextBoolean(),false,true));
-        generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "RESTA", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "DOTARE", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "CHIOSA", rdm.nextBoolean(),false,false));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "OSTINARE", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "COREANI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "CORANI", rdm.nextBoolean(),false,true));
+        generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "RESTA", rdm.nextBoolean(),false,true));
+
+        //return statement
+        return grids.toArray(new String[grids.size()]);
     }
 
-
+    /**
+     *
+     * @param numPlayers
+     * @param gameID
+     * @param lang
+     * @param n
+     * @return grids, le griglie di gioco
+     * @throws IOException
+     * @throws DictionaryException
+     * @throws URISyntaxException
+     * @throws NoSuchAlgorithmException
+     */
     private String[] createDummyGameEntries(int numPlayers, UUID gameID, Language lang, int n) throws IOException,
             DictionaryException, URISyntaxException, NoSuchAlgorithmException {
         List<String> grids = new ArrayList<>();
+        String[] arrayGrids;
         Player chosen;
         List<Player> chosenPlayers = new ArrayList<>();
         for (int i = 0; i < numPlayers; i++) {
@@ -1079,33 +1271,18 @@ public class DbPopulator {
         generatedPlayers.addAll(chosenPlayers);
         System.out.println("Players generated");
         switch (n){
-            case(2) :
-                switch (n){
-                    case(1) -> createDummyGameEntries2_1(chosenPlayers, gameID, lang, grids);
-                    case(2) -> createDummyGameEntries2_2(chosenPlayers, gameID, lang, grids);
-                }break;
-            case(3) :
-                switch (n){
-                    case(3) -> createDummyGameEntries3_1(chosenPlayers, gameID, lang, grids);
-                    case(4) -> createDummyGameEntries3_2(chosenPlayers, gameID, lang, grids);
-                }break;
-            case(4) :
-                switch (n){
-                    case(5) -> createDummyGameEntries4_1(chosenPlayers, gameID, lang, grids);
-                }break;
-            case(5) :
-                switch (n){
-                    case(6) -> createDummyGameEntries5_1(chosenPlayers, gameID, lang, grids);
-                }break;
-            case(6) :
-                switch (n){
-                    case(7) -> createDummyGameEntries6_1(chosenPlayers, gameID, lang, grids);
-                }break;
+            case(1) -> arrayGrids = createDummyGameEntries2_1(chosenPlayers, gameID, lang, grids);
+            case(2) -> arrayGrids = createDummyGameEntries2_2(chosenPlayers, gameID, lang, grids);
+            case(3) -> arrayGrids = createDummyGameEntries3_1(chosenPlayers, gameID, lang, grids);
+            case(4) -> arrayGrids = createDummyGameEntries3_2(chosenPlayers, gameID, lang, grids);
+            case(5) -> arrayGrids = createDummyGameEntries4_1(chosenPlayers, gameID, lang, grids);
+            case(6) -> arrayGrids = createDummyGameEntries5_1(chosenPlayers, gameID, lang, grids);
+            case(7) -> arrayGrids = createDummyGameEntries6_1(chosenPlayers, gameID, lang, grids);
         }
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
+    /*/**
      *il metodo crea tutte le tuple di un Game e le genera simulando match per match
      * @param numPlayers
      * @param gameID
@@ -1179,7 +1356,7 @@ public class DbPopulator {
         return false;
     }
     */
-    /**
+    /*/**
      *
      * @param numPlayers num of players "playing" the game
      * @param personalWords words(WordAnalyzer) that player found
@@ -1190,8 +1367,8 @@ public class DbPopulator {
      * Generate random word from wordsOfGrid pool
      * the method
      *
-     */
-    public void generateWord(int numPlayers, List<WordAnalyzer>[] personalWords, ArrayList<String>[] paroleIdentificabili, wordsOfGrid woG, List<WordAnalyzer> paroleTrovate, Language lang, List<String> soloParoleTrovate/*,valids*/){
+     *//*
+    public void generateWord(int numPlayers, List<WordAnalyzer>[] personalWords, ArrayList<String>[] paroleIdentificabili, wordsOfGrid woG, List<WordAnalyzer> paroleTrovate, Language lang, List<String> soloParoleTrovate/*,valids*){
         for (int i=0; i<numPlayers; i++) {
             personalWords[i] = new ArrayList<>();
             paroleIdentificabili[i] = new ArrayList<>();
@@ -1226,9 +1403,9 @@ public class DbPopulator {
                 personalWords[i].add(wordAnalyzer);
             }
         }
-    }
+    }*/
 
-    /**
+    /*/**
      *
      * @param numPlayers num of players "playing" the game
      * @param chosenPlayers Array of Players
@@ -1238,8 +1415,8 @@ public class DbPopulator {
      * @param gameID the game id
      * @param match_number the match number
      * the method control the word previously generated
-     */
-    public void controlWord(int numPlayers, List<Player> chosenPlayers, List<WordAnalyzer>[] personalWords, int[] score, List<WordAnalyzer> paroleTrovate, UUID gameID, short match_number/*,valids*/){
+     *//*
+    public void controlWord(int numPlayers, List<Player> chosenPlayers, List<WordAnalyzer>[] personalWords, int[] score, List<WordAnalyzer> paroleTrovate, UUID gameID, short match_number/*,valids*){
         for (int i=0; i<numPlayers; i++) {
             Player chosen = chosenPlayers.get(i);
             //CONTROLLO delle parole duplicate in base al valore della parola in parole trovate
@@ -1266,17 +1443,17 @@ public class DbPopulator {
             }
             System.out.println("Player " + i + " score: " + score[i]);
         }
-    }
+    }*/
 
-    /**
+    /*/**
      *
      * @param paroleIdentificabili
      * @param paroleTrovate
-     */
-    public void reset(List<String>[] paroleIdentificabili, List<WordAnalyzer> paroleTrovate, List<String> soloParoleTrovate/*,valids*/){
+     *//*
+    public void reset(List<String>[] paroleIdentificabili, List<WordAnalyzer> paroleTrovate, List<String> soloParoleTrovate/*,valids*){
         for (int i=0; i<paroleIdentificabili.length;i++)
             paroleIdentificabili[i].clear();
         paroleTrovate.clear();
         soloParoleTrovate.clear();
-    }
+    }*/
 }
