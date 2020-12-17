@@ -1,5 +1,6 @@
 package uninsubria.server.roomReference;
 
+import uninsubria.server.roomManager.RoomManager;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
@@ -151,10 +152,10 @@ public class RoomReference {
     /**
      * Inizia una nuova partita istanziando il RoomManager per la gestione dei dati da mandare e ricevere
      * ai player nella lobby.
-     */
+//     */
     public boolean newGameIsPossible() {
         if(actualPlayer == maxPlayer) {
-            manager = new RoomManager(slots, language);
+//            manager = new RoomManager(slots, language);
             state = RoomState.GAMEON;
             return true;
 

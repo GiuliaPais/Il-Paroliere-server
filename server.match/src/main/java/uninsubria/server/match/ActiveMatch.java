@@ -1,6 +1,6 @@
 package uninsubria.server.match;
 
-import uninsubria.server.roomReference.RoomManager;
+import uninsubria.server.roomManager.RoomManager;
 import uninsubria.server.scoreCounter.DuplicateWords;
 import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.utils.business.Player;
@@ -30,7 +30,7 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     public void throwDices() {
         super.grid.resetDices();
         super.grid.throwDices();
-        roomManager.sendGrid(super.grid.getDiceFaces(), super.grid.getDiceNumb());
+//        roomManager.sendGrid(super.grid.getDiceFaces(), super.grid.getDiceNumb());
     }
 
     /**
@@ -38,20 +38,20 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
      */
     @Override
     public void calculateScore() {
-        roomManager.waitWords();
-        scores = roomManager.getPlayersScore();
+//        roomManager.waitWords();
+//        scores = roomManager.getPlayersScore();
+//
+//        DuplicateWords dp = new DuplicateWords(roomManager.getLanguage());
 
-        DuplicateWords dp = new DuplicateWords(roomManager.getLanguage());
-
-        for(PlayerScore ps : scores)
-            dp.addWords(ps.getWords());
-
-        wordsFounded = dp.getWordsAsString();
-
-        for(PlayerScore ps : scores)
-            ps.setDuplicateWords(dp.getDuplicatedWords());
-
-        duplicatedWords = dp.getDuplicateAsString();
+//        for(PlayerScore ps : scores)
+//            dp.addWords(ps.getWords());
+//
+//        wordsFounded = dp.getWordsAsString();
+//
+//        for(PlayerScore ps : scores)
+//            ps.setDuplicateWords(dp.getDuplicatedWords());
+//
+//        duplicatedWords = dp.getDuplicateAsString();
     }
 
     /**
@@ -67,7 +67,7 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
      */
     @Override
     public void conclude() {
-        roomManager.sendScores(scores);
+//        roomManager.sendScores(scores);
 
         for(int i = 0; i < super.participants.length; i++) {
             PlayerScore score = scores[i];

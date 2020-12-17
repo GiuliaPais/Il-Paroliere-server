@@ -5,13 +5,13 @@ module server.core {
     requires utils.managers.api;
     requires utils.serviceResults;
     requires server.database;
-    requires server.services.api;
-    requires server.services.playerServicesImpl;
     requires utils.business;
     requires com.jfoenix;
     requires java.prefs;
     requires server.dictionary;
     requires server.email;
+    requires server.playerManagerImpl;
+    requires server.room;
 
     opens uninsubria.server.gui to javafx.fxml;
     exports uninsubria.server.gui;

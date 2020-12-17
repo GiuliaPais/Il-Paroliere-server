@@ -1,9 +1,12 @@
-package uninsubria.server.managersimpl;
+package uninsubria.server.playerManagerImpl;
+
 
 import uninsubria.server.services.api.AbstractServiceFactory;
 import uninsubria.server.services.api.Service;
 import uninsubria.server.services.api.ServiceFactoryImpl;
 import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
+import uninsubria.server.wrappers.PlayerWrapper;
+import uninsubria.utils.business.Lobby;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
@@ -117,5 +120,13 @@ public class PlayerManager implements PlayerManagerInterface {
     public ServiceResultInterface deleteProfile(String id, String password) {
         Service service = serviceFactory.getService(PlayerServiceType.DELETE_PROFILE, id, password);
         return service.execute();
+    }
+
+    @Override
+    public boolean createRoom(Lobby lobby) {
+        PlayerWrapper playerWrapper = new PlayerWrapper(this.player, this.playerAddress);
+        Service service = serviceFactory.getService(PlayerServiceType.CREATE_ROOM, playerWrapper, lobby);
+        service.execute();
+        return true;
     }
 }

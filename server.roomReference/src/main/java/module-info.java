@@ -5,6 +5,7 @@ module server.roomReference {
     requires utils.chronometer;
     requires server.scoreCounter;
     requires utils.ruleset;
+    requires server.roomManager;
 
     exports uninsubria.server.roomReference;
 }

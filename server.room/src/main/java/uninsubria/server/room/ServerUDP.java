@@ -5,10 +5,7 @@ import uninsubria.utils.business.Lobby;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -21,11 +18,8 @@ public class ServerUDP extends Thread {
     // Ricezione
     private DatagramSocket datagramSocket;
     private InetAddress address;
+    private int clientPort;
     private boolean running;
-
-    // Invio
-    private ByteArrayOutputStream byteArrayOutputStream;
-    private ObjectOutputStream objectOutputStream;
 
     /*---Constructor---*/
     public ServerUDP() {
@@ -38,15 +32,15 @@ public class ServerUDP extends Thread {
         running = true;
 
         while (running) {
-            String string = this.receiveString();
-            this.waitCommand(string);
+            String string = receiveString();
+            waitCommand(string);
         }
     }
 
     public void interrupt() {
         super.interrupt();
         running = false;
-        this.close();
+//        this.close();
     }
 
     public void sendPlayersList(UUID roomId) {
@@ -63,8 +57,6 @@ public class ServerUDP extends Thread {
     private void initialize() {
         try {
             datagramSocket = new DatagramSocket(CommHolder.SERVER_PORT);
-            byteArrayOutputStream = new ByteArrayOutputStream();
-            objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,7 +69,8 @@ public class ServerUDP extends Thread {
             byte[] stringBytes = new byte[256];
             DatagramPacket packet = new DatagramPacket(stringBytes, stringBytes.length);
             datagramSocket.receive(packet);
-            address = datagramSocket.getInetAddress();
+            address = packet.getAddress();
+            clientPort = packet.getPort();
 
             return new String(packet.getData(), 0, packet.getLength());
 
@@ -88,8 +81,7 @@ public class ServerUDP extends Thread {
 
     // Permette di mandare la lista delle attuali stanze
     private void sendRoomList() {
-        ArrayList<Lobby> rooms = RoomList.getRoomsAsLobbies();
-        this.sendObject(rooms);
+        sendObject(RoomList.getLobbies());
     }
 
 
@@ -107,24 +99,28 @@ public class ServerUDP extends Thread {
         }
     }
 
-    private void close() {
-        try {
-            objectOutputStream.close();
-            byteArrayOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        datagramSocket.close();
-    }
+//    private void close() {
+//        try {
+//            objectOutputStream.close();
+//            byteArrayOutputStream.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        datagramSocket.close();
+//    }
 
     private void sendObject(Serializable object) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(byteArrayOutputStream));
+            objectOutputStream.flush();
             objectOutputStream.writeObject(object);
+            objectOutputStream.flush();
             byte[] objectBytes = byteArrayOutputStream.toByteArray();
-            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, CommHolder.SERVER_PORT);
+            DatagramPacket datagramPacket = new DatagramPacket(objectBytes, objectBytes.length, address, clientPort);
             datagramSocket.send(datagramPacket);
-
+            objectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

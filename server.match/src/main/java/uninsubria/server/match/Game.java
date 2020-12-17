@@ -1,13 +1,14 @@
 package uninsubria.server.match;
 
+import uninsubria.server.roomManager.RoomManager;
+import uninsubria.server.roomReference.RoomReference;
+import uninsubria.utils.business.Player;
+import uninsubria.utils.chronometer.Chronometer;
+import uninsubria.utils.chronometer.Counter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import uninsubria.server.roomReference.RoomManager;
-import uninsubria.server.roomReference.RoomReference;
-import uninsubria.utils.business.Player;
-import uninsubria.utils.chronometer.*;
 
 public class Game {
 
@@ -28,8 +29,8 @@ public class Game {
 
     public Game(RoomReference r) {
         reference = r;
-        roomManager = r.getRoomManager();
-        grid = new Grid(roomManager.getLanguage());
+//        roomManager = r.getRoomManager();
+//        grid = new Grid(roomManager.getLanguage());
         state = GameState.ONGOING;
         numMatch = 0;
         exists = true;
@@ -44,7 +45,7 @@ public class Game {
     public void newMatch() {
         if(!state.equals(GameState.FINISHED)) {
 
-            roomManager.setSyncTimer(5000L);
+//            roomManager.setSyncTimer(5000L);
             addMatch();
 
             ActiveMatch matchTmp = matches.get(numMatch);
@@ -82,7 +83,7 @@ public class Game {
     public void abandon(Player player) {
         reference.leaveRoom(player);
         state = GameState.INTERRUPTED;
-        roomManager.close();
+//        roomManager.close();
     }
 
     /**
@@ -187,8 +188,8 @@ public class Game {
 
         if(max >= 50 && !moreThanOne) {
            state = GameState.FINISHED;
-           roomManager.endGame(winner.getName(), max);
-           roomManager.close();
+//           roomManager.endGame(winner.getName(), max);
+//           roomManager.close();
         }
 
     }

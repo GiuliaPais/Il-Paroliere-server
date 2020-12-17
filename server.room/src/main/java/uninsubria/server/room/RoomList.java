@@ -5,7 +5,6 @@ import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.serviceResults.ErrorMsgType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,17 +42,15 @@ public class RoomList {
     public static void joinRoom(UUID roomId, PlayerWrapper player, List<ErrorMsgType> errors) {
         Room room = getInstance().rooms.get(roomId);
         Lobby lobby = getInstance().lobbies.get(roomId);
-
-        if(room.getRoomStatus().equals(RoomState.OPEN)) {
-            room.joinRoom(player);
-            getInstance().serverUDP.sendPlayersList(roomId);
-
-            if(!getInstance().statusAreSync(room, lobby))
-                getInstance().synchronizeStatus(room, lobby);
-
-        } else
+        boolean entered = room.joinRoom(player);
+        if (!entered) {
             errors.add(ErrorMsgType.ROOM_FULL);
+            return;
+        }
+        getInstance().serverUDP.sendPlayersList(roomId);
 
+        if(!getInstance().statusAreSync(room, lobby))
+            getInstance().synchronizeStatus(room, lobby);
     }
 
     public static void leaveRoom(UUID roomId, String playerID) {
@@ -76,15 +73,8 @@ public class RoomList {
         return getInstance().rooms.get(roomId);
     }
 
-    public static ArrayList<Lobby> getRoomsAsLobbies() {
-        ArrayList<Lobby> lobbyList = new ArrayList<>();
-        ConcurrentHashMap<UUID, Lobby> lobbyMap = getInstance().lobbies;
-
-        for(UUID u : lobbyMap.keySet()) {
-            lobbyList.add(lobbyMap.get(u));
-        }
-
-        return lobbyList;
+    public static ConcurrentHashMap<UUID, Lobby> getLobbies() {
+        return getInstance().lobbies;
     }
 
     //  Controlla che gli status tra lobby e room combacino. Restituisce true se entrambe sono aperte o entrambe chiuse,
@@ -110,7 +100,6 @@ public class RoomList {
     private void synchronizeStatus(Room room, Lobby lobby) {
         if(room.getRoomStatus().equals(RoomState.OPEN))
             lobby.setStatus(Lobby.LobbyStatus.OPEN);
-
         else
             lobby.setStatus(Lobby.LobbyStatus.CLOSED);
     }

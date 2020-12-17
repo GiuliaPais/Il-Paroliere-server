@@ -1,7 +1,8 @@
 package uninsubria.server.room;
 
+
 import uninsubria.server.match.Game;
-import uninsubria.server.roomReference.RoomManager;
+import uninsubria.server.roomManager.RoomManager;
 import uninsubria.server.roomReference.RoomState;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.chronometer.Counter;
@@ -20,9 +21,9 @@ public class Room {
     private Language language;
     private Ruleset ruleset;
     private ArrayList<PlayerWrapper> playerSlots;
-    private RoomManager roomManager;
     private RoomState roomStatus;
     private Game game;
+    private RoomManager roomManager;
 
     /*---Constructors---*/
     public Room(UUID roomId, String roomName, Integer numPlayers, Language language, Ruleset ruleset,
@@ -31,21 +32,25 @@ public class Room {
         this.roomName = roomName;
         this.language = language;
         this.ruleset = ruleset;
-        roomStatus = RoomState.OPEN;
-
-        this.setNumPlayers(numPlayers);
-        this.joinRoom(creator);
+        this.roomStatus = RoomState.OPEN;
+        setNumPlayers(numPlayers);
+        this.playerSlots = new ArrayList<>();
+        this.playerSlots.add(creator);
     }
 
     /*---Methods---*/
-    public void joinRoom(PlayerWrapper player) {
-        playerSlots.add(player);
-
+    public synchronized boolean joinRoom(PlayerWrapper player) {
+        boolean entered = false;
+        if (roomStatus.equals(RoomState.OPEN)) {
+            playerSlots.add(player);
+            entered = true;
+        }
         if(playerSlots.size() == numPlayers) {
             roomStatus = RoomState.FULL;
             ChronometerRoom cr = new ChronometerRoom(new Counter(0,10,0), id);
             cr.start();
         }
+        return entered;
     }
 
     public void leaveRoom(String pLayerID) {

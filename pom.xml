@@ -26,6 +26,9 @@
       <module>server.dbpopulator</module>
       <module>server.scoreCounter</module>
       <module>server.wrappers</module>
+      <module>server.services.roomServicesImpl</module>
+      <module>server.playerManagerImpl</module>
+      <module>server.roomManager</module>
   </modules>
   
   <build>

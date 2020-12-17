@@ -8,6 +8,7 @@ import uninsubria.server.dictionary.manager.DictionaryManager;
 import uninsubria.server.email.EmailManager;
 import uninsubria.server.gui.MainServerGuiController;
 import uninsubria.server.gui.MessageType;
+import uninsubria.server.room.RoomList;
 import uninsubria.utils.connection.CommHolder;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * for clients. For each client connected launches a reserved Skeleton thread.
  *
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class MasterServer extends Thread {
     /*---Fields---*/
@@ -84,7 +85,8 @@ public class MasterServer extends Thread {
         /* Needed to reset potential errors if server process was killed abruptly */
         TransactionManager transactionManager = new TransactionManager();
         transactionManager.logoutEveryone();
-        //Initialize room list TODO
+        Platform.runLater(() -> controllerReference.printToConsole("Initializing room list...", MessageType.MESSAGE));
+        RoomList.getInstance();
         try {
             this.serverSocket = new ServerSocket(CommHolder.SERVER_PORT);
             Platform.runLater(() -> controllerReference.printToConsole("Server running, listening on port "+CommHolder.SERVER_PORT, MessageType.MESSAGE));
