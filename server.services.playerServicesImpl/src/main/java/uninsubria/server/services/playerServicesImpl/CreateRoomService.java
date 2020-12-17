@@ -1,30 +1,37 @@
 package uninsubria.server.services.playerServicesImpl;
 
+import uninsubria.server.room.RoomList;
 import uninsubria.server.services.api.Service;
-import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
-import uninsubria.utils.languages.Language;
-import uninsubria.utils.ruleset.Ruleset;
+import uninsubria.server.wrappers.PlayerWrapper;
+import uninsubria.utils.business.Lobby;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
+
+/**
+ * Implementation of service responsible for creating a new room.
+ *
+ * @author Giulia Pais
+ * @version 0.9.0
+ */
 public class CreateRoomService implements Service {
-	
-	private final PlayerServiceType serviceType = PlayerServiceType.CREATE_ROOM;
-	private String roomName;
-	private Integer playersNo;
-	private Ruleset ruleset;
-	private Language language;
-	
-	
-	public CreateRoomService(String roomName, Integer playersNo, Ruleset ruleset, Language language) {
-		this.roomName = roomName;
-		this.playersNo = playersNo;
-		this.language = language;
-		this.ruleset = ruleset;
+
+	private final PlayerWrapper playerWrapper;
+	private final Lobby lobby;
+
+	/**
+	 * Instantiates a new Create room service.
+	 *
+	 * @param playerWrapper the player wrapper
+	 * @param lobby         the lobby
+	 */
+	public CreateRoomService(PlayerWrapper playerWrapper, Lobby lobby) {
+		this.playerWrapper = playerWrapper;
+		this.lobby = lobby;
 	}
 
 	@Override
 	public ServiceResultInterface execute() {
-		// TODO Auto-generated method stub
+		RoomList.createRoom(playerWrapper, lobby);
 		return null;
 	}
 	

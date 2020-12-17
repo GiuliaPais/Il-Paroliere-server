@@ -6,6 +6,8 @@ module server.services.playerServicesImpl {
 	requires utils.business;
     requires utils.languages;
     requires utils.ruleset;
+    requires server.wrappers;
+    requires server.room;
 
     exports uninsubria.server.services.playerServicesImpl;
 	exports uninsubria.server.services.playerServicesTypes;

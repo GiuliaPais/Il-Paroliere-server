@@ -1,7 +1,9 @@
 package uninsubria.server.core;
 
 import uninsubria.server.gui.ServerLauncher;
-import uninsubria.server.managersimpl.PlayerManager;
+
+import uninsubria.server.playerManagerImpl.PlayerManager;
+import uninsubria.utils.business.Lobby;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.connection.CommProtocolCommands;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
@@ -17,7 +19,7 @@ import java.util.Objects;
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
@@ -133,6 +135,11 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                 String pw = in.readUTF();
                 ServiceResultInterface res = playerManager.deleteProfile(id, pw);
                 writeCommand(CommProtocolCommands.DELETE_PROFILE, res);
+            }
+            case CREATE_ROOM -> {
+                Lobby lobby = (Lobby) in.readObject();
+                playerManager.createRoom(lobby);
+                writeCommand(CommProtocolCommands.CREATE_ROOM);
             }
         }
     }
