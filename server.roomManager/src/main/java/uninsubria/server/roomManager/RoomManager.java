@@ -7,24 +7,51 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
+/**
+ * RoomManager coordinates all operations that require the communication
+ * of the room either with players (via socket) or with other server
+ * modules.
+ *
+ * @author Davide di Giovanni
+ * @author Giulia Pais
+ * @version 0.9.2
+ */
 public class RoomManager {
 
 	private final AbstractServiceFactory serviceFactory;
 	private HashMap<InetAddress, ProxyRoom> proxies;
 
+	/**
+	 * Instantiates a new Room manager.
+	 */
 	public RoomManager() {
 		this.serviceFactory = new ServiceFactoryImpl();
 		this.proxies = new HashMap<>();
 	}
 
+	/**
+	 * Add room proxy.
+	 *
+	 * @param address the address
+	 * @throws IOException the io exception
+	 */
 	/*---Methods---*/
 	public void addRoomProxy(InetAddress address) throws IOException {
 		ProxyRoom proxyRoom = new ProxyRoom(address);
 		proxies.put(address, proxyRoom);
 	}
 
+	/**
+	 * Remove room proxy.
+	 *
+	 * @param address the address
+	 */
 	public void removeRoomProxy(InetAddress address) {
-		proxies.remove(address);
+		try {
+			proxies.remove(address).quit();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 

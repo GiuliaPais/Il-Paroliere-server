@@ -13,13 +13,14 @@ import uninsubria.utils.serviceResults.ServiceResultInterface;
 import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * A class representing the Skeleton component in the pattern Proxy-Skeleton.
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.5
+ * @version 0.9.4
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
@@ -140,6 +141,10 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                 Lobby lobby = (Lobby) in.readObject();
                 playerManager.createRoom(lobby);
                 writeCommand(CommProtocolCommands.CREATE_ROOM);
+            }
+            case LEAVE_ROOM -> {
+                UUID roomID = (UUID) in.readObject();
+                playerManager.leaveRoom(roomID);
             }
         }
     }

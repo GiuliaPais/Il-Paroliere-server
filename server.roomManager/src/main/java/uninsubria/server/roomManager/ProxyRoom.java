@@ -19,7 +19,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -56,6 +56,12 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	}
 
 	@Override
+	public void quit() throws IOException {
+		writeCommand(CommProtocolCommands.QUIT);
+		terminate();
+	}
+
+	@Override
 	public void writeCommand(CommProtocolCommands command, Object... params) throws IOException {
 		out.writeUTF(command.getCommand());
 		for (Object p : params) {
@@ -77,6 +83,25 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		CommProtocolCommands com = CommProtocolCommands.getByCommand(command);
 		switch (Objects.requireNonNull(com)) {
 			case SET_SYNC -> {}
+		}
+	}
+
+	public void terminate() {
+		try {
+			if (in != null)
+				in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

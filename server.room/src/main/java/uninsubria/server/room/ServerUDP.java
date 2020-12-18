@@ -1,7 +1,6 @@
 package uninsubria.server.room;
 
 import uninsubria.server.wrappers.PlayerWrapper;
-import uninsubria.utils.business.Lobby;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 
@@ -12,6 +11,14 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.UUID;
 
+/**
+ * Thread that actively listens for periodic requests on a
+ * datagram socket for client updates.
+ *
+ * @author Davide Di Giovanni
+ * @author Giulia Pais (minor)
+ * @version 0.9.2
+ */
 public class ServerUDP extends Thread {
 
     /*---Fields---*/
@@ -21,6 +28,9 @@ public class ServerUDP extends Thread {
     private int clientPort;
     private boolean running;
 
+    /**
+     * Instantiates a new Server udp.
+     */
     /*---Constructor---*/
     public ServerUDP() {
         this.initialize();
@@ -43,7 +53,15 @@ public class ServerUDP extends Thread {
 //        this.close();
     }
 
+    /**
+     * Send players list.
+     *
+     * @param roomId the room id
+     */
     public void sendPlayersList(UUID roomId) {
+        if (RoomList.getRoom(roomId) == null) {
+            return;
+        }
         ArrayList<PlayerWrapper> playersList = RoomList.getRoom(roomId).getPlayerSlots();
 
         for(int i = 0; i < playersList.size(); i++) {

@@ -11,6 +11,7 @@ import uninsubria.utils.business.Player;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
  * Class responsible for creating and executing player requested services.
  *
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
@@ -128,5 +129,11 @@ public class PlayerManager implements PlayerManagerInterface {
         Service service = serviceFactory.getService(PlayerServiceType.CREATE_ROOM, playerWrapper, lobby);
         service.execute();
         return true;
+    }
+
+    @Override
+    public void leaveRoom(UUID roomID) throws IOException {
+        Service service = serviceFactory.getService(PlayerServiceType.LEAVE_ROOM, roomID, player.getPlayerID());
+        service.execute();
     }
 }
