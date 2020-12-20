@@ -50,7 +50,6 @@ public class ServerUDP extends Thread {
     public void interrupt() {
         super.interrupt();
         running = false;
-//        this.close();
     }
 
     /**
@@ -109,24 +108,13 @@ public class ServerUDP extends Thread {
         CommProtocolCommands command = CommProtocolCommands.getByCommand(string);
 
         switch(command) {
-            case SEND_ROOM_LIST:
+            case SEND_ROOMLIST:
                 this.sendRoomList();
                 break;
             default:
                 break;
         }
     }
-
-//    private void close() {
-//        try {
-//            objectOutputStream.close();
-//            byteArrayOutputStream.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        datagramSocket.close();
-//    }
 
     private void sendObject(Serializable object) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

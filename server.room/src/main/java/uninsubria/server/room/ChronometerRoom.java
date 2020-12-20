@@ -1,6 +1,5 @@
 package uninsubria.server.room;
 
-import uninsubria.server.roomReference.RoomState;
 import uninsubria.utils.chronometer.Chronometer;
 import uninsubria.utils.chronometer.Counter;
 
@@ -8,32 +7,62 @@ import java.util.UUID;
 
 public class ChronometerRoom extends Chronometer {
 
-    private UUID roomId;
+    private Room room;
+    public RoomCommand command;
 
-    public ChronometerRoom(Counter counter, UUID roomId) {
+    public ChronometerRoom(Counter counter, UUID roomId, RoomCommand command) {
         super(counter);
-        this.roomId = roomId;
+        room = RoomList.getRoom(roomId);
+        this.command = command;
+    }
+
+
+    public void run() {
+
+        this.selectAction(command);
+
+    }
+
+    private void selectAction(RoomCommand action) {
+
+        switch(action) {
+            case START_NEW_GAME:
+                this.startNewGame();
+                break;
+
+            case START_NEW_MATCH:
+                break;
+
+            case TEST:
+                System.out.println("INIZIA IL TEST");
+                Long start = System.currentTimeMillis();
+                super.run();
+
+                System.out.println("FINITO IL TEST");
+                Long end = System.currentTimeMillis();
+                Long time = end - start;
+                System.out.println("Tempo trascorso: " + time);
+                break;
+
+            default:
+                throw new IllegalStateException("Unexpected value: " + action);
+        }
     }
 
     /**
-     * Imposta lo status della stanza a TimeOut ed attende che il counter arrivi a zero. Se qualcuno abbandona la stanza prima
-     * del termine, si interrompe immediatamente senza far partire il gioco. Se al termine del conteggio tutti i giocatori sono ancora
-     * presenti, il gioco viene avviato.
+     * Imposta lo status della stanza a TimeOut ed attende che il counter arrivi a zero. Fintanto che il cronometro è
+     * attivo, sarà impossibile per i player abbandonare la stanza. Una volta iniziato il game,
+     * sarà possibile abbandonarlo.
      */
-    public void run() {
-        Room room = RoomList.getRoom(roomId);
+    private void startNewGame() {
         room.setRoomStatus(RoomState.TIMEOUT);
+        room.setIsPossibleToLeave(false);
 
-        while(!super.isInterrupted()) {
+        super.run();
 
-            if(room.getRoomStatus().equals(RoomState.OPEN))
-                super.interrupt();
-
-        }
-
-        if(!room.getRoomStatus().equals(RoomState.OPEN)) {
-            room.newGame();
-            room.setRoomStatus(RoomState.GAMEON);
-        }
+        room.newGame();
+        room.setRoomStatus(RoomState.GAMEON);
+        room.setIsPossibleToLeave(true);
     }
+
 }

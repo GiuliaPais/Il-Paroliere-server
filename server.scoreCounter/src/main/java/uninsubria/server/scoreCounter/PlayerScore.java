@@ -1,9 +1,9 @@
 package uninsubria.server.scoreCounter;
 
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,7 +12,7 @@ public class PlayerScore {
     private int totalScore;
     private Language language;
     private WordAnalyzer[] words;
-    private Player player;
+    private PlayerWrapper player;
 
     /*-----Constructor-----*/
     /**
@@ -21,7 +21,7 @@ public class PlayerScore {
      * @param words le parole trovate dal player.
      * @param l la lingua sulla cui base analizzare le parole.
      */
-    public PlayerScore(Player p, String[] words, Language l) {
+    public PlayerScore(PlayerWrapper p, String[] words, Language l) {
         player = p;
         language = l;
         this.words = setWords(words);
@@ -66,12 +66,12 @@ public class PlayerScore {
      * Restituisce il player le cui parole sono state prese in esame.
      * @return il player che ha trovato le parole.
      */
-    public Player getPlayer() {
+    public PlayerWrapper getPlayer() {
         return player;
     }
 
     public String toString() {
-        return player.getName() + " " + Arrays.toString(words);
+        return player.getPlayer().getName() + " " + Arrays.toString(words);
     }
 
     /*-----Private methods-----*/

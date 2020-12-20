@@ -1,4 +1,4 @@
-package uninsubria.server.roomReference;
+package uninsubria.server.room;
 
 public enum RoomState {
 

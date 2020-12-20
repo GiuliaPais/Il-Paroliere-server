@@ -1,10 +1,11 @@
 package uninsubria.server.match;
 
-import uninsubria.server.roomManager.RoomManager;
-import uninsubria.server.scoreCounter.DuplicateWords;
 import uninsubria.server.scoreCounter.PlayerScore;
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.languages.Language;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
@@ -12,14 +13,20 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     private String[] wordsFounded;
     private String[] duplicatedWords;
     private PlayerScore[] scores;
-    private RoomManager roomManager;
-    private HashMap<Player, Integer> playersScore;
+    private Language language;
+    private HashMap<PlayerWrapper, Integer> playersScore;
 
-    public ActiveMatch(int numMatch, Player[] p, Grid grid, RoomManager rm) {
+    public ActiveMatch() {
+
+    }
+
+    public ActiveMatch(int numMatch, Grid grid, ArrayList<PlayerWrapper> participants, Language language) {
         super.matchNo = numMatch;
-        super.participants = p;
-        roomManager = rm;
+        super.participants = participants;
         super.grid = grid;
+
+        this.language = language;
+
         playersScore = new HashMap<>();
     }
 
@@ -30,7 +37,6 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     public void throwDices() {
         super.grid.resetDices();
         super.grid.throwDices();
-//        roomManager.sendGrid(super.grid.getDiceFaces(), super.grid.getDiceNumb());
     }
 
     /**
@@ -69,7 +75,7 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
     public void conclude() {
 //        roomManager.sendScores(scores);
 
-        for(int i = 0; i < super.participants.length; i++) {
+        for(int i = 0; i < super.participants.size(); i++) {
             PlayerScore score = scores[i];
             playersScore.put(score.getPlayer(), score.getTotalScore());
         }
@@ -79,7 +85,7 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
      * Restituisce l'HashMap contenente il player ed il suo attuale punteggio.
      * @return l'HashMap contenente il player ed il suo attuale punteggio.
      */
-    public HashMap<Player, Integer> getPlayersScore() {
+    public HashMap<PlayerWrapper, Integer> getPlayersScore() {
         return playersScore;
     }
 

@@ -1,11 +1,12 @@
 module server.match {
     requires utils.business;
     requires server.scoreCounter;
-    requires server.roomReference;
     requires server.dice;
     requires utils.languages;
     requires utils.chronometer;
     requires server.roomManager;
+    requires server.wrappers;
+    requires utils.ruleset;
 
     exports uninsubria.server.match;
 }

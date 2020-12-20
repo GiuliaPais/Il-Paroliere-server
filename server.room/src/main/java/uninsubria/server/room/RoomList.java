@@ -1,6 +1,5 @@
 package uninsubria.server.room;
 
-import uninsubria.server.roomReference.RoomState;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.serviceResults.ErrorMsgType;
@@ -68,7 +67,8 @@ public class RoomList {
     public static void joinRoom(UUID roomId, PlayerWrapper player, List<ErrorMsgType> errors) {
         Room room = getInstance().rooms.get(roomId);
         Lobby lobby = getInstance().lobbies.get(roomId);
-        int entered = room.joinRoom(player);
+        /*int entered = room.joinRoom(player);
+
         if (entered == 1) {
             errors.add(ErrorMsgType.ROOM_COMM_ERROR);
             return;
@@ -76,7 +76,7 @@ public class RoomList {
         if (entered == 2) {
             errors.add(ErrorMsgType.ROOM_FULL);
             return;
-        }
+        } */
         getInstance().serverUDP.sendPlayersList(roomId);
 
         if(!getInstance().statusAreSync(room, lobby))

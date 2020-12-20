@@ -2,6 +2,7 @@ package uninsubria.server.scoreCounter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 
@@ -12,12 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlayerScoreTest {
 
     private PlayerScore test;
-    private Player player;
+    private PlayerWrapper player;
     private Language language;
 
     @BeforeEach
     void setUp() {
-        player = new Player();
         language = Language.ITALIAN;
         String[] words = {"CASA", "ABBAIARE", "HO"};
         test = new PlayerScore(player, words, language);

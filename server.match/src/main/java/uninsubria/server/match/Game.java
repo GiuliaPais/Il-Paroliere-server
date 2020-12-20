@@ -1,121 +1,116 @@
 package uninsubria.server.match;
 
-import uninsubria.server.roomManager.RoomManager;
-import uninsubria.server.roomReference.RoomReference;
-import uninsubria.utils.business.Player;
-import uninsubria.utils.chronometer.Chronometer;
-import uninsubria.utils.chronometer.Counter;
+import uninsubria.server.wrappers.PlayerWrapper;
+import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class Game {
 
-    private RoomReference reference;
-    private RoomManager roomManager;
-    private ArrayList<ActiveMatch> matches;
-    private Player winner;
-    private Player[] participants;
-    private GameState state;
-    private int numMatch;
+    private ArrayList<PlayerWrapper> players;
+    private Language language;
     private Grid grid;
-    private boolean exists;
-    private HashMap<Player, Integer> playersScore;
+    private GameState state;
+    private int numMatch, maxScoreToWin;
+    private ArrayList<ActiveMatch> matches;
+    private HashMap<PlayerWrapper, Integer> playersScore;
+    private PlayerWrapper winner;
+    private boolean interruptIfSomeoneLeaves, thereIsAWinner;
 
-    public Game() {
+    public Game(ArrayList<PlayerWrapper> players, Language language, Ruleset ruleset) {
+        this.players = players;
+        this.language = language;
 
-    }
-
-    public Game(RoomReference r) {
-        reference = r;
-//        roomManager = r.getRoomManager();
-//        grid = new Grid(roomManager.getLanguage());
+        interruptIfSomeoneLeaves = ruleset.interruptIfSomeoneLeaves();
+        maxScoreToWin = ruleset.getMaxScoreToWin();
+        grid = new Grid(language);
         state = GameState.ONGOING;
         numMatch = 0;
-        exists = true;
-        participants = r.getSlots().toArray(new Player[0]);
+        thereIsAWinner = false;
 
-        setPlayerScore();
+        this.setPlayerScore();
     }
 
     /**
-     * Avvia un nuovo match sincronizzando i timer dei player.
+     * Inizia un nuovo match del game.
      */
     public void newMatch() {
-        if(!state.equals(GameState.FINISHED)) {
+        numMatch++;
+        ActiveMatch match = new ActiveMatch(numMatch, grid, players, language);
+        matches.add(match);
 
-//            roomManager.setSyncTimer(5000L);
-            addMatch();
-
-            ActiveMatch matchTmp = matches.get(numMatch);
-            matchTmp.throwDices();
-
-            waitTheEnd(3, 0, 0);
-
-            matchTmp.calculateScore();
-            matchTmp.conclude();
-
-            controlScore(matchTmp);
-        }
+        ActiveMatch actualMatch = matches.get(numMatch);
+        actualMatch.throwDices();
     }
 
     /**
-     * Metodo per i test. Restituisce true se la classe è stata istanziata.
-     * @return true se istanziato.
+     * Calcola lo score del match.
      */
-    public boolean exists() {
-        return exists;
+    public void calculateMatchScore() {
+        this.getActualMatch().calculateScore();
+    }
+
+    /**
+     * Aggiorna i punteggi totali e controlla che ci sia un vincitore.
+     */
+    public void calculateTotalScore() {
+        HashMap<PlayerWrapper, Integer> actualMatchScore =  this.getActualMatch().getPlayersScore();
+
+        for(int i = 0; i < actualMatchScore.size(); i++) {
+            PlayerWrapper player = players.get(i);
+
+            int matchScore = actualMatchScore.get(player);
+            int gameScore = playersScore.get(player);
+            int sum = matchScore + gameScore;
+
+            playersScore.put(player, sum);
+        }
+
+        this.checkIfThereIsAWinner();
+    }
+
+    /**
+     * Restituisce il match attuale.
+     * @return il match attuale.
+     */
+    public ActiveMatch getActualMatch() {
+        return matches.get(numMatch);
     }
 
     /**
      * Restituisce l'attuale punteggio di tutti i player.
      * @return un HashMap contenente il Player ed il suo attuale punteggio.
      */
-    public HashMap<Player, Integer> getPlayersScore() {
+    public HashMap<PlayerWrapper, Integer> getPlayersScore() {
         return playersScore;
     }
 
     /**
-     * Rimuove il partecipante passato come argomento e lo espelle dalla stanza.
-     * @param player in uscita dal gioco.
+     * Rimuove il partecipante dal gioco.
+     * @param player da rimuovere.
      */
-    public void abandon(Player player) {
-        reference.leaveRoom(player);
-        state = GameState.INTERRUPTED;
-//        roomManager.close();
-    }
+    public void abandon(PlayerWrapper player) {
+        players.remove(player);
 
-    /**
-     * Restituisce i match fino ad ora avvenuti nella partita.
-     * @return i match già avvenuti in partita.
-     */
-    public List<ActiveMatch> getMatches() {
-        return matches;
+        if(interruptIfSomeoneLeaves)
+            state = GameState.INTERRUPTED;
+
+        else
+            playersScore.remove(player);
     }
 
     /**
      * Restituisce il nome del vincitore.
      * @return il nome del vincitore come Stringa.
      */
-    public Player getWinner() {
+    public PlayerWrapper getWinner() {
         return winner;
     }
 
-    /**
-     * Setta un nuovo vincitore
-     * @param winner il nuovo vincitore.
-     */
-    public void setWinner(Player winner) {
-        this.winner = winner;
-    }
-
-    /**
-     * Restituisce la lista dei partecipanti attuali.
-     * @return i partecipanti attuali.
-     */
-    public Player[] getParticipants() {
-        return participants;
+    public boolean thereIsAWinner() {
+        return thereIsAWinner;
     }
 
     /**
@@ -126,72 +121,36 @@ public class Game {
         return state;
     }
 
-    // Aggiunge un nuovo match al game in corso.
-    private void addMatch() {
-        numMatch++;
-        ActiveMatch match = new ActiveMatch(numMatch, participants, grid, roomManager);
-        matches.add(match);
-    }
-
-    // Tempo di attesa per la fine del turno o di un caricamento.
-    private void waitTheEnd(int min, int sec, int millis) {
-        Counter counter = new Counter(min, sec, millis);
-        Chronometer chronometer = new Chronometer(counter);
-        try {
-            chronometer.join();
-        } catch (InterruptedException ignored) { }
-    }
-
     // Setta l'attuale punteggio di tutti i player a 0.
     private void setPlayerScore() {
         playersScore = new HashMap<>();
 
-        for(int i = 0; i < participants.length; i++) {
-            playersScore.put(participants[i], 0);
+        for(int i = 0; i < players.size(); i++) {
+            playersScore.put(players.get(i), 0);
         }
-    }
-
-    // Somma i valori delle due hashMap e li aggionra in playersScore.
-    private void addScore(HashMap<Player, Integer> matchScores) {
-        for(int i = 0; i < matchScores.size(); i++) {
-            Player player = participants[i];
-            int matchScore = matchScores.get(player);
-            int gameScore = playersScore.get(player);
-            int sum = matchScore + gameScore;
-            playersScore.put(player, sum);
-        }
-    }
-
-    // Controlla i punteggi e se ci sia o meno un vincitore.
-    private void controlScore(ActiveMatch match) {
-        addScore(match.getPlayersScore());
-        controlWinner();
-
     }
 
     // Controlla che ci sia un vincitore e, se c'è ed è unico, termina il game.
-    private void controlWinner() {
-        boolean moreThanOne = false;
-        int max = 0;
+    private void checkIfThereIsAWinner() {
+        int max = maxScoreToWin;
 
-        for(int i = 0; i < participants.length; i++) {
-            Player player = participants[i];
+        for(int i = 0; i < players.size(); i++) {
+            PlayerWrapper player = players.get(i);
             int score = playersScore.get(player);
 
             if(score > max) {
                 max = score;
                 winner = player;
+                thereIsAWinner = true;
+
             } else if(score == max) {
-                moreThanOne = true;
+                thereIsAWinner = false;
             }
         }
 
-        if(max >= 50 && !moreThanOne) {
+        if(thereIsAWinner) {
            state = GameState.FINISHED;
-//           roomManager.endGame(winner.getName(), max);
-//           roomManager.close();
         }
-
     }
 
 }

@@ -1,12 +1,15 @@
 package uninsubria.server.match;
 
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
+
+import java.util.ArrayList;
 
 public abstract class AbstractMatch implements MatchInterface {
 
     protected Grid grid;
     protected int matchNo;
-    protected Player[] participants;
+    protected ArrayList<PlayerWrapper> participants;
 
     @Override
     public Grid getGrid() {
@@ -19,7 +22,7 @@ public abstract class AbstractMatch implements MatchInterface {
     }
 
     @Override
-    public Player[] getParticipants() {
+    public ArrayList<PlayerWrapper> getParticipants() {
         return participants;
     }
 
