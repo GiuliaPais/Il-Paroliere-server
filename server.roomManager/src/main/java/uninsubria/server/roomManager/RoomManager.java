@@ -29,13 +29,13 @@ public class RoomManager {
 		this.proxies = new HashMap<>();
 	}
 
+	/*---Methods---*/
 	/**
 	 * Add room proxy.
 	 *
 	 * @param address the address
 	 * @throws IOException the io exception
 	 */
-	/*---Methods---*/
 	public void addRoomProxy(InetAddress address) throws IOException {
 		ProxyRoom proxyRoom = new ProxyRoom(address);
 		proxies.put(address, proxyRoom);
@@ -53,7 +53,6 @@ public class RoomManager {
 			e.printStackTrace();
 		}
 	}
-
 
 
 //	@Override

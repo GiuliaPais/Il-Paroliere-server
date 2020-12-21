@@ -4,7 +4,6 @@ module server.match {
     requires server.dice;
     requires utils.languages;
     requires utils.chronometer;
-    requires server.roomManager;
     requires server.wrappers;
     requires utils.ruleset;
 

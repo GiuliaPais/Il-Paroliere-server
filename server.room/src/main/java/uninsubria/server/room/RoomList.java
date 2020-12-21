@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais (minor)
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class RoomList {
 
@@ -58,7 +58,8 @@ public class RoomList {
     }
 
     /**
-     * Join room.
+     * Allows a player to join the specified room. If it's not possible to join the room, the error list
+     * passed as a parameter gets populated and returned to the player.
      *
      * @param roomId the room id
      * @param player the player
@@ -66,9 +67,12 @@ public class RoomList {
      */
     public static void joinRoom(UUID roomId, PlayerWrapper player, List<ErrorMsgType> errors) {
         Room room = getInstance().rooms.get(roomId);
+        if (room == null) {
+            errors.add(ErrorMsgType.ROOM_CLOSED);
+            return;
+        }
         Lobby lobby = getInstance().lobbies.get(roomId);
-        /*int entered = room.joinRoom(player);
-
+        int entered = room.joinRoom(player);
         if (entered == 1) {
             errors.add(ErrorMsgType.ROOM_COMM_ERROR);
             return;
@@ -76,8 +80,7 @@ public class RoomList {
         if (entered == 2) {
             errors.add(ErrorMsgType.ROOM_FULL);
             return;
-        } */
-        getInstance().serverUDP.sendPlayersList(roomId);
+        }
 
         if(!getInstance().statusAreSync(room, lobby))
             getInstance().synchronizeStatus(room, lobby);
@@ -93,7 +96,6 @@ public class RoomList {
         Room room = getInstance().rooms.get(roomId);
         Lobby lobby = getInstance().lobbies.get(roomId);
         room.leaveRoom(playerID);
-        getInstance().serverUDP.sendPlayersList(roomId);
 
         if(!getInstance().statusAreSync(room, lobby))
             getInstance().synchronizeStatus(room, lobby);

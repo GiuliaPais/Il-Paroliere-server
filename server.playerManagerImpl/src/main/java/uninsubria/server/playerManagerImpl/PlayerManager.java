@@ -11,7 +11,6 @@ import uninsubria.utils.business.Player;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -19,13 +18,14 @@ import java.util.UUID;
  * Class responsible for creating and executing player requested services.
  *
  * @author Giulia Pais
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
     private final AbstractServiceFactory serviceFactory;
     private final InetAddress playerAddress;
     private Player player;
+    private UUID activeRoomID;
 
     /*---Constructors---*/
     /**
@@ -105,6 +105,9 @@ public class PlayerManager implements PlayerManagerInterface {
 
     @Override
     public void quit() {
+        if (this.activeRoomID != null) {
+            leaveRoom(activeRoomID);
+        }
         if (this.player != null) {
            logout(player.getPlayerID());
         }
@@ -128,12 +131,26 @@ public class PlayerManager implements PlayerManagerInterface {
         PlayerWrapper playerWrapper = new PlayerWrapper(this.player, this.playerAddress);
         Service service = serviceFactory.getService(PlayerServiceType.CREATE_ROOM, playerWrapper, lobby);
         service.execute();
+        activeRoomID = lobby.getRoomId();
         return true;
     }
 
     @Override
-    public void leaveRoom(UUID roomID) throws IOException {
+    public void leaveRoom(UUID roomID) {
         Service service = serviceFactory.getService(PlayerServiceType.LEAVE_ROOM, roomID, player.getPlayerID());
         service.execute();
+        activeRoomID = null;
+    }
+
+    @Override
+    public ServiceResultInterface joinRoom(UUID roomID) {
+        PlayerWrapper playerWrapper = new PlayerWrapper(this.player, this.playerAddress);
+        Service service = serviceFactory.getService(PlayerServiceType.JOIN_ROOM, roomID, playerWrapper);
+        ServiceResultInterface serviceResult = service.execute();
+        Boolean joined = (Boolean) serviceResult.getResult("Success").getValue();
+        if (joined) {
+            activeRoomID = roomID;
+        }
+        return serviceResult;
     }
 }

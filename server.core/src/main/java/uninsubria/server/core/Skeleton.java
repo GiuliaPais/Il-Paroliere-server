@@ -20,7 +20,7 @@ import java.util.UUID;
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
@@ -145,6 +145,11 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
             case LEAVE_ROOM -> {
                 UUID roomID = (UUID) in.readObject();
                 playerManager.leaveRoom(roomID);
+            }
+            case JOIN_ROOM -> {
+                UUID roomID = (UUID) in.readObject();
+                ServiceResultInterface res = playerManager.joinRoom(roomID);
+                writeCommand(CommProtocolCommands.JOIN_ROOM, res);
             }
         }
     }

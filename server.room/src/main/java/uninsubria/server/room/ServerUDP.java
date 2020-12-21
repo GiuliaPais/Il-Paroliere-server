@@ -1,6 +1,5 @@
 package uninsubria.server.room;
 
-import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 
@@ -8,8 +7,10 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Thread that actively listens for periodic requests on a
@@ -17,7 +18,7 @@ import java.util.UUID;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais (minor)
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class ServerUDP extends Thread {
 
@@ -52,23 +53,6 @@ public class ServerUDP extends Thread {
         running = false;
     }
 
-    /**
-     * Send players list.
-     *
-     * @param roomId the room id
-     */
-    public void sendPlayersList(UUID roomId) {
-        if (RoomList.getRoom(roomId) == null) {
-            return;
-        }
-        ArrayList<PlayerWrapper> playersList = RoomList.getRoom(roomId).getPlayerSlots();
-
-        for(int i = 0; i < playersList.size(); i++) {
-            PlayerWrapper pw = playersList.get(i);
-            address = pw.getIpAddress();
-            this.sendObject(pw.getPlayer().getName());
-        }
-    }
 
     /*---Private methods---*/
     private void initialize() {
@@ -105,14 +89,21 @@ public class ServerUDP extends Thread {
 
     // Attende la stringa col comando corrispondente. Se non è quella che si aspetta, non fa nulla.
     private void waitCommand(String string) {
+        if (string.contains("|")) {
+            List<String> splitted = Pattern.compile("\\|")
+                    .splitAsStream(string)
+                    .collect(Collectors.toList());
+            CommProtocolCommands command = CommProtocolCommands.getByCommand(splitted.get(0));
+            switch (command) {
+                case SEND_PLIST -> sendObject(RoomList.getRoom(UUID.fromString(splitted.get(1))).getCurrentPlayers());
+                default -> {}
+            }
+            return;
+        }
         CommProtocolCommands command = CommProtocolCommands.getByCommand(string);
-
         switch(command) {
-            case SEND_ROOMLIST:
-                this.sendRoomList();
-                break;
-            default:
-                break;
+            case SEND_ROOM_LIST -> sendRoomList();
+            default -> {}
         }
     }
 
