@@ -1,11 +1,15 @@
 package uninsubria.server.match;
 
+import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class Game {
 
@@ -15,7 +19,7 @@ public class Game {
     private GameState state;
     private int numMatch, maxScoreToWin;
     private ArrayList<ActiveMatch> matches;
-    private HashMap<PlayerWrapper, Integer> playersScore;
+    private HashMap<PlayerWrapper, Integer> TotalPlayersScore;
     private PlayerWrapper winner;
     private boolean interruptIfSomeoneLeaves, thereIsAWinner;
 
@@ -41,31 +45,39 @@ public class Game {
         ActiveMatch match = new ActiveMatch(numMatch, grid, players, language);
         matches.add(match);
 
-        ActiveMatch actualMatch = matches.get(numMatch);
-        actualMatch.throwDices();
+        this.getActualMatch().throwDices();
     }
 
     /**
      * Calcola lo score del match.
      */
-    public void calculateMatchScore() {
-        this.getActualMatch().calculateScore();
+    public void calculateMatchScore(HashMap<PlayerWrapper, String[]> map) {
+        ArrayList<PlayerScore> list = new ArrayList<>();
+        Set<Map.Entry<PlayerWrapper, String[]>> wordsSet = map.entrySet();
+
+        for(Map.Entry<PlayerWrapper, String[]> entry : wordsSet) {
+            list.add(new PlayerScore(entry.getKey(), entry.getValue(), language));
+        }
+
+        PlayerScore[] playerScores = list.toArray(new PlayerScore[0]);
+        this.getActualMatch().calculateScore(playerScores);
     }
 
     /**
      * Aggiorna i punteggi totali e controlla che ci sia un vincitore.
      */
-    public void calculateTotalScore() {
+    public void ConcludeMatchAndCalculateTotalScore() {
+        this.getActualMatch().conclude();
         HashMap<PlayerWrapper, Integer> actualMatchScore =  this.getActualMatch().getPlayersScore();
 
         for(int i = 0; i < actualMatchScore.size(); i++) {
             PlayerWrapper player = players.get(i);
 
             int matchScore = actualMatchScore.get(player);
-            int gameScore = playersScore.get(player);
+            int gameScore = TotalPlayersScore.get(player);
             int sum = matchScore + gameScore;
 
-            playersScore.put(player, sum);
+            TotalPlayersScore.put(player, sum);
         }
 
         this.checkIfThereIsAWinner();
@@ -83,8 +95,8 @@ public class Game {
      * Restituisce l'attuale punteggio di tutti i player.
      * @return un HashMap contenente il Player ed il suo attuale punteggio.
      */
-    public HashMap<PlayerWrapper, Integer> getPlayersScore() {
-        return playersScore;
+    public HashMap<PlayerWrapper, Integer> getTotalPlayersScore() {
+        return TotalPlayersScore;
     }
 
     /**
@@ -98,7 +110,7 @@ public class Game {
             state = GameState.INTERRUPTED;
 
         else
-            playersScore.remove(player);
+            TotalPlayersScore.remove(player);
     }
 
     /**
@@ -123,10 +135,10 @@ public class Game {
 
     // Setta l'attuale punteggio di tutti i player a 0.
     private void setPlayerScore() {
-        playersScore = new HashMap<>();
+        TotalPlayersScore = new HashMap<>();
 
         for(int i = 0; i < players.size(); i++) {
-            playersScore.put(players.get(i), 0);
+            TotalPlayersScore.put(players.get(i), 0);
         }
     }
 
@@ -136,9 +148,9 @@ public class Game {
 
         for(int i = 0; i < players.size(); i++) {
             PlayerWrapper player = players.get(i);
-            int score = playersScore.get(player);
+            int score = TotalPlayersScore.get(player);
 
-            if(score > max) {
+            if(score >= max) {
                 max = score;
                 winner = player;
                 thereIsAWinner = true;

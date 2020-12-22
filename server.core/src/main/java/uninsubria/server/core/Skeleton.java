@@ -75,6 +75,11 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
     }
 
     @Override
+    public String[] readWords() {
+        return null;
+    }
+
+    @Override
     public void readCommand(String command) throws IOException, ClassNotFoundException {
         CommProtocolCommands com = CommProtocolCommands.getByCommand(command);
         switch (Objects.requireNonNull(com)) {

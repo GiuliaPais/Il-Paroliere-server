@@ -32,6 +32,7 @@ public class Room {
     private Game game;
     private RoomManager roomManager;
     private boolean isPossibleToLeave;
+    private ChronometerRoom chronometerRoom;
 
     /**
      * Instantiates a new Room.
@@ -51,13 +52,17 @@ public class Room {
         this.language = language;
         this.ruleset = ruleset;
         this.roomStatus = RoomState.OPEN;
+
         setNumPlayers(numPlayers);
+
         this.playerSlots = new ArrayList<>();
         this.playerSlots.add(creator);
+
         isPossibleToLeave = true;
         roomManager = new RoomManager();
+
         try {
-            roomManager.addRoomProxy(creator.getIpAddress());
+            roomManager.addRoomProxy(creator);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,14 +78,14 @@ public class Room {
     public synchronized int joinRoom(PlayerWrapper player) {
         if (roomStatus.equals(RoomState.OPEN)) {
             try {
-                roomManager.addRoomProxy(player.getIpAddress());
+                roomManager.addRoomProxy(player);
             } catch (IOException e) {
                 return 1;
             }
             playerSlots.add(player);
             if(playerSlots.size() == numPlayers) {
                 roomStatus = RoomState.FULL;
-                ChronometerRoom chronometerRoom = new ChronometerRoom(ruleset.getTimeToStart(), id,
+                chronometerRoom = new ChronometerRoom(ruleset.getTimeToStart(), id,
                         RoomCommand.START_NEW_GAME);
                 chronometerRoom.start();
             }
@@ -104,7 +109,7 @@ public class Room {
                     });
             playerSlots.removeAll(toRemove);
             for (PlayerWrapper p : toRemove) {
-                roomManager.removeRoomProxy(p.getIpAddress());
+                roomManager.removeRoomProxy(p);
             }
             if (playerSlots.size() == 0) {
                 RoomList.closeRoom(this.id);
@@ -133,10 +138,17 @@ public class Room {
         this.roomStatus = roomStatus;
     }
 
+    /**
+     * Permette al giocatore passato come parametro di abbandonare la partita.
+     * @param playerID il player del giocatore.
+     */
     public void leaveGame(String playerID) {
         if(game != null) {
             PlayerWrapper playerTmp = this.findById(playerID);
             game.abandon(playerTmp);
+
+            if(ruleset.interruptIfSomeoneLeaves())
+                chronometerRoom.interrupt();
         }
     }
 
@@ -185,10 +197,41 @@ public class Room {
         return numPlayers;
     }
 
+    /**
+     * Inizia un nuovo game.
+     */
     public void newGame() {
         game = new Game(playerSlots, language, ruleset);
     }
 
+    /**
+     * Inizia un nuovo match.
+     */
+    public void newMatch() {
+        chronometerRoom = new ChronometerRoom(ruleset.getTimeToMatch(), id, RoomCommand.START_NEW_MATCH);
+        chronometerRoom.start();
+    }
+
+    /**
+     * Conclude l'attuale match e calcola i punteggi.
+     */
+    public void concludeMatch() {
+        chronometerRoom = new ChronometerRoom(ruleset.getTimeToWaitFromMatchToMatch(), id, RoomCommand.CONCLUDE_MATCH);
+        chronometerRoom.start();
+    }
+
+    /**
+     * Restituisce il RoomManager.
+     * @return il RoomManager.
+     */
+    public RoomManager getRoomManager() {
+        return roomManager;
+    }
+
+    /**
+     * Restituisce il Game.
+     * @return il Game.
+     */
     public Game getGame() {
         return game;
     }
@@ -202,14 +245,26 @@ public class Room {
         return playerSlots;
     }
 
+    /**
+     * Setta la possibilità di abbandonare la Room.
+     * @param isPossible booleano per settare la possibilità di abbandono.
+     */
     public void setIsPossibleToLeave(boolean isPossible) {
         isPossibleToLeave = isPossible;
     }
 
+    /**
+     * Restituisce true se è possibile abbandonare la stanza, false altrimenti.
+     * @return booleano che stabilisce se è possibile abbandonare.
+     */
     public boolean isPossibleToLeave() {
         return isPossibleToLeave;
     }
 
+    /**
+     * Restituisce gli attuali player nella Room.
+     * @return gli attuali player nella room.
+     */
     public ArrayList<String> getCurrentPlayers() {
         ArrayList<String> playerNames = new ArrayList<>();
         playerSlots.stream()

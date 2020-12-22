@@ -1,6 +1,7 @@
 package uninsubria.server.roomManager;
 
 
+import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 import uninsubria.utils.managersAPI.ProxySkeletonInterface;
@@ -27,12 +28,11 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	private final Socket socket;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
-//	private Long ping;
-//
-//	private final Long waitABitTime = 50L; // Tempo di attesa per il metodo privato waitABit. Richiamato anche in setSync.
+	private PlayerWrapper playerWrapper;
 
-	public ProxyRoom(InetAddress address) throws IOException {
-		this.socket = new Socket(address, CommHolder.ROOM_PORT);
+	public ProxyRoom(PlayerWrapper playerWrapper) throws IOException {
+		this.playerWrapper = playerWrapper;
+		this.socket = new Socket(playerWrapper.getIpAddress(), CommHolder.ROOM_PORT);
 		this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 	}
 
@@ -84,6 +84,21 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		switch (Objects.requireNonNull(com)) {
 			case SET_SYNC -> {}
 		}
+	}
+
+	@Override
+	public String[] readWords() throws IOException {
+		writeCommand(CommProtocolCommands.SEND_WORDS);
+		this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		String[] words = null;
+
+		try {
+			words = (String[]) in.readObject();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return words;
 	}
 
 	public void terminate() {

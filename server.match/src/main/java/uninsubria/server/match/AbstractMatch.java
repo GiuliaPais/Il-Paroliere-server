@@ -1,5 +1,6 @@
 package uninsubria.server.match;
 
+import uninsubria.server.scoreCounter.PlayerScore;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Player;
 

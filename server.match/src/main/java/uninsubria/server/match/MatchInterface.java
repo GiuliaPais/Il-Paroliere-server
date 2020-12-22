@@ -10,5 +10,5 @@ public interface MatchInterface {
     public Grid getGrid();
     public int getMatchNo();
     public ArrayList<PlayerWrapper> getParticipants();
-    void calculateScore();
+
 }

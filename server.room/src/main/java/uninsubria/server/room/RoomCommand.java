@@ -4,6 +4,7 @@ public enum RoomCommand {
 
     START_NEW_GAME,
     START_NEW_MATCH,
-    TEST;
+    CONCLUDE_MATCH;
+
 
 }

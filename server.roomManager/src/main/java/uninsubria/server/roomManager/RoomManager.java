@@ -2,10 +2,12 @@ package uninsubria.server.roomManager;
 
 import uninsubria.server.services.api.AbstractServiceFactory;
 import uninsubria.server.services.api.ServiceFactoryImpl;
+import uninsubria.server.wrappers.PlayerWrapper;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * RoomManager coordinates all operations that require the communication
@@ -19,39 +21,59 @@ import java.util.HashMap;
 public class RoomManager {
 
 	private final AbstractServiceFactory serviceFactory;
-	private HashMap<InetAddress, ProxyRoom> proxies;
+	private Map<PlayerWrapper, ProxyRoom> proxies;
 
 	/**
 	 * Instantiates a new Room manager.
 	 */
 	public RoomManager() {
 		this.serviceFactory = new ServiceFactoryImpl();
-		this.proxies = new HashMap<>();
+		this.proxies = new HashMap<PlayerWrapper, ProxyRoom>();
 	}
 
 	/*---Methods---*/
 	/**
 	 * Add room proxy.
 	 *
-	 * @param address the address
+	 * @param playerWrapper the playerWrapper
 	 * @throws IOException the io exception
 	 */
-	public void addRoomProxy(InetAddress address) throws IOException {
-		ProxyRoom proxyRoom = new ProxyRoom(address);
-		proxies.put(address, proxyRoom);
+	public void addRoomProxy(PlayerWrapper playerWrapper) throws IOException {
+		ProxyRoom proxyRoom = new ProxyRoom(playerWrapper);
+		proxies.put(playerWrapper, proxyRoom);
 	}
 
 	/**
 	 * Remove room proxy.
 	 *
-	 * @param address the address
+	 * @param playerWrapper the playerWrapper
 	 */
-	public void removeRoomProxy(InetAddress address) {
+	public void removeRoomProxy(PlayerWrapper playerWrapper) {
 		try {
-			proxies.remove(address).quit();
+			proxies.remove(playerWrapper).quit();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Legge le parole dai proxy e le restituisce insieme al giocatore che le ha trovate.
+	 * @return HashMap contenente player e parole trovate.
+	 */
+	public HashMap<PlayerWrapper, String[]> readWords() {
+		HashMap<PlayerWrapper, String[]> mapTmp = new HashMap<>();
+		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
+
+		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
+			try {
+				mapTmp.put(entry.getKey(), entry.getValue().readWords());
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return mapTmp;
 	}
 
 
