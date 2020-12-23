@@ -76,43 +76,61 @@ public class RoomManager {
 		return mapTmp;
 	}
 
+	/**
+	 * Manda ai player le facce dei dadi usciti dalla griglia ed i relativi numeri di dado.
+	 * @param faces le facce dei dadi.
+	 * @param numbs i numeri dei dadi.
+	 */
+	public void sendGrid(String[] faces, Integer[] numbs) {
+		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
 
-//	@Override
-//	public void sendScores(PlayerScore[] scores) {
-//		for(ProxyRoom p : proxy)
-//			p.sendScores(scores);
+		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
+			try {
+				entry.getValue().sendGrid(faces, numbs);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Manda lo score del match e lo score dell'intero game, estraendo dal PlayerWrapper solo il nome del giocatore.
+	 * @param matchScores lo score del match.
+	 * @param gameScores lo score del game.
+	 */
+	public void sendScores(HashMap<PlayerWrapper, Integer> matchScores, HashMap<PlayerWrapper, Integer> gameScores) {
+		// Estrazione dei nomi dal PlayerWrapper
+		HashMap<String, Integer> matchTmp = new HashMap<>();
+		HashMap<String, Integer> gameTmp = new HashMap<>();
+
+		Set<Map.Entry<PlayerWrapper, Integer>> matchSet =  matchScores.entrySet();
+		Set<Map.Entry<PlayerWrapper, Integer>> gameSet =  gameScores.entrySet();
+
+		for(Map.Entry<PlayerWrapper, Integer> entry : matchSet) {
+			matchTmp.put(entry.getKey().getPlayer().getName(), entry.getValue());
+		}
+
+		for(Map.Entry<PlayerWrapper, Integer> entry : gameSet) {
+			matchTmp.put(entry.getKey().getPlayer().getName(), entry.getValue());
+		}
+
+		// Invio dei punteggi
+		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
+
+		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
+			try {
+				entry.getValue().sendScores(matchTmp, gameTmp);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+
 //
-//	}
-//
-//	/**
-//	 * Manda ai player la griglia sotto forma di stringa anticipato dal tag "<GRID>".
-//	 * @param gridFaces le facce uscite sulla griglia da mandare.
-//	 * @param gridNumbers i numeri usciti sulla griglia da mandare.
-//	 */
-//	@Override
-//	public void sendGrid(String[] gridFaces, Integer[] gridNumbers) {
-//		for(ProxyRoom p : proxy)
-//			p.sendGrid(gridFaces, gridNumbers);
-//	}
-//
-//	/**
-//	 * Manda ai player il proprio system.currentTimeMillis() sotto forma
-//	 * di stringa anticipato dal tag "<SYNC>" per l'operazione di sincronizzazione.
-//	 */
-//	@Override
-//	public void setSyncTimer(Long millis) {
-//		for(ProxyRoom p : proxy)
-//			p.setSyncTimer(millis);
-//	}
-//
-//	/**
-//	 * Setta la latenza dei proxy tra player e room.
-//	 */
-//	@Override
-//	public void pingServer() {
-//		for(ProxyRoom p : proxy)
-//			p.pingServer();
-//	}
 //
 //	/**
 //	 * Manda a tutti i giocatori il nome del vincitore ed il suo punteggio.
@@ -142,21 +160,7 @@ public class RoomManager {
 //		return players;
 //	}
 //
-//	/**
-//	 * Restituisce true se il RoomManager è stato istanziato.
-//	 * @return true se istanziato correttamente.
-//	 */
-//	public boolean exists() {
-//		return exists;
-//	}
 //
-//	/**
-//	 * Restituisce l'attuale lingua utilizzata.
-//	 * @return la lingua utilizzata.
-//	 */
-//	public Language getLanguage() {
-//		return language;
-//	}
 //
 //	/**
 //	 * Attende che vengano inviate le parole alla fine del match.
@@ -177,16 +181,6 @@ public class RoomManager {
 //			array[i] = proxy[i].getPlayerScore();
 //
 //		return array;
-//	}
-//
-//	/*---Private methods---*/
-//	// Genera i proxy necessari per la comunicazione col singolo player.
-//	private void setProxy() {
-//		proxy = new ProxyRoom[players.length];
-//
-//		for(int i = 0; i < players.length; i++) {
-//			proxy[i] = new ProxyRoom(players[i], language);
-//		}
 //	}
 
 }

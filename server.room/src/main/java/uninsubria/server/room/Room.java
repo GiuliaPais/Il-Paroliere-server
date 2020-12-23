@@ -2,15 +2,14 @@ package uninsubria.server.room;
 
 
 import uninsubria.server.match.Game;
+import uninsubria.server.match.GameState;
 import uninsubria.server.roomManager.RoomManager;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Represents the server-side implementation of a player lobby.
@@ -32,7 +31,7 @@ public class Room {
     private Game game;
     private RoomManager roomManager;
     private boolean isPossibleToLeave;
-    private ChronometerRoom chronometerRoom;
+    private Timer timer;
 
     /**
      * Instantiates a new Room.
@@ -79,17 +78,20 @@ public class Room {
         if (roomStatus.equals(RoomState.OPEN)) {
             try {
                 roomManager.addRoomProxy(player);
+
             } catch (IOException e) {
                 return 1;
             }
+
             playerSlots.add(player);
+
             if(playerSlots.size() == numPlayers) {
                 roomStatus = RoomState.FULL;
-                chronometerRoom = new ChronometerRoom(ruleset.getTimeToStart(), id,
-                        RoomCommand.START_NEW_GAME);
-                chronometerRoom.start();
+                this.newGame();
             }
+
             return 0;
+
         } else {
             return 2;
         }
@@ -108,13 +110,16 @@ public class Room {
                         toRemove.add(playerWrapper);
                     });
             playerSlots.removeAll(toRemove);
+
             for (PlayerWrapper p : toRemove) {
                 roomManager.removeRoomProxy(p);
             }
+
             if (playerSlots.size() == 0) {
                 RoomList.closeRoom(this.id);
                 return;
             }
+
             if (playerSlots.size() < numPlayers)
                 roomStatus = RoomState.OPEN;
         }
@@ -148,7 +153,7 @@ public class Room {
             game.abandon(playerTmp);
 
             if(ruleset.interruptIfSomeoneLeaves())
-                chronometerRoom.interrupt();
+                timer.cancel();
         }
     }
 
@@ -201,23 +206,78 @@ public class Room {
      * Inizia un nuovo game.
      */
     public void newGame() {
-        game = new Game(playerSlots, language, ruleset);
+        roomStatus = RoomState.TIMEOUT;
+        isPossibleToLeave = false;
+
+        timer = new Timer("New game");
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                game = new Game(playerSlots, language, ruleset);
+                roomStatus = RoomState.GAMEON;
+                isPossibleToLeave = true;
+                newMatch();
+                timer.cancel();
+            }
+        };
+
+        long delay = ruleset.getTimeToStart().getTimeStamp();
+        timer.schedule(task, delay);
+
     }
 
     /**
      * Inizia un nuovo match.
      */
     public void newMatch() {
-        chronometerRoom = new ChronometerRoom(ruleset.getTimeToMatch(), id, RoomCommand.START_NEW_MATCH);
-        chronometerRoom.start();
+        game.newMatch();
+        String[] faces = game.getActualMatch().getGrid().getDiceFaces();
+        Integer[] numbs = game.getActualMatch().getGrid().getDiceNumb();
+
+        roomManager.sendGrid(faces, numbs);
+
+        timer = new Timer("New match");
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                HashMap<PlayerWrapper, String[]> words = roomManager.readWords();
+                game.calculateMatchScore(words);
+                concludeMatch();
+                timer.cancel();
+            }
+        };
+
+        long delay = ruleset.getTimeToMatch().getTimeStamp();
+        timer.schedule(task, delay);
     }
 
     /**
-     * Conclude l'attuale match e calcola i punteggi.
+     * Conclude l'attuale match e calcola i punteggi, mandandoli ai player.
      */
     public void concludeMatch() {
-        chronometerRoom = new ChronometerRoom(ruleset.getTimeToWaitFromMatchToMatch(), id, RoomCommand.CONCLUDE_MATCH);
-        chronometerRoom.start();
+        game.ConcludeMatchAndCalculateTotalScore();
+
+        HashMap<PlayerWrapper, Integer> matchScores = game.getActualMatch().getPlayersScore();
+        HashMap<PlayerWrapper, Integer> gameScores = game.getTotalPlayersScore();
+
+        roomManager.sendScores(matchScores, gameScores);
+
+        timer = new Timer("Conclude match");
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if(game.getGameState().equals(GameState.ONGOING))
+                    newMatch();
+
+                timer.cancel();
+            }
+        };
+
+        long delay = ruleset.getTimeToWaitFromMatchToMatch().getTimeStamp();
+        timer.schedule(task, delay);
     }
 
     /**

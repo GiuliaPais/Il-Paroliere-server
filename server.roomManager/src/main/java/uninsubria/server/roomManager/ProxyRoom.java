@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -59,6 +60,16 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	public void quit() throws IOException {
 		writeCommand(CommProtocolCommands.QUIT);
 		terminate();
+	}
+
+	@Override
+	public void sendGrid(String[] faces, Integer[] numbs) throws IOException {
+		writeCommand(CommProtocolCommands.SEND_GRID, faces, numbs);
+	}
+
+	@Override
+	public void sendScores(HashMap<String, Integer> matchScores, HashMap<String, Integer> gameScores) throws IOException {
+		writeCommand(CommProtocolCommands.SEND_SCORE, matchScores, gameScores);
 	}
 
 	@Override
