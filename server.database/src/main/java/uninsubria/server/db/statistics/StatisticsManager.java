@@ -2,6 +2,9 @@ package uninsubria.server.db.statistics;
 
 import uninsubria.server.dice.DiceSet;
 import uninsubria.server.dice.DiceSetStandard;
+import uninsubria.utils.business.PlayerStatResult;
+import uninsubria.utils.business.TurnsResult;
+import uninsubria.utils.business.WordGameStatResult;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.serviceResults.Result;
 import uninsubria.utils.serviceResults.ServiceResult;
@@ -20,19 +23,21 @@ import java.util.*;
  *
  * @author Giulia Pais
  * @author Alessandro Lerro
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class StatisticsManager {
     /*---Fields---*/
     private Connection connection;
 
     /*---Constructors---*/
+
     /**
      * Instantiates a new StatisticsManager.
      */
     public StatisticsManager() {}
 
     /*---Methods---*/
+
     /**
      * Gets connection.
      *
@@ -56,10 +61,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerMatch() throws SQLException {
-        String topPlayerPerMatch = "SELECT PLAYERID, SUM_MATCH AS MAX_MATCH_SCORE " +
+        String topPlayerPerMatch = "SELECT DISTINCT PLAYERID, SUM_MATCH AS MAX_MATCH_SCORE " +
                 "FROM " +
                 "(SELECT PLAYERID, GAME, MATCH, SUM(POINTS) AS SUM_MATCH " +
                 "FROM GAMEENTRY " +
@@ -74,15 +79,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topPlayerPerMatch);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest score per match");
-        Result<String> player_name;
-        Result<Integer> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Score" + i, rs.getInt(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -92,10 +95,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerGame() throws SQLException {
-        String topPlayerPerGame = "SELECT PLAYERID, SUM_GAME AS MAX_GAME_SCORE " +
+        String topPlayerPerGame = "SELECT DISTINCT PLAYERID, SUM_GAME AS MAX_GAME_SCORE " +
                 "FROM " +
                 "(SELECT PLAYERID, GAME,  SUM(POINTS) AS SUM_GAME " +
                 "FROM GAMEENTRY " +
@@ -109,15 +112,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topPlayerPerGame);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest score per game");
-        Result<String> player_name;
-        Result<Integer> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Score" + i, rs.getInt(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -127,10 +128,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerMatchAvg() throws SQLException {
-        String topPlayerAvgMatch = "SELECT PLAYERID, AVG_SCORE_MATCH " +
+        String topPlayerAvgMatch = "SELECT DISTINCT PLAYERID, AVG_SCORE_MATCH " +
                 "FROM " +
                 "(SELECT PLAYERID, AVG(SUM_MATCH) AS AVG_SCORE_MATCH " +
                 "FROM " +
@@ -148,15 +149,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topPlayerAvgMatch);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest average score per match");
-        Result<String> player_name;
-        Result<Double> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Score" + i, rs.getDouble(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -166,10 +165,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerGameAvg() throws SQLException {
-        String topPlayerAvgGame = "SELECT PLAYERID, AVG_SCORE_GAME " +
+        String topPlayerAvgGame = "SELECT DISTINCT PLAYERID, AVG_SCORE_GAME " +
                 "FROM " +
                 "(SELECT PLAYERID, AVG(SUM_GAME) AS AVG_SCORE_GAME " +
                 "FROM " +
@@ -188,15 +187,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topPlayerAvgGame);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Highest average score per game");
-        Result<String> player_name;
-        Result<Double> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Score" + i, rs.getDouble(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -206,10 +203,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerGamesN() throws SQLException {
-        String topPlayerNGames = "SELECT PLAYERID, TOTAL_GAMES " +
+        String topPlayerNGames = "SELECT DISTINCT PLAYERID, TOTAL_GAMES " +
                 "FROM " +
                 "(SELECT DISTINCT PLAYERID, COUNT(DISTINCT GAME) AS TOTAL_GAMES " +
                 "FROM GAMEENTRY " +
@@ -221,15 +218,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topPlayerNGames);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Games played record");
-        Result<String> player_name;
-        Result<Integer> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Games" + i, rs.getInt(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -239,10 +234,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerDuplicated() throws SQLException {
-        String topDuplicated = "SELECT PLAYERID, DUPL_OCCURR AS DUPLICATED_RECORD " +
+        String topDuplicated = "SELECT DISTINCT PLAYERID, DUPL_OCCURR AS DUPLICATED_RECORD " +
                 "FROM " +
                 "(SELECT PLAYERID, COUNT(*) AS DUPL_OCCURR " +
                 "FROM GAMEENTRY " +
@@ -256,15 +251,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topDuplicated);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Record duplicated words");
-        Result<String> player_name;
-        Result<Integer> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Duplicated" + i, rs.getInt(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -274,10 +267,10 @@ public class StatisticsManager {
      * they are all returned.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface topPlayerWrong() throws SQLException {
-        String topWrong = "SELECT PLAYERID, WRONG_OCCURR WRONG_RECORD " +
+        String topWrong = "SELECT DISTINCT PLAYERID, WRONG_OCCURR WRONG_RECORD " +
                 "FROM " +
                 "(SELECT PLAYERID, COUNT(*) AS WRONG_OCCURR " +
                 "FROM GAMEENTRY " +
@@ -291,15 +284,13 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(topWrong);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Record wrong words");
-        Result<String> player_name;
-        Result<Integer> player_score;
+        Result<PlayerStatResult> tuple;
         int i = 0;
         while (rs.next()) {
             i++;
-            player_name = new Result<>("Player_ID" + i, rs.getString(1));
-            player_score = new Result<>("Wrong" + i, rs.getInt(2));
-            result.addResult(player_name);
-            result.addResult(player_score);
+            tuple = new Result<>(Integer.toString(i), new PlayerStatResult(rs.getString(1),
+                    Integer.valueOf(rs.getInt(2)).doubleValue()));
+            result.addResult(tuple);
         }
         return result;
     }
@@ -308,7 +299,7 @@ public class StatisticsManager {
      * Produces a ranking of the occurrences for all valid words ever found.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface validWordsRanking() throws SQLException {
         String validWordsRanking = "SELECT DISTINCT Word, COUNT(*) as word_occurences " +
@@ -319,15 +310,15 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(validWordsRanking);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Ranking of valid words occurrences");
-        Result<String> word;
-        Result<Integer> occurrences;
-        int i = 0;
-        while (rs.next()) {
-            i++;
-            word = new Result<>("Word" + i, rs.getString(1));
-            occurrences = new Result<>("Occurrences" + i, rs.getInt(2));
-            result.addResult(word);
-            result.addResult(occurrences);
+        if (rs.next()) {
+            Hashtable<String, Integer> words = new Hashtable<>();
+            do {
+                String word = rs.getString(1);
+                Integer occ = rs.getInt(2);
+                words.put(word, occ);
+            } while (rs.next());
+            Result<Hashtable<String, Integer>> res = new Result<>("Occurrences", words);
+            result.addResult(res);
         }
         return result;
     }
@@ -336,7 +327,7 @@ public class StatisticsManager {
      * Produces a ranking of the occurrences for all requested words.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface requestedWordsRanking() throws SQLException {
         String requestedWordsRanking = "SELECT DISTINCT word, COUNT(*) as Definition_Request " +
@@ -347,15 +338,15 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(requestedWordsRanking);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Ranking of requested words occurrences");
-        Result<String> word;
-        Result<Integer> occurrences;
-        int i = 0;
-        while (rs.next()) {
-            i++;
-            word = new Result<>("Word" + i, rs.getString(1));
-            occurrences = new Result<>("Occurrences" + i, rs.getInt(2));
-            result.addResult(word);
-            result.addResult(occurrences);
+        if (rs.next()) {
+            Hashtable<String, Integer> words = new Hashtable<>();
+            do {
+                String word = rs.getString(1);
+                Integer occ = rs.getInt(2);
+                words.put(word, occ);
+            } while (rs.next());
+            Result<Hashtable<String, Integer>> res = new Result<>("Occurrences", words);
+            result.addResult(res);
         }
         return result;
     }
@@ -365,7 +356,7 @@ public class StatisticsManager {
      *
      * @param word the word requested
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface getGameByRequestedWord(String word) throws SQLException {
         String getGamesWhereRequested = "SELECT DISTINCT Game " +
@@ -375,23 +366,46 @@ public class StatisticsManager {
         statement.setString(1, word);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Games where the word was requested");
-        Result<UUID> games;
-        int i = 0;
-        while (rs.next()) {
-            i++;
-            games = new Result<>("GameID" + i, rs.getObject(1, UUID.class));
-            result.addResult(games);
+        if (rs.next()) {
+            int i = 0;
+            do {
+                Result<UUID> games = new Result<>(Integer.toString(++i), rs.getObject(1, UUID.class));
+                result.addResult(games);
+            } while (rs.next());
         }
         return result;
     }
 
     /**
+     * Returns matches statistics for each category of games (2-6 players), namely minimum, maximum and average
+     * number of matches.
+     *
+     * @return A service result wrapping the results of the queries
+     * @throws SQLException the sql exception
+     */
+    public ServiceResultInterface turnStats() throws SQLException {
+        HashMap<Integer, Integer[]> minMax = minMaxMatchesPerNPlayers();
+        HashMap<Integer, Double> avg = avgMatchesPerNPlayers();
+        ServiceResult serviceResult = new ServiceResult("TURNS STATS");
+        for (Integer i : minMax.keySet()) {
+            TurnsResult turnsResult = new TurnsResult();
+            turnsResult.setCategory(i);
+            turnsResult.setMinTurns(minMax.get(i)[0]);
+            turnsResult.setMaxTurns(minMax.get(i)[1]);
+            turnsResult.setAvgTurns(avg.get(i));
+            Result<TurnsResult> res = new Result<>(Integer.toString(i), turnsResult);
+            serviceResult.addResult(res);
+        }
+        return serviceResult;
+    }
+
+    /**
      * For each number of players, returns the minimum and maximum number of matches.
      *
-     * @return A ServiceResult wrapping the results of the query
+     * @return A map for each category of games
      * @throws SQLException
      */
-    public ServiceResultInterface minMaxMatchesPerNPlayers() throws SQLException {
+    private HashMap<Integer, Integer[]> minMaxMatchesPerNPlayers() throws SQLException {
         String minMaxMatches = "SELECT NUM_PLAYERS, MIN(NUM_MATCHES) AS MIN_NUMBER_MATCHES," +
                 "MAX(NUM_MATCHES) AS MAX_NUMBER_MATCHES " +
                 "FROM " +
@@ -407,30 +421,23 @@ public class StatisticsManager {
                 "GROUP BY NUM_PLAYERS";
         PreparedStatement statement = connection.prepareStatement(minMaxMatches);
         ResultSet rs = statement.executeQuery();
-        ServiceResultInterface result = new ServiceResult("Minimum and maximum matches for games with different number of players");
-        Result<Short> n_players;
-        Result<Integer> min_matches;
-        Result<Integer> max_matches;
-        int i = 0;
+        HashMap<Integer, Integer[]> minMaxTurns = new HashMap<>();
         while (rs.next()) {
-            i++;
-            n_players = new Result<>("PlayersN" + i, rs.getShort(1));
-            min_matches = new Result<>("Min matches" + i, rs.getInt(2));
-            max_matches = new Result<>("Max matches" + i, rs.getInt(3));
-            result.addResult(n_players);
-            result.addResult(min_matches);
-            result.addResult(max_matches);
+            int n_players = rs.getInt(1);
+            int min_matches = rs.getInt(2);
+            int max_matches = rs.getInt(3);
+            minMaxTurns.put(n_players, new Integer[] {min_matches, max_matches});
         }
-        return result;
+        return minMaxTurns;
     }
 
     /**
      * For each number of players, returns the average number of matches.
      *
-     * @return A ServiceResult wrapping the results of the query
+     * @return A map for each category of games
      * @throws SQLException
      */
-    public ServiceResultInterface avgMatchesPerNPlayers() throws SQLException {
+    private HashMap<Integer, Double> avgMatchesPerNPlayers() throws SQLException {
         String avgMatches = "SELECT NUM_PLAYERS, AVG(NUM_MATCHES) AS AVG_NUMBER_MATCHES " +
                 "FROM " +
                 "(SELECT GAME_NPLAYERS.GAMEID, NUM_MATCHES, NUM_PLAYERS " +
@@ -445,28 +452,23 @@ public class StatisticsManager {
                 "GROUP BY NUM_PLAYERS";
         PreparedStatement statement = connection.prepareStatement(avgMatches);
         ResultSet rs = statement.executeQuery();
-        ServiceResultInterface result = new ServiceResult("Average matches for games with different number of players");
-        Result<Short> n_players;
-        Result<Double> avg_matches;
-        int i = 0;
+        HashMap<Integer, Double> avgTurns = new HashMap<>();
         while (rs.next()) {
-            i++;
-            n_players = new Result<>("PlayersN" + i, rs.getShort(1));
-            avg_matches = new Result<>("Avg matches" + i, rs.getDouble(2));
-            result.addResult(n_players);
-            result.addResult(avg_matches);
+           int n_players = rs.getInt(1);
+           double avg = rs.getDouble(2);
+           avgTurns.put(n_players, avg);
         }
-        return result;
+        return avgTurns;
     }
 
     /**
      * For each game, identifies the word with the maximum score and returns the word and points.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface getGameMaxPointWords() throws SQLException {
-        String gameWordMaxPoints = "SELECT GAME, WORD, POINTS " +
+        String gameWordMaxPoints = "SELECT DISTINCT GAME, WORD, POINTS " +
                 "FROM GAMEENTRY " +
                 "WHERE (GAME, POINTS) IN " +
                 "(SELECT GAME, MAX(Points) AS MAX_POINTS " +
@@ -475,18 +477,16 @@ public class StatisticsManager {
         PreparedStatement statement = connection.prepareStatement(gameWordMaxPoints);
         ResultSet rs = statement.executeQuery();
         ServiceResultInterface result = new ServiceResult("Game words with highest points");
-        Result<UUID> game;
-        Result<String> word;
-        Result<Integer> points;
-        int i = 0;
-        while (rs.next()) {
-            i++;
-            game = new Result<>("Game" + i, rs.getObject(1, UUID.class));
-            word = new Result<>("Word" + i, rs.getString(2));
-            points = new Result<>("Points" + i, rs.getInt(3));
-            result.addResult(game);
-            result.addResult(word);
-            result.addResult(points);
+        if (rs.next()) {
+            int i = 0;
+            do {
+                UUID game = rs.getObject(1, UUID.class);
+                String word = rs.getString(2);
+                Integer points = rs.getInt(3);
+                WordGameStatResult tuple = new WordGameStatResult(game, word, points);
+                Result<WordGameStatResult> res = new Result<>(Integer.toString(++i), tuple);
+                result.addResult(res);
+            } while (rs.next());
         }
         return result;
     }
@@ -495,52 +495,56 @@ public class StatisticsManager {
      * Produces the average occurrences for the letters in the grid for each language supported.
      *
      * @return A ServiceResult wrapping the results of the query
-     * @throws SQLException
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws SQLException the sql exception
      */
     public ServiceResultInterface avgLetterOnGridOccurrences() throws SQLException {
         ServiceResult avg_occurrences = new ServiceResult("Average letter occurrences");
         /* For every language supported by the application do */
+        String allGridsPerLanguage = "SELECT GRID " + "FROM GAMEINFO " +
+                "WHERE LANGUAGE=?";
         for (Language lang : Language.values()) {
             /* Retrieve from the database all the grids of games with the current language.
             * This is necessary since grids generated can differ based on different dice sets
             * for different languages. */
-            String allGridsPerLanguage = "SELECT GRID " + "FROM GAMEINFO " +
-                    "WHERE LANGUAGE=?";
             PreparedStatement statement = connection.prepareStatement(allGridsPerLanguage);
             statement.setString(1, lang.name());
             ResultSet rs = statement.executeQuery();
-            List<String[]> grids = new ArrayList<>();
-            while (rs.next()) {
-                /* Grids are saved in the database per game. To obtain a list of grids for every match
-                * every game grid is divided by 16 */
-                String[] gameGrid = (String[]) rs.getArray(1).getArray();
-                int chunks = gameGrid.length / 16;
-                int j = 0;
-                for (int i = 0; i < chunks; i++) {
-                    grids.add(Arrays.copyOfRange(gameGrid, j, j+16));
-                    j += 16;
-                }
-            }
             /* Retrieves all the possible letters that can appear on the grid based on the language
-            * and the dice set */
+             * and the dice set */
             DiceSet diceSet = new DiceSet(DiceSetStandard.valueOf(lang.name()));
             String[] factors = diceSet.getLettersOccurrences();
             /* Counts occurrences for every grid */
             Hashtable<String, Integer> abs_occurr = new Hashtable<>();
+            Hashtable<String, Double> avg_occurr = new Hashtable<>();
             for (String f : factors) {
                 abs_occurr.put(f, 0);
             }
-            for (String[] grid : grids) {
-                for (String letter : grid) {
-                    abs_occurr.merge(letter, 1, Integer::sum);
+            List<String[]> grids = new ArrayList<>();
+            if (rs.next()) {
+                do {
+                    /* Grids are saved in the database per game. To obtain a list of grids for every match
+                     * every game grid is divided by 16 */
+                    String[] gameGrid = (String[]) rs.getArray(1).getArray();
+                    int chunks = gameGrid.length / 16;
+                    int j = 0;
+                    for (int i = 0; i < chunks; i++) {
+                        grids.add(Arrays.copyOfRange(gameGrid, j, j+16));
+                        j += 16;
+                    }
+                } while (rs.next());
+                for (String[] grid : grids) {
+                    for (String letter : grid) {
+                        abs_occurr.merge(letter, 1, Integer::sum);
+                    }
                 }
-            }
-            /* Obtains average occurrences with the size of the grids list */
-            Hashtable<String, Double> avg_occurr = new Hashtable<>();
-            for (Map.Entry<String, Integer> entry : abs_occurr.entrySet()) {
-                avg_occurr.put(entry.getKey(), entry.getValue().doubleValue() / grids.size());
+                /* Obtains average occurrences with the size of the grids list */
+                for (Map.Entry<String, Integer> entry : abs_occurr.entrySet()) {
+                    avg_occurr.put(entry.getKey(), entry.getValue().doubleValue() / grids.size());
+                }
+            } else {
+                for (Map.Entry<String, Integer> entry : abs_occurr.entrySet()) {
+                    avg_occurr.put(entry.getKey(), 0.0);
+                }
             }
             Result<Hashtable<String, Double>> res = new Result<>(lang.name(), avg_occurr);
             avg_occurrences.addResult(res);

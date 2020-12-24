@@ -2,10 +2,13 @@ package uninsubria.server.db.api;
 
 import uninsubria.server.db.businesslayer.UserToken;
 import uninsubria.server.db.dao.*;
+import uninsubria.server.db.statistics.StatisticsManager;
 import uninsubria.server.email.EmailManager;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.security.PasswordEncryptor;
 import uninsubria.utils.serviceResults.ErrorMsgType;
+import uninsubria.utils.serviceResults.ServiceResultAggregate;
+import uninsubria.utils.serviceResults.ServiceResultInterface;
 
 import javax.mail.MessagingException;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +34,7 @@ public class TransactionManager {
 	private final GameInfoDAO gameInfoDAO;
 	private final GameEntryDAO gameEntryDAO;
 	private final UserTokenDAO userTokenDAO;
+	private final StatisticsManager statisticsManager;
 
 	/*---Constructors---*/
 	/**
@@ -41,6 +45,7 @@ public class TransactionManager {
 		this.gameInfoDAO = new GameInfoDAOImpl();
 		this.gameEntryDAO = new GameEntryDAOImpl();
 		this.userTokenDAO = new UserTokenDAOImpl();
+		this.statisticsManager = new StatisticsManager();
 	}
 
 	/*---Methods---*/
@@ -555,6 +560,80 @@ public class TransactionManager {
 		} catch (SQLException throwables) {
 			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
 			return;
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Fetch statistics as a single aggregate.
+	 *
+	 * @param errorCode a list where the function can add error codes
+	 * @return the service result aggregate
+	 */
+	public ServiceResultAggregate fetchStatistics(List<ErrorMsgType> errorCode) {
+		/* Obtain a connection first */
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException throwables) {
+			throwables.printStackTrace();
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return null;
+		}
+		statisticsManager.setConnection(connection);
+		ServiceResultAggregate allStats = new ServiceResultAggregate("STATISTICS");
+		ServiceResultAggregate playerStats = new ServiceResultAggregate("PLAYERS STATS");
+		ServiceResultAggregate gameStats = new ServiceResultAggregate("GAME STATS");
+		ServiceResultAggregate wordStats = new ServiceResultAggregate("WORD STATS");
+		try {
+			playerStats.addComponent(statisticsManager.topPlayerGame());
+			playerStats.addComponent(statisticsManager.topPlayerMatch());
+			playerStats.addComponent(statisticsManager.topPlayerGameAvg());
+			playerStats.addComponent(statisticsManager.topPlayerMatchAvg());
+			playerStats.addComponent(statisticsManager.topPlayerGamesN());
+			playerStats.addComponent(statisticsManager.topPlayerDuplicated());
+			playerStats.addComponent(statisticsManager.topPlayerWrong());
+			gameStats.addComponent(statisticsManager.turnStats());
+			gameStats.addComponent(statisticsManager.avgLetterOnGridOccurrences());
+			wordStats.addComponent(statisticsManager.validWordsRanking());
+			wordStats.addComponent(statisticsManager.requestedWordsRanking());
+			wordStats.addComponent(statisticsManager.getGameMaxPointWords());
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+			errorCode.add(ErrorMsgType.GENERIC_DB_ERROR);
+			return null;
+		} finally {
+			resetConnections(connection);
+		}
+		allStats.addComponent(playerStats);
+		allStats.addComponent(gameStats);
+		allStats.addComponent(wordStats);
+		return allStats;
+	}
+
+	/**
+	 * Fetches stats for a word provided as input.
+	 *
+	 * @param word the word
+	 * @return the service result interface
+	 */
+	public ServiceResultInterface requestWordStats(String word) {
+		/* Obtain a connection first */
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException throwables) {
+			throwables.printStackTrace();
+			return null;
+		}
+		statisticsManager.setConnection(connection);
+		try {
+			ServiceResultInterface serviceResult = statisticsManager.getGameByRequestedWord(word);
+			return serviceResult;
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+			return null;
 		} finally {
 			resetConnections(connection);
 		}
