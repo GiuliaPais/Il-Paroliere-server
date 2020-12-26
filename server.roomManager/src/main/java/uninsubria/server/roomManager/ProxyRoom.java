@@ -25,11 +25,14 @@ import java.util.Objects;
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
-	private final Duration FIXED_TIME_ADJUST = Duration.ofMillis(100);
+	private final Duration FIXED_TIME_ADJUST = Duration.ofMillis(2000);
 	private final Socket socket;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	private PlayerWrapper playerWrapper;
+
+	private Instant pingInit;
+	private Instant nextScheduledTimerTime;
 
 	public ProxyRoom(PlayerWrapper playerWrapper) throws IOException {
 		this.playerWrapper = playerWrapper;
@@ -37,23 +40,19 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 	}
 
-	@Override
-	public void setTimer(TimerType timerType) throws IOException {
-		Instant initial = Instant.now();
-		writeCommand(CommProtocolCommands.SET_SYNC, timerType);
-		try {
-			if (in == null) {
-				this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-			}
-			readCommand(in.readUTF());
-			Instant after = Instant.now();
-			long ping = initial.until(after, ChronoUnit.MILLIS);
-			Instant future = Instant.now().plus(ping, ChronoUnit.MILLIS).plus(FIXED_TIME_ADJUST);
-			out.writeObject(future);
-			//other stuff TODO
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+	public Instant startNewGame(String[] faces, Integer[] numbs) throws IOException, ClassNotFoundException {
+		/* Signals a new game is starting by sending the grid and uses this to ping the client */
+		pingInit = Instant.now();
+		writeCommand(CommProtocolCommands.GAME_STARTING, faces, numbs);
+		if (in == null) {
+			this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		}
+		readCommand(in.readUTF());
+		return nextScheduledTimerTime;
+	}
+
+	public void interruptGame() throws IOException {
+		writeCommand(CommProtocolCommands.INTERRUPT_GAME);
 	}
 
 	@Override
@@ -93,7 +92,12 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		}
 		CommProtocolCommands com = CommProtocolCommands.getByCommand(command);
 		switch (Objects.requireNonNull(com)) {
-			case SET_SYNC -> {}
+			case GAME_STARTING -> {
+				Instant pingReceived = Instant.now();
+				long ping = pingInit.until(pingReceived, ChronoUnit.MILLIS);
+				nextScheduledTimerTime = Instant.now().plus(ping, ChronoUnit.MILLIS).plus(FIXED_TIME_ADJUST);
+				setTimer(nextScheduledTimerTime);
+			}
 		}
 	}
 
@@ -129,6 +133,10 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void setTimer(Instant instant) throws IOException {
+		writeCommand(CommProtocolCommands.SET_SYNC, instant);
 	}
 
 //	/**

@@ -9,6 +9,7 @@ import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -206,51 +207,73 @@ public class Room {
      * Inizia un nuovo game.
      */
     public void newGame() {
-        roomStatus = RoomState.TIMEOUT;
-        isPossibleToLeave = false;
-
-        timer = new Timer("New game");
-
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                game = new Game(playerSlots, language, ruleset);
-                roomStatus = RoomState.GAMEON;
-                isPossibleToLeave = true;
-                newMatch();
-                timer.cancel();
+//        roomStatus = RoomState.TIMEOUT;
+//        isPossibleToLeave = false;
+//
+//        timer = new Timer("New game");
+//
+//        TimerTask task = new TimerTask() {
+//            @Override
+//            public void run() {
+//                game = new Game(playerSlots, language, ruleset);
+//                roomStatus = RoomState.GAMEON;
+//                isPossibleToLeave = true;
+//                newMatch();
+//                timer.cancel();
+//            }
+//        };
+//
+//        long delay = ruleset.getTimeToStart().getTimeStamp();
+//        timer.schedule(task, delay);
+        /* Prepares a new game */
+        Game newGame = new Game(playerSlots, language, ruleset);
+        /* Contacts players, sends them the grid. If one or more players can't be reached rooms adjusts accordingly */
+        List<Instant> timerInstant = roomManager.newGame(game.getActualMatch().getGrid().getDiceFaces(), game.getActualMatch().getGrid().getDiceNumb());
+        if (timerInstant.size() < playerSlots.size()) { //means one or more players weren't reachable
+            for (PlayerWrapper p : playerSlots) {
+                if (!roomManager.getPlayers().contains(p)) {
+                    game.abandon(p);
+                    playerSlots.remove(p);
+                }
             }
-        };
-
-        long delay = ruleset.getTimeToStart().getTimeStamp();
-        timer.schedule(task, delay);
-
+            if (game.getGameState().equals(GameState.INTERRUPTED)) {
+                //If game was interrupted send notification to remaining players and set the room to open again
+                roomManager.interruptGame();
+                if (playerSlots.size() < numPlayers) {
+                    roomStatus = RoomState.OPEN;
+                }
+                return;
+            }
+        }
+        Instant max = timerInstant.stream().max(Instant::compareTo).get();
+        game = newGame;
+        //timer
     }
 
     /**
      * Inizia un nuovo match.
      */
     public void newMatch() {
-        game.newMatch();
-        String[] faces = game.getActualMatch().getGrid().getDiceFaces();
-        Integer[] numbs = game.getActualMatch().getGrid().getDiceNumb();
-
-        roomManager.sendGrid(faces, numbs);
-
-        timer = new Timer("New match");
-
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                HashMap<PlayerWrapper, String[]> words = roomManager.readWords();
-                game.calculateMatchScore(words);
-                concludeMatch();
-                timer.cancel();
-            }
-        };
-
-        long delay = ruleset.getTimeToMatch().getTimeStamp();
-        timer.schedule(task, delay);
+//        game.newMatch();
+//        String[] faces = game.getActualMatch().getGrid().getDiceFaces();
+//        Integer[] numbs = game.getActualMatch().getGrid().getDiceNumb();
+//
+//        roomManager.sendGrid(faces, numbs);
+//
+//        timer = new Timer("New match");
+//
+//        TimerTask task = new TimerTask() {
+//            @Override
+//            public void run() {
+//                HashMap<PlayerWrapper, String[]> words = roomManager.readWords();
+//                game.calculateMatchScore(words);
+//                concludeMatch();
+//                timer.cancel();
+//            }
+//        };
+//
+//        long delay = ruleset.getTimeToMatch().getTimeStamp();
+//        timer.schedule(task, delay);
     }
 
     /**

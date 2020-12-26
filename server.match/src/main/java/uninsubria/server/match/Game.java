@@ -6,6 +6,7 @@ import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,15 +27,14 @@ public class Game {
     public Game(ArrayList<PlayerWrapper> players, Language language, Ruleset ruleset) {
         this.players = players;
         this.language = language;
-
         interruptIfSomeoneLeaves = ruleset.interruptIfSomeoneLeaves();
         maxScoreToWin = ruleset.getMaxScoreToWin();
         grid = new Grid(language);
         state = GameState.ONGOING;
         numMatch = 0;
         thereIsAWinner = false;
-
         this.setPlayerScore();
+        newMatch();
     }
 
     /**
@@ -44,7 +44,6 @@ public class Game {
         numMatch++;
         ActiveMatch match = new ActiveMatch(numMatch, grid, players, language);
         matches.add(match);
-
         this.getActualMatch().throwDices();
     }
 
@@ -163,6 +162,10 @@ public class Game {
         if(thereIsAWinner) {
            state = GameState.FINISHED;
         }
+    }
+
+    public ArrayList<PlayerWrapper> getPlayers() {
+        return players;
     }
 
 }

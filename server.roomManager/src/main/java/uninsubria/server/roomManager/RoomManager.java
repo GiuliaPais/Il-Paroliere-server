@@ -3,11 +3,11 @@ package uninsubria.server.roomManager;
 import uninsubria.server.services.api.AbstractServiceFactory;
 import uninsubria.server.services.api.ServiceFactoryImpl;
 import uninsubria.server.wrappers.PlayerWrapper;
+import uninsubria.utils.business.Player;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * RoomManager coordinates all operations that require the communication
@@ -28,7 +28,7 @@ public class RoomManager {
 	 */
 	public RoomManager() {
 		this.serviceFactory = new ServiceFactoryImpl();
-		this.proxies = new HashMap<PlayerWrapper, ProxyRoom>();
+		this.proxies = new HashMap<>();
 	}
 
 	/*---Methods---*/
@@ -54,6 +54,33 @@ public class RoomManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public List<Instant> newGame(String[] gridFaces, Integer[] gridNumb) {
+		List<Instant> times = new ArrayList<>();
+		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+			try {
+				Instant future = entry.getValue().startNewGame(gridFaces, gridNumb);
+				times.add(future);
+			} catch (IOException | ClassNotFoundException e) {
+				/* If there were communication errors, this player must be disconnected from the room and game re setted */
+				e.printStackTrace();
+				entry.getValue().terminate();
+				proxies.remove(entry.getKey());
+			}
+		}
+		return times;
+	}
+
+	public void interruptGame() {
+		proxies.entrySet().stream()
+				.forEach(e -> {
+					try {
+						e.getValue().interruptGame();
+					} catch (IOException ioException) {
+						ioException.printStackTrace();
+					}
+				});
 	}
 
 	/**
@@ -129,7 +156,9 @@ public class RoomManager {
 
 	}
 
-
+	public Set<PlayerWrapper> getPlayers() {
+		return proxies.keySet();
+	}
 //
 //
 //	/**
