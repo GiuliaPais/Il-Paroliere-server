@@ -14,10 +14,10 @@ public class Grid {
 	private String[] diceFaces;
 	private Integer[] diceNumb;
 
-	public Grid() {
-		dices = new DiceSet();
-		diceNumb = dices.getResultNumb();
-	}
+//	public Grid() {
+//		dices = new DiceSet();
+//		diceNumb = dices.getResultNumb();
+//	}
 
 	public Grid(Language l) {
 		dices = new DiceSet(DiceSetStandard.getByLanguage(l.getLanguage()));

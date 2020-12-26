@@ -33,6 +33,7 @@ public class Game {
         state = GameState.ONGOING;
         numMatch = 0;
         thereIsAWinner = false;
+        this.matches = new ArrayList<>();
         this.setPlayerScore();
         newMatch();
     }
@@ -87,7 +88,7 @@ public class Game {
      * @return il match attuale.
      */
     public ActiveMatch getActualMatch() {
-        return matches.get(numMatch);
+        return matches.get(numMatch-1);
     }
 
     /**

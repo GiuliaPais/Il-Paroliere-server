@@ -20,7 +20,6 @@ public class ActiveMatch extends AbstractMatch implements ActiveMatchInterface {
         super.matchNo = numMatch;
         super.participants = participants;
         super.grid = grid;
-
         this.language = language;
 
         playersScore = new HashMap<>();

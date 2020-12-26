@@ -16,8 +16,8 @@ import java.util.*;
  * Represents the server-side implementation of a player lobby.
  *
  * @author Davide Di Giovanni
- * @author Giulia Pais (minor)
- * @version 0.9.3
+ * @author Giulia Pais
+ * @version 0.9.4
  */
 public class Room {
 
@@ -34,6 +34,7 @@ public class Room {
     private boolean isPossibleToLeave;
     private Timer timer;
 
+    /*---Constructors---*/
     /**
      * Instantiates a new Room.
      *
@@ -44,7 +45,6 @@ public class Room {
      * @param ruleset    the ruleset
      * @param creator    the creator
      */
-    /*---Constructors---*/
     public Room(UUID roomId, String roomName, Integer numPlayers, Language language, Ruleset ruleset,
                 PlayerWrapper creator) {
         this.id = roomId;
@@ -204,50 +204,37 @@ public class Room {
     }
 
     /**
-     * Inizia un nuovo game.
+     * Starts a new game when the room is full.
+     * If any problem occurs while trying to communicate with
+     * players, rooms adjusts according to the Ruleset chosen:
+     * for standard ruleset the game is interrupted and unreachable
+     * players are expelled from the room.
      */
-    public void newGame() {
-//        roomStatus = RoomState.TIMEOUT;
-//        isPossibleToLeave = false;
-//
-//        timer = new Timer("New game");
-//
-//        TimerTask task = new TimerTask() {
-//            @Override
-//            public void run() {
-//                game = new Game(playerSlots, language, ruleset);
-//                roomStatus = RoomState.GAMEON;
-//                isPossibleToLeave = true;
-//                newMatch();
-//                timer.cancel();
-//            }
-//        };
-//
-//        long delay = ruleset.getTimeToStart().getTimeStamp();
-//        timer.schedule(task, delay);
+    private void newGame() {
         /* Prepares a new game */
         Game newGame = new Game(playerSlots, language, ruleset);
         /* Contacts players, sends them the grid. If one or more players can't be reached rooms adjusts accordingly */
-        List<Instant> timerInstant = roomManager.newGame(game.getActualMatch().getGrid().getDiceFaces(), game.getActualMatch().getGrid().getDiceNumb());
+        List<Instant> timerInstant = roomManager.newGame(newGame.getActualMatch().getGrid().getDiceFaces(), newGame.getActualMatch().getGrid().getDiceNumb());
         if (timerInstant.size() < playerSlots.size()) { //means one or more players weren't reachable
             for (PlayerWrapper p : playerSlots) {
                 if (!roomManager.getPlayers().contains(p)) {
-                    game.abandon(p);
+                    newGame.abandon(p);
                     playerSlots.remove(p);
                 }
             }
-            if (game.getGameState().equals(GameState.INTERRUPTED)) {
+            if (newGame.getGameState().equals(GameState.INTERRUPTED)) {
                 //If game was interrupted send notification to remaining players and set the room to open again
                 roomManager.interruptGame();
                 if (playerSlots.size() < numPlayers) {
-                    roomStatus = RoomState.OPEN;
+                    setRoomStatus(RoomState.OPEN);
                 }
                 return;
             }
         }
         Instant max = timerInstant.stream().max(Instant::compareTo).get();
         game = newGame;
-        //timer
+        //Parte un timer che semplicemente decrementa una variabile ogni secondo. Quando arriva a 0 la stanza chiede
+        //le parole ai giocatori TODO
     }
 
     /**
@@ -280,27 +267,27 @@ public class Room {
      * Conclude l'attuale match e calcola i punteggi, mandandoli ai player.
      */
     public void concludeMatch() {
-        game.ConcludeMatchAndCalculateTotalScore();
-
-        HashMap<PlayerWrapper, Integer> matchScores = game.getActualMatch().getPlayersScore();
-        HashMap<PlayerWrapper, Integer> gameScores = game.getTotalPlayersScore();
-
-        roomManager.sendScores(matchScores, gameScores);
-
-        timer = new Timer("Conclude match");
-
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                if(game.getGameState().equals(GameState.ONGOING))
-                    newMatch();
-
-                timer.cancel();
-            }
-        };
-
-        long delay = ruleset.getTimeToWaitFromMatchToMatch().getTimeStamp();
-        timer.schedule(task, delay);
+//        game.ConcludeMatchAndCalculateTotalScore();
+//
+//        HashMap<PlayerWrapper, Integer> matchScores = game.getActualMatch().getPlayersScore();
+//        HashMap<PlayerWrapper, Integer> gameScores = game.getTotalPlayersScore();
+//
+//        roomManager.sendScores(matchScores, gameScores);
+//
+//        timer = new Timer("Conclude match");
+//
+//        TimerTask task = new TimerTask() {
+//            @Override
+//            public void run() {
+//                if(game.getGameState().equals(GameState.ONGOING))
+//                    newMatch();
+//
+//                timer.cancel();
+//            }
+//        };
+//
+//        long delay = ruleset.getTimeToWaitFromMatchToMatch().getTimeStamp();
+//        timer.schedule(task, delay);
     }
 
     /**

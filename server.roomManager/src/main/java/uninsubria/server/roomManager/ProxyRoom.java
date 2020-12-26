@@ -21,7 +21,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -40,6 +40,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 	}
 
+	@Override
 	public Instant startNewGame(String[] faces, Integer[] numbs) throws IOException, ClassNotFoundException {
 		/* Signals a new game is starting by sending the grid and uses this to ping the client */
 		pingInit = Instant.now();
@@ -51,6 +52,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		return nextScheduledTimerTime;
 	}
 
+	@Override
 	public void interruptGame() throws IOException {
 		writeCommand(CommProtocolCommands.INTERRUPT_GAME);
 	}
@@ -59,11 +61,6 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	public void quit() throws IOException {
 		writeCommand(CommProtocolCommands.QUIT);
 		terminate();
-	}
-
-	@Override
-	public void sendGrid(String[] faces, Integer[] numbs) throws IOException {
-		writeCommand(CommProtocolCommands.SEND_GRID, faces, numbs);
 	}
 
 	@Override
