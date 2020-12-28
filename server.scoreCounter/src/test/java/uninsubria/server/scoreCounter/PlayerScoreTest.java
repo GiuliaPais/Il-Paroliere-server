@@ -24,6 +24,22 @@ class PlayerScoreTest {
     }
 
     @Test
+    void nullConstructor() {
+        language = Language.ITALIAN;
+
+        // Da un arrayList vuoto
+        ArrayList<String> list = new ArrayList<>();
+        String[] words = list.toArray(new String[0]);
+        test = new PlayerScore(player, words, language);
+        assertEquals(0, test.getTotalScore());
+
+        // null
+        words = null;
+        test = new PlayerScore(player, words, language);
+        assertEquals(0, test.getTotalScore());
+    }
+
+    @Test
     void setDuplicateWords() {
         WordAnalyzer w1 = new WordAnalyzer("Abbaiare", language);
         ArrayList<WordAnalyzer> list = new ArrayList<>();

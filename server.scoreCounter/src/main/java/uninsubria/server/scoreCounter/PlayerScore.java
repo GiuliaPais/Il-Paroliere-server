@@ -24,7 +24,14 @@ public class PlayerScore {
     public PlayerScore(PlayerWrapper p, String[] words, Language l) {
         player = p;
         language = l;
-        this.words = setWords(words);
+
+        if(words == null) {
+            String[] arrayTmp = {""};
+            this.words = setWords(arrayTmp);
+
+        } else
+            this.words = setWords(words);
+
         setTotalScore();
     }
 

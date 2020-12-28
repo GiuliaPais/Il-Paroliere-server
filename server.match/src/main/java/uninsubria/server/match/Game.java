@@ -114,8 +114,8 @@ public class Game {
     }
 
     /**
-     * Restituisce il nome del vincitore.
-     * @return il nome del vincitore come Stringa.
+     * Restituisce il vincitore.
+     * @return il vincitore come PLayerWrapper.
      */
     public PlayerWrapper getWinner() {
         return winner;
