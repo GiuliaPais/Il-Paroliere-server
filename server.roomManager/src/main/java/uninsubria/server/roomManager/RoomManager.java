@@ -3,11 +3,14 @@ package uninsubria.server.roomManager;
 import uninsubria.server.services.api.AbstractServiceFactory;
 import uninsubria.server.services.api.ServiceFactoryImpl;
 import uninsubria.server.wrappers.PlayerWrapper;
-import uninsubria.utils.business.Player;
+import uninsubria.utils.business.GameScore;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * RoomManager coordinates all operations that require the communication
@@ -22,6 +25,7 @@ public class RoomManager {
 
 	private final AbstractServiceFactory serviceFactory;
 	private Map<PlayerWrapper, ProxyRoom> proxies;
+	private ExecutorService executorService = Executors.newCachedThreadPool();
 
 	/**
 	 * Instantiates a new Room manager.
@@ -38,8 +42,8 @@ public class RoomManager {
 	 * @param playerWrapper the playerWrapper
 	 * @throws IOException the io exception
 	 */
-	public void addRoomProxy(PlayerWrapper playerWrapper) throws IOException {
-		ProxyRoom proxyRoom = new ProxyRoom(playerWrapper);
+	public synchronized void addRoomProxy(PlayerWrapper playerWrapper) throws IOException {
+		ProxyRoom proxyRoom = new ProxyRoom(playerWrapper.getIpAddress());
 		proxies.put(playerWrapper, proxyRoom);
 	}
 
@@ -48,7 +52,7 @@ public class RoomManager {
 	 *
 	 * @param playerWrapper the playerWrapper
 	 */
-	public void removeRoomProxy(PlayerWrapper playerWrapper) {
+	public synchronized void removeRoomProxy(PlayerWrapper playerWrapper) {
 		try {
 			proxies.remove(playerWrapper).quit();
 		} catch (IOException e) {
@@ -56,30 +60,64 @@ public class RoomManager {
 		}
 	}
 
-	public List<Instant> newGame(String[] gridFaces, Integer[] gridNumb) {
+	public synchronized List<Instant> newGame() {
 		List<Instant> times = new ArrayList<>();
-		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
-			try {
-				Instant future = entry.getValue().startNewGame(gridFaces, gridNumb);
-				times.add(future);
-			} catch (IOException | ClassNotFoundException e) {
-				/* If there were communication errors, this player must be disconnected from the room and game re setted */
-				e.printStackTrace();
-				entry.getValue().terminate();
-				proxies.remove(entry.getKey());
+		List<Callable<Instant>> tasks = new ArrayList<>();
+		Map<Integer, PlayerWrapper> identity = new HashMap<>();
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<Instant> task = () -> entry.getValue().startNewGame();
+					tasks.add(task);
+					identity.put(tasks.indexOf(task), entry.getKey());
+				});
+		/* Submit */
+		try {
+			List<Future<Instant>> results = executorService.invokeAll(tasks);
+			for (Future<Instant> future : results) {
+				try {
+					Instant instant = future.get();
+					times.add(instant);
+				} catch (ExecutionException e) {
+					/* If there were communication errors, this player must be disconnected */
+					e.printStackTrace();
+					ProxyRoom proxy = proxies.get(identity.get(results.indexOf(future)));
+					proxy.terminate();
+					Set<PlayerWrapper> key = proxies.entrySet().stream()
+							.filter(entry -> entry.getValue().equals(proxy))
+							.map(entry -> entry.getKey())
+							.collect(Collectors.toSet());
+					for (PlayerWrapper k : key) {
+						proxies.remove(k);
+					}
+				}
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		return times;
 	}
 
-	public void interruptGame() {
+	public void newMatch(String[] gridF, Integer[] gridNum) {
 		proxies.entrySet().stream()
-				.forEach(e -> {
-					try {
-						e.getValue().interruptGame();
-					} catch (IOException ioException) {
-						ioException.printStackTrace();
-					}
+				.forEach(entry -> {
+					Callable<Void> task = () -> {
+						entry.getValue().startNewMatch(gridF, gridNum);
+						return null;
+					};
+					executorService.submit(task);
+				});
+	}
+
+	public synchronized void interruptGame() {
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<Void> task = () -> {
+						entry.getValue().interruptGame();
+						return null;
+					};
+					executorService.submit(task);
 				});
 	}
 
@@ -87,129 +125,93 @@ public class RoomManager {
 	 * Legge le parole dai proxy e le restituisce insieme al giocatore che le ha trovate.
 	 * @return HashMap contenente player e parole trovate.
 	 */
-	public HashMap<PlayerWrapper, String[]> readWords() {
+	public synchronized HashMap<PlayerWrapper, String[]> readWords() {
 		HashMap<PlayerWrapper, String[]> mapTmp = new HashMap<>();
-		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
-
-		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
-			try {
-				mapTmp.put(entry.getKey(), entry.getValue().readWords());
-
-			} catch (IOException e) {
-				e.printStackTrace();
+		List<Callable<ArrayList<String>>> tasks = new ArrayList<>();
+		Map<Integer, PlayerWrapper> identity = new HashMap<>();
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<ArrayList<String>> task = () -> entry.getValue().readWords();
+					tasks.add(task);
+					identity.put(tasks.indexOf(task), entry.getKey());
+				});
+		/* Submit */
+		try {
+			List<Future<ArrayList<String>>> results = executorService.invokeAll(tasks);
+			for (Future<ArrayList<String>> future : results) {
+				try {
+					ArrayList<String> words = future.get();
+					String[] arrayWords = new String[0];
+					arrayWords = words.toArray(arrayWords);
+					mapTmp.put(identity.get(results.indexOf(future)), arrayWords);
+				} catch (ExecutionException e) {
+					/* If there were communication errors, this player must be disconnected */
+					e.printStackTrace();
+					ProxyRoom proxy = proxies.get(identity.get(results.indexOf(future)));
+					proxy.terminate();
+					Set<PlayerWrapper> key = proxies.entrySet().stream()
+							.filter(entry -> entry.getValue().equals(proxy))
+							.map(entry -> entry.getKey())
+							.collect(Collectors.toSet());
+					for (PlayerWrapper k : key) {
+						proxies.remove(k);
+					}
+				}
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-
 		return mapTmp;
 	}
 
-	/**
-	 * Manda ai player le facce dei dadi usciti dalla griglia ed i relativi numeri di dado.
-	 * @param faces le facce dei dadi.
-	 * @param numbs i numeri dei dadi.
-	 */
-	public void sendGrid(String[] faces, Integer[] numbs) {
-		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
 
-		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
-			try {
-				entry.getValue().sendGrid(faces, numbs);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+	public void sendScores(GameScore gameScore) {
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<Void> task = () -> {
+						entry.getValue().sendScores(gameScore);
+						return null;
+					};
+					executorService.submit(task);
+				});
 	}
 
-	/**
-	 * Manda lo score del match e lo score dell'intero game, estraendo dal PlayerWrapper solo il nome del giocatore.
-	 * @param matchScores lo score del match.
-	 * @param gameScores lo score del game.
-	 */
-	public void sendScores(HashMap<PlayerWrapper, Integer> matchScores, HashMap<PlayerWrapper, Integer> gameScores) {
-		// Estrazione dei nomi dal PlayerWrapper
-		HashMap<String, Integer> matchTmp = new HashMap<>();
-		HashMap<String, Integer> gameTmp = new HashMap<>();
-
-		Set<Map.Entry<PlayerWrapper, Integer>> matchSet =  matchScores.entrySet();
-		Set<Map.Entry<PlayerWrapper, Integer>> gameSet =  gameScores.entrySet();
-
-		for(Map.Entry<PlayerWrapper, Integer> entry : matchSet) {
-			matchTmp.put(entry.getKey().getPlayer().getName(), entry.getValue());
+	public boolean setMatchTimeout(Duration waitTime) {
+		List<Callable<Boolean>> tasks = new ArrayList<>();
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<Boolean> task = () -> entry.getValue().setTimeoutMatch();
+					tasks.add(task);
+				});
+		try {
+			List<Future<Boolean>> results = executorService.invokeAll(tasks, waitTime.getSeconds(), TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		return true;
+	}
 
-		for(Map.Entry<PlayerWrapper, Integer> entry : gameSet) {
-			matchTmp.put(entry.getKey().getPlayer().getName(), entry.getValue());
-		}
-
-		// Invio dei punteggi
-		Set<Map.Entry<PlayerWrapper, ProxyRoom>> proxySet =  proxies.entrySet();
-
-		for(Map.Entry<PlayerWrapper, ProxyRoom> entry : proxySet) {
-			try {
-				entry.getValue().sendScores(matchTmp, gameTmp);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+	public void terminateGame() {
 
 	}
 
 	public Set<PlayerWrapper> getPlayers() {
 		return proxies.keySet();
 	}
-//
-//
-//	/**
-//	 * Manda a tutti i giocatori il nome del vincitore ed il suo punteggio.
-//	 * @param winner il nome del vincitore.
-//	 * @param score il punteggio del vincitore.
-//	 */
-//	@Override
-//	public void endGame(String winner, int score) {
-//		for(ProxyRoom p : proxy)
-//			p.endGame(winner, score);
-//	}
-//
-//	/**
-//	 * Chiude tutte le connessioni coi giocatori.
-//	 */
-//	@Override
-//	public void close() {
-//		for(ProxyRoom p : proxy)
-//			p.close();
-//	}
-//
-//	/**
-//	 * Restituisce i player attualmente presenti in stanza.
-//	 * @return array di Player.
-//	 */
-//	public Player[] getPlayers() {
-//		return players;
-//	}
-//
-//
-//
-//	/**
-//	 * Attende che vengano inviate le parole alla fine del match.
-//	 */
-//	public void waitWords() {
-//		for(ProxyRoom p : proxy)
-//			p.waitWords();
-//	}
-//
-//	/**
-//	 * Restituisce i PlayerScore di tutti i player come array.
-//	 * @return PlayerScore come array.
-//	 */
-//	public PlayerScore[] getPlayersScore() {
-//		PlayerScore[] array = new PlayerScore[proxy.length];
-//
-//		for(int i = 0; i < array.length; i++)
-//			array[i] = proxy[i].getPlayerScore();
-//
-//		return array;
-//	}
+
+	public void terminateManager() {
+		for (ProxyRoom p : proxies.values()) {
+			try {
+				p.quit();
+				p.terminate();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		executorService.shutdownNow();
+	}
 
 }

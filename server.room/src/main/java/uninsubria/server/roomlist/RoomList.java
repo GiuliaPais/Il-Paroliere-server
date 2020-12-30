@@ -1,5 +1,7 @@
-package uninsubria.server.room;
+package uninsubria.server.roomlist;
 
+import uninsubria.server.room.Room;
+import uninsubria.server.room.RoomState;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.serviceResults.ErrorMsgType;
@@ -14,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais (minor)
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class RoomList {
 
@@ -96,20 +98,17 @@ public class RoomList {
         Room room = getInstance().rooms.get(roomId);
         Lobby lobby = getInstance().lobbies.get(roomId);
         room.leaveRoom(playerID);
-
+        synchronized (RoomList.class) {
+            if (room.getCurrentPlayers().size() == 0) {
+                getInstance().rooms.remove(roomId);
+                getInstance().lobbies.remove(roomId);
+                return;
+            }
+        }
         if(!getInstance().statusAreSync(room, lobby))
             getInstance().synchronizeStatus(room, lobby);
     }
 
-    /**
-     * Close room.
-     *
-     * @param roomID the room id
-     */
-    public static void closeRoom(UUID roomID) {
-        getInstance().rooms.remove(roomID);
-        getInstance().lobbies.remove(roomID);
-    }
 
     /**
      * Leave game.
@@ -118,9 +117,9 @@ public class RoomList {
      * @param playerID the player id
      */
     public static void leaveGame(UUID roomId, String playerID) {
-        Room room = getInstance().rooms.get(roomId);
-        room.leaveGame(playerID);
-        room.leaveRoom(playerID);
+//        Room room = getInstance().rooms.get(roomId);
+//        room.leaveGame(playerID);
+//        room.leaveRoom(playerID);
     }
 
     /**

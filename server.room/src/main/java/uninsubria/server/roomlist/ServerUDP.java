@@ -1,4 +1,4 @@
-package uninsubria.server.room;
+package uninsubria.server.roomlist;
 
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @author Giulia Pais (minor)
  * @version 0.9.3
  */
-public class ServerUDP extends Thread {
+class ServerUDP extends Thread {
 
     /*---Fields---*/
     // Ricezione

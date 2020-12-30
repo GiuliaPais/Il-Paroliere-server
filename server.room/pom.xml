@@ -19,9 +19,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.6.0</version>
+            <groupId>it.uninsubria.labB717304</groupId>
+            <artifactId>server.wrappers</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.uninsubria.labB717304</groupId>
+            <artifactId>server.roomManager</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -30,42 +37,13 @@
         </dependency>
         <dependency>
             <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>utils.business</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>server.match</artifactId>
+            <artifactId>server.scoreCounter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>utils.ruleset</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>utils.connection</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>server.wrappers</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>utils.chronometer</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.uninsubria.labB717304</groupId>
-            <artifactId>server.roomManager</artifactId>
+            <artifactId>server.dice</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

@@ -1,23 +1,20 @@
-package uninsubria.server.match;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URISyntaxException;
+package uninsubria.server.room.game;
 
 import uninsubria.server.dice.DiceSet;
 import uninsubria.server.dice.DiceSetStandard;
 import uninsubria.utils.languages.Language;
 
+/**
+ * Represents the game grid.
+ *
+ * @author Davide Di Giovanni
+ * @version 0.9.0
+ */
 public class Grid {
 
 	private DiceSet dices;
 	private String[] diceFaces;
 	private Integer[] diceNumb;
-
-//	public Grid() {
-//		dices = new DiceSet();
-//		diceNumb = dices.getResultNumb();
-//	}
 
 	public Grid(Language l) {
 		dices = new DiceSet(DiceSetStandard.getByLanguage(l.getLanguage()));

@@ -8,7 +8,7 @@ import uninsubria.server.dictionary.manager.DictionaryManager;
 import uninsubria.server.email.EmailManager;
 import uninsubria.server.gui.MainServerGuiController;
 import uninsubria.server.gui.MessageType;
-import uninsubria.server.room.RoomList;
+import uninsubria.server.roomlist.RoomList;
 import uninsubria.utils.connection.CommHolder;
 
 import java.io.IOException;

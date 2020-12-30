@@ -1,6 +1,6 @@
 package uninsubria.server.services.playerServicesImpl;
 
-import uninsubria.server.room.RoomList;
+import uninsubria.server.roomlist.RoomList;
 import uninsubria.server.services.api.Service;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 

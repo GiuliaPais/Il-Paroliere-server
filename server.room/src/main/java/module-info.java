@@ -1,14 +1,14 @@
 module server.room {
-    requires javafx.base;
-    requires utils.business;
-    requires server.match;
-    requires utils.languages;
     requires utils.ruleset;
-    requires utils.connection;
+    requires utils.languages;
     requires server.wrappers;
-    requires utils.serviceResults;
-    requires utils.chronometer;
     requires server.roomManager;
+    requires server.scoreCounter;
+    requires server.dice;
+    requires utils.connection;
+    requires utils.serviceResults;
+    requires utils.business;
+    requires javafx.base;
 
-    exports uninsubria.server.room;
+    exports uninsubria.server.roomlist;
 }

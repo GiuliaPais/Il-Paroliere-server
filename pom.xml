@@ -20,7 +20,6 @@
         <module>server.dice</module>
         <module>server.dictionary</module>
         <module>server.room</module>
-        <module>server.match</module>
         <module>server.database</module>
         <module>server.email</module>
         <module>server.dbpopulator</module>

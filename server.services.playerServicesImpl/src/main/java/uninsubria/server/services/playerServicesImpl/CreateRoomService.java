@@ -1,6 +1,6 @@
 package uninsubria.server.services.playerServicesImpl;
 
-import uninsubria.server.room.RoomList;
+import uninsubria.server.roomlist.RoomList;
 import uninsubria.server.services.api.Service;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
@@ -11,7 +11,7 @@ import uninsubria.utils.serviceResults.ServiceResultInterface;
  * Implementation of service responsible for creating a new room.
  *
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class CreateRoomService implements Service {
 

@@ -2,18 +2,16 @@ package uninsubria.server.scoreCounter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uninsubria.server.wrappers.PlayerWrapper;
-import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PlayerScoreTest {
 
     private PlayerScore test;
-    private PlayerWrapper player;
+    private String player;
     private Language language;
 
     @BeforeEach
