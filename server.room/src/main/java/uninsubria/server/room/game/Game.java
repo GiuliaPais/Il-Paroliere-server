@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -116,7 +116,7 @@ public class Game implements Runnable {
             if (winner == null) {
                 currentMatchGrid.resetDices();
                 currentMatchGrid.throwDices();
-                sleepTime = ruleset.getTimeToMatch().plusSeconds(5).toMillis();
+                sleepTime = ruleset.getTimeToMatch().plusSeconds(3).toMillis();
             }
         } while (winner == null);
         //TODO terminate game
@@ -195,12 +195,13 @@ public class Game implements Runnable {
                 .filter(entry -> entry.getValue() >= ruleset.getMaxScoreToWin())
                 .collect(Collectors.groupingBy(e -> e.getValue(), TreeMap::new, Collectors.counting()))
                 .lastEntry();
-        if (max.getValue() > 1) {
+        if (max == null || max.getValue() > 1) {
             return null;
         }
-        return totalGameScores.entrySet().stream()
+        String winn = totalGameScores.entrySet().stream()
                 .filter(e -> e.getValue().equals(max.getKey()))
                 .map(e -> e.getKey())
                 .collect(Collectors.joining());
+        return winn;
     }
 }
