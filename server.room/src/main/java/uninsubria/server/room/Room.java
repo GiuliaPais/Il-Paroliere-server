@@ -21,7 +21,7 @@ import java.util.concurrent.Future;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class Room {
 
@@ -205,6 +205,14 @@ public class Room {
         game.gameStatusProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals(GameState.INTERRUPTED)) {
                 interruptGame();
+                return;
+            }
+            if (newValue.equals(GameState.FINISHED)) {
+                if (playerSlots.size() < numPlayers) {
+                    setRoomStatus(RoomState.OPEN);
+                } else {
+                    setRoomStatus(RoomState.FULL);
+                }
             }
         });
         currentGame = executorService.submit(game);

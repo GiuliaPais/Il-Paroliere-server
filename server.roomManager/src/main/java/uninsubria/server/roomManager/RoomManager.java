@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class RoomManager {
 
@@ -115,6 +115,18 @@ public class RoomManager {
 				.forEach(entry -> {
 					Callable<Void> task = () -> {
 						entry.getValue().interruptGame();
+						return null;
+					};
+					executorService.submit(task);
+				});
+	}
+
+	public synchronized void endGame() {
+		/* Create all the tasks */
+		proxies.entrySet().stream()
+				.forEach(entry -> {
+					Callable<Void> task = () -> {
+						entry.getValue().endGame();
 						return null;
 					};
 					executorService.submit(task);

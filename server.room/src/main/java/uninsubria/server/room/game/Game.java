@@ -15,6 +15,7 @@ import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -116,10 +117,18 @@ public class Game implements Runnable {
             if (winner == null) {
                 currentMatchGrid.resetDices();
                 currentMatchGrid.throwDices();
-                sleepTime = ruleset.getTimeToMatch().plusSeconds(3).toMillis();
+                sleepTime = ruleset.getTimeToMatch().plusSeconds(5).toMillis();
             }
         } while (winner == null);
-        //TODO terminate game
+        roomManager.endGame();
+        //register game statistics
+        roomManager.terminateManager();
+        try {
+            Thread.sleep(Duration.ofSeconds(40).toMillis());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        setGameStatus(GameState.FINISHED);
     }
 
     public GameState getGameStatus() {
