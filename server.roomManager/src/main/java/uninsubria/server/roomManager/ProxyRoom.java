@@ -51,8 +51,12 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	}
 
 	@Override
-	public void startNewMatch(String[] faces, Integer[] numbs) throws IOException {
+	public void startNewMatch(String[] faces, Integer[] numbs) throws IOException, ClassNotFoundException {
 		writeCommand(CommProtocolCommands.NEW_MATCH, faces, numbs);
+		if (in == null) {
+			this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		}
+		readCommand(in.readUTF());
 	}
 
 	@Override
@@ -107,7 +111,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 				ArrayList<String> words = (ArrayList<String>) in.readObject();
 				receivedObjectQueue.add(words);
 			}
-			case TIMEOUT_MATCH -> {}
+			case TIMEOUT_MATCH, NEW_MATCH -> {}
 		}
 	}
 
