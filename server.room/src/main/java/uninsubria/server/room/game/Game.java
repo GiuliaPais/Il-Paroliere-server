@@ -2,6 +2,7 @@ package uninsubria.server.room.game;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import uninsubria.server.room.RoomLeaveMonitor;
 import uninsubria.server.room.match.Match;
 import uninsubria.server.roomManager.RoomManager;
 import uninsubria.server.roomlist.RoomList;
@@ -27,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.2
+ * @version 0.9.3
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -37,6 +38,7 @@ public class Game implements Runnable {
     private final Language language;
     private final UUID roomID;
     private final ObjectProperty<GameState> gameStatus;
+    private final RoomLeaveMonitor monitor;
 
     //++ Matches ++//
     private final Grid currentMatchGrid;
@@ -49,7 +51,7 @@ public class Game implements Runnable {
     private String winner;
 
     /*---Constructors---*/
-    public Game(ArrayList<PlayerWrapper> players, Ruleset ruleset, Language language, UUID roomId) {
+    public Game(ArrayList<PlayerWrapper> players, Ruleset ruleset, Language language, UUID roomId, RoomLeaveMonitor monitor) {
         this.players = players;
         this.ruleset = ruleset;
         this.language = language;
@@ -62,6 +64,7 @@ public class Game implements Runnable {
         this.lastMatchIndex = 0;
         this.gameStatus = new SimpleObjectProperty<>(GameState.STARTING);
         this.totalGameScores = new HashMap<>();
+        this.monitor = monitor;
     }
 
     /*---Methods---*/
@@ -148,8 +151,10 @@ public class Game implements Runnable {
         roomManager.newMatch(currentMatchGrid.getDiceFaces(), currentMatchGrid.getDiceNumb());
         if (sleepTime > 0) {
             try {
-                Thread.sleep(sleepTime);
+                monitor.isSomeoneLeaving(sleepTime);
+                //optional block to manage behaviour of alternate ruleset
             } catch (InterruptedException e) {
+                setGameStatus(GameState.INTERRUPTED);
                 roomManager.interruptGame();
                 roomManager.terminateManager();
                 return;

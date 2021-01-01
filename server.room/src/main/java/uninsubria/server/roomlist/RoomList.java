@@ -1,7 +1,6 @@
 package uninsubria.server.roomlist;
 
 import uninsubria.server.room.Room;
-import uninsubria.server.room.RoomState;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.serviceResults.ErrorMsgType;
@@ -16,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais (minor)
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class RoomList {
 
@@ -117,9 +116,18 @@ public class RoomList {
      * @param playerID the player id
      */
     public static void leaveGame(UUID roomId, String playerID) {
-//        Room room = getInstance().rooms.get(roomId);
-//        room.leaveGame(playerID);
-//        room.leaveRoom(playerID);
+        Room room = getInstance().rooms.get(roomId);
+        Lobby lobby = getInstance().lobbies.get(roomId);
+        room.leaveGame(playerID);
+        synchronized (RoomList.class) {
+            if (room.getCurrentPlayers().size() == 0) {
+                getInstance().rooms.remove(roomId);
+                getInstance().lobbies.remove(roomId);
+                return;
+            }
+        }
+        if(!getInstance().statusAreSync(room, lobby))
+            getInstance().synchronizeStatus(room, lobby);
     }
 
     /**
@@ -147,7 +155,7 @@ public class RoomList {
         boolean roomStatus;
         boolean lobbyStatus;
 
-        if(room.getRoomStatus().equals(RoomState.OPEN))
+        if(room.getRoomStatus().equals(Room.RoomState.OPEN))
             roomStatus = true;
         else
             roomStatus = false;
@@ -162,7 +170,7 @@ public class RoomList {
 
     // Setta lo stato della lobby in base a quello della room. Open se la room è open, closed altrimenti.
     private void synchronizeStatus(Room room, Lobby lobby) {
-        if(room.getRoomStatus().equals(RoomState.OPEN))
+        if(room.getRoomStatus().equals(Room.RoomState.OPEN))
             lobby.setStatus(Lobby.LobbyStatus.OPEN);
         else
             lobby.setStatus(Lobby.LobbyStatus.CLOSED);

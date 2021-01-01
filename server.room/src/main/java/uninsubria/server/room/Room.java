@@ -21,7 +21,7 @@ import java.util.concurrent.Future;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class Room {
 
@@ -35,6 +35,11 @@ public class Room {
     private final ObjectProperty<RoomState> roomStatus;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> currentGame;
+    private RoomLeaveMonitor monitor;
+
+    public enum RoomState {
+        OPEN, FULL, GAMEON
+    }
 
     /*---Constructors---*/
     /**
@@ -57,6 +62,7 @@ public class Room {
         this.numPlayers = numPlayers;
         this.playerSlots = new ArrayList<>();
         this.playerSlots.add(creator);
+        this.monitor = new RoomLeaveMonitor();
         setStatusListeners();
     }
 
@@ -109,20 +115,16 @@ public class Room {
         this.roomStatus.set(roomStatus);
     }
 
-//
-//    /**
-//     * Permette al giocatore passato come parametro di abbandonare la partita.
-//     * @param playerID il player del giocatore.
-//     */
-//    public void leaveGame(String playerID) {
-//        if(game != null) {
-//            PlayerWrapper playerTmp = this.findById(playerID);
-//            game.abandon(playerTmp);
-//
-////            if(ruleset.interruptIfSomeoneLeaves())
-////                timer.cancel();
-//        }
-//    }
+    public synchronized void leaveGame(String playerID) {
+        if (ruleset.interruptIfSomeoneLeaves()) {
+            /* Sends an interrupt to the game if only if the ruleset contains this rule */
+            currentGame.cancel(true);
+        }
+        PlayerWrapper pw = findById(playerID);
+        playerSlots.remove(pw);
+        /* Notifies the game someone has left the game causing the thread to awake */
+        monitor.signalPlayerisLeaving(pw);
+    }
 
     public synchronized void interruptGame() {
         if (currentGame != null) {
@@ -131,7 +133,7 @@ public class Room {
         if (playerSlots.size() < numPlayers) {
             setRoomStatus(RoomState.OPEN);
         } else {
-            setRoomStatus(RoomState.TIMEOUT);
+            setRoomStatus(RoomState.FULL);
         }
     }
 
@@ -201,7 +203,8 @@ public class Room {
      * players are expelled from the room.
      */
     private void newGame() {
-        Game game = new Game(playerSlots, ruleset, language, id);
+        monitor.clearQueue();
+        Game game = new Game(playerSlots, ruleset, language, id, monitor);
         game.gameStatusProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals(GameState.INTERRUPTED)) {
                 interruptGame();
@@ -223,7 +226,6 @@ public class Room {
         roomStatus.addListener((observable, oldValue, newValue) -> {
             switch (newValue) {
                 case FULL -> newGame();
-                case TIMEOUT -> {}
             }
         });
     }

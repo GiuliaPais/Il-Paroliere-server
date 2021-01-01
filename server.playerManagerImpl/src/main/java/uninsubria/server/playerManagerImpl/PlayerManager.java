@@ -18,7 +18,7 @@ import java.util.UUID;
  * Class responsible for creating and executing player requested services.
  *
  * @author Giulia Pais
- * @version 0.9.7
+ * @version 0.9.8
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
@@ -164,5 +164,12 @@ public class PlayerManager implements PlayerManagerInterface {
     public ServiceResultInterface requestWordStats(String word) {
         Service service = serviceFactory.getService(PlayerServiceType.WORD_STATS, word);
         return service.execute();
+    }
+
+    @Override
+    public void leaveGame(UUID roomID) {
+        Service service = serviceFactory.getService(PlayerServiceType.LEAVE_GAME, roomID, player.getPlayerID());
+        service.execute();
+        activeRoomID = null;
     }
 }
