@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -112,6 +112,9 @@ public class Game implements Runnable {
         setGameStatus(GameState.ONGOING);
         do {
             //At least one match
+            if (getGameStatus().equals(GameState.INTERRUPTED)) {
+                return;
+            }
             newMatch(sleepTime);
             List<String> gridAsList = Arrays.asList(currentMatchGrid.getDiceFaces());
             //Update the total game grid
@@ -124,8 +127,6 @@ public class Game implements Runnable {
             }
         } while (winner == null);
         roomManager.endGame();
-        //register game statistics
-        roomManager.terminateManager();
         try {
             Thread.sleep(Duration.ofSeconds(40).toMillis());
         } catch (InterruptedException e) {
@@ -152,11 +153,14 @@ public class Game implements Runnable {
         if (sleepTime > 0) {
             try {
                 monitor.isSomeoneLeaving(sleepTime);
-                //optional block to manage behaviour of alternate ruleset
+                if (ruleset.interruptIfSomeoneLeaves()) {
+                    throw new InterruptedException();
+                }
             } catch (InterruptedException e) {
                 setGameStatus(GameState.INTERRUPTED);
+                List<PlayerWrapper> leavingPlayers = monitor.getPlayersLeaving();
+                players.removeAll(leavingPlayers);
                 roomManager.interruptGame();
-                roomManager.terminateManager();
                 return;
             }
         }

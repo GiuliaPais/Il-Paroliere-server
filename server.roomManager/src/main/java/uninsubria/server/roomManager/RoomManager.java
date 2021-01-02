@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class RoomManager {
 
@@ -36,6 +36,7 @@ public class RoomManager {
 	}
 
 	/*---Methods---*/
+
 	/**
 	 * Add room proxy.
 	 *
@@ -48,18 +49,11 @@ public class RoomManager {
 	}
 
 	/**
-	 * Remove room proxy.
+	 * Signals all players in the room that a new game is starting.
 	 *
-	 * @param playerWrapper the playerWrapper
+	 * @return A list of Instant objects representing the time
+	 * at which the timers will start
 	 */
-	public synchronized void removeRoomProxy(PlayerWrapper playerWrapper) {
-		try {
-			proxies.remove(playerWrapper).quit();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public synchronized List<Instant> newGame() {
 		List<Instant> times = new ArrayList<>();
 		List<Callable<Instant>> tasks = new ArrayList<>();
@@ -98,6 +92,13 @@ public class RoomManager {
 		return times;
 	}
 
+	/**
+	 * Signals the players a new match is starting, sending the
+	 * match grid.
+	 *
+	 * @param gridF   the faces of dices in the grid
+	 * @param gridNum the nuber of the dices in the grid
+	 */
 	public void newMatch(String[] gridF, Integer[] gridNum) {
 		proxies.entrySet().stream()
 				.forEach(entry -> {
@@ -109,6 +110,9 @@ public class RoomManager {
 				});
 	}
 
+	/**
+	 * Signals players that the current game has been interrupted.
+	 */
 	public synchronized void interruptGame() {
 		/* Create all the tasks */
 		proxies.entrySet().stream()
@@ -121,6 +125,9 @@ public class RoomManager {
 				});
 	}
 
+	/**
+	 * Signals the players that the current game is ending.
+	 */
 	public synchronized void endGame() {
 		/* Create all the tasks */
 		proxies.entrySet().stream()
@@ -131,10 +138,13 @@ public class RoomManager {
 					};
 					executorService.submit(task);
 				});
+		//Game stats
+		terminateManager();
 	}
 
 	/**
 	 * Legge le parole dai proxy e le restituisce insieme al giocatore che le ha trovate.
+	 *
 	 * @return HashMap contenente player e parole trovate.
 	 */
 	public synchronized HashMap<PlayerWrapper, String[]> readWords() {
@@ -178,6 +188,11 @@ public class RoomManager {
 	}
 
 
+	/**
+	 * Sends the scores to the players.
+	 *
+	 * @param gameScore the game score
+	 */
 	public void sendScores(GameScore gameScore) {
 		/* Create all the tasks */
 		proxies.entrySet().stream()
@@ -190,6 +205,12 @@ public class RoomManager {
 				});
 	}
 
+	/**
+	 * Sets match timeout.
+	 *
+	 * @param waitTime the wait time
+	 * @return the match timeout
+	 */
 	public boolean setMatchTimeout(Duration waitTime) {
 		List<Callable<Boolean>> tasks = new ArrayList<>();
 		/* Create all the tasks */
@@ -206,23 +227,19 @@ public class RoomManager {
 		return true;
 	}
 
-	public void terminateGame() {
-
-	}
-
+	/**
+	 * Gets players.
+	 *
+	 * @return the players
+	 */
 	public Set<PlayerWrapper> getPlayers() {
 		return proxies.keySet();
 	}
 
+	/**
+	 * Terminate manager.
+	 */
 	public void terminateManager() {
-		for (ProxyRoom p : proxies.values()) {
-			try {
-				p.quit();
-				p.terminate();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		executorService.shutdownNow();
 	}
 

@@ -20,7 +20,7 @@ import java.util.*;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -62,11 +62,13 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	@Override
 	public void interruptGame() throws IOException {
 		writeCommand(CommProtocolCommands.INTERRUPT_GAME);
+		quit();
 	}
 
 	@Override
 	public void endGame() throws IOException {
 		writeCommand(CommProtocolCommands.END_GAME);
+		quit();
 	}
 
 	@Override
