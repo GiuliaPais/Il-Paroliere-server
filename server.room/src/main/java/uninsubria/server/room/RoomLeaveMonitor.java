@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Monitor object for signaling when a player wants to leave the game while a match is ongoing
  *
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class RoomLeaveMonitor {
     /*---Fields---*/
@@ -28,6 +28,9 @@ public class RoomLeaveMonitor {
     public synchronized boolean isSomeoneLeaving(long waitTime) throws InterruptedException {
         while (playersLeaving.isEmpty()) {
             wait(waitTime);
+            if (playersLeaving.isEmpty()) {
+                return false;
+            }
         }
         return true;
     }
