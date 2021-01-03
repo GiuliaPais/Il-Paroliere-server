@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class RoomManager {
 
@@ -36,12 +36,11 @@ public class RoomManager {
 	}
 
 	/*---Methods---*/
-
 	/**
-	 * Add room proxy.
+	 * Tries to establish a connection with the given player by instantiating a proxy.
 	 *
-	 * @param playerWrapper the playerWrapper
-	 * @throws IOException the io exception
+	 * @param playerWrapper the playerWrapper - which contains reference to the player and its IP address
+	 * @throws IOException if the opening of the socket fails
 	 */
 	public synchronized void addRoomProxy(PlayerWrapper playerWrapper) throws IOException {
 		ProxyRoom proxyRoom = new ProxyRoom(playerWrapper.getIpAddress());
@@ -99,15 +98,37 @@ public class RoomManager {
 	 * @param gridF   the faces of dices in the grid
 	 * @param gridNum the nuber of the dices in the grid
 	 */
-	public void newMatch(String[] gridF, Integer[] gridNum) {
+	public boolean newMatch(String[] gridF, Integer[] gridNum) {
+		List<Callable<Void>> tasks = new ArrayList<>();
+		/* Create all the tasks */
 		proxies.entrySet().stream()
 				.forEach(entry -> {
 					Callable<Void> task = () -> {
 						entry.getValue().startNewMatch(gridF, gridNum);
 						return null;
 					};
-					executorService.submit(task);
+					tasks.add(task);
 				});
+		/* Submit */
+		try {
+			List<Future<Void>> results = executorService.invokeAll(tasks);
+			for (Future<Void> future : results) {
+				if (future.isCancelled()) {
+					proxies.entrySet().stream()
+							.forEach(entry -> {
+								Callable<Void> task = () -> {
+									entry.getValue().interruptGame();
+									return null;
+								};
+								executorService.submit(task);
+							});
+					return false;
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	/**

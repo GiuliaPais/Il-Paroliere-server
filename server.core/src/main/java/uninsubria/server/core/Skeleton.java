@@ -164,6 +164,9 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
                 UUID roomID = (UUID) in.readObject();
                 playerManager.leaveGame(roomID);
             }
+            case KICKED -> {
+                playerManager.signalWasKicked();
+            }
         }
     }
 

@@ -8,8 +8,9 @@ module server.services.playerServicesImpl {
     requires utils.ruleset;
     requires server.wrappers;
 	requires server.room;
+    requires server.dictionary;
 
-	exports uninsubria.server.services.playerServicesImpl;
+    exports uninsubria.server.services.playerServicesImpl;
 	exports uninsubria.server.services.playerServicesTypes;
 	
 }

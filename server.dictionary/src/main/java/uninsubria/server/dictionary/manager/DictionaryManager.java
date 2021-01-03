@@ -10,7 +10,6 @@ import uninsubria.utils.dictionary.Definition;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.languages.LanguageManager;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.List;
 
 /**
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public class DictionaryManager {
 	/*---Fields---*/
@@ -27,7 +26,7 @@ public class DictionaryManager {
 	private HashMap<Language, Dictionary> dictionaries;
 
 	/*---Constructors---*/
-	private DictionaryManager() throws FileNotFoundException, DictionaryException, URISyntaxException, IOException {
+	private DictionaryManager() throws DictionaryException, URISyntaxException, IOException {
 		DictionaryLoader dl = new DictionaryLoader();
 		this.dictionaries = dl.loadAll();
 	}
@@ -42,6 +41,19 @@ public class DictionaryManager {
 
 	public static List<Definition> lookUpWord(String word, Language lang) throws DictionaryException, IOException, URISyntaxException {
 		return getInstance().dictionaries.get(lang).getDefinitions(word);
+	}
+
+	public static HashMap<String, List<Definition>> lookUpWord(String[] words, Language language) {
+		HashMap<String, List<Definition>> definitions = new HashMap<>();
+		for (String w : words) {
+			try {
+				List<Definition> def = getInstance().dictionaries.get(language).getDefinitions(w);
+				definitions.put(w, def);
+			} catch (IOException | DictionaryException | URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
+		return definitions;
 	}
 	
 	public static boolean isValid(String word, Language lang) throws DictionaryException, IOException, URISyntaxException {

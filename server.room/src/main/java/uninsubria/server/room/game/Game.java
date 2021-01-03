@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -149,7 +149,11 @@ public class Game implements Runnable {
 
     private void newMatch(long sleepTime) {
         /* Contact new players announcing a new match and sending the grid */
-        roomManager.newMatch(currentMatchGrid.getDiceFaces(), currentMatchGrid.getDiceNumb());
+        boolean ok = roomManager.newMatch(currentMatchGrid.getDiceFaces(), currentMatchGrid.getDiceNumb());
+        if (!ok) {
+            setGameStatus(GameState.INTERRUPTED);
+            return;
+        }
         if (sleepTime > 0) {
             try {
                 boolean to = monitor.isSomeoneLeaving(sleepTime);

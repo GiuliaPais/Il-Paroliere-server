@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais (minor)
- * @version 0.9.3
+ * @version 0.9.4
  */
 class ServerUDP extends Thread {
 
@@ -95,7 +95,12 @@ class ServerUDP extends Thread {
                     .collect(Collectors.toList());
             CommProtocolCommands command = CommProtocolCommands.getByCommand(splitted.get(0));
             switch (command) {
-                case SEND_PLIST -> sendObject(RoomList.getRoom(UUID.fromString(splitted.get(1))).getCurrentPlayers());
+                case SEND_PLIST -> {
+                    UUID roomID = UUID.fromString(splitted.get(1));
+                    if (RoomList.getRoom(roomID) != null) {
+                        sendObject(RoomList.getRoom(roomID).getCurrentPlayers());
+                    }
+                }
                 default -> {}
             }
             return;
