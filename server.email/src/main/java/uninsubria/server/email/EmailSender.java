@@ -72,19 +72,26 @@ public class EmailSender{
      * @throws MessagingException
      */
     public static void sendEmail(Email email) throws SendFailedException, MessagingException{
-        String provider = getInstance().username.substring(getInstance().username.indexOf("@") + 1, getInstance().username.indexOf("."));
+        String provider = "outlook";
         Properties props = getProperties(provider);
-        Session session = Session.getInstance(props,  new Authenticator() {
+        /**Session session = Session.getInstance(props,  new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(getInstance().username, getInstance().password);
+                return new PasswordAuthentication("Il_Paroliere@outlook.it", "Paroliere21");
+            }
+        });*/
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(EmailSender.getInstance().getUsername(), EmailSender.getInstance().getPassword());
             }
         });
         Message msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(getInstance().username));
+        msg.setFrom(new InternetAddress(EmailSender.getInstance().getUsername()));
         msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo()));
         msg.setSubject(email.getSubject());
         msg.setContent(email.getBody(), "text/html; charset=UTF-8");
         Transport.send(msg);
+        System.out.println("Email sent sussessfully");
     }
 
     /**
@@ -110,11 +117,11 @@ public class EmailSender{
         //include Outlook, hotmail, Live
         else if(provider.contentEquals("outlook") || provider.contentEquals("hotmail") || provider.contentEquals("studenti")) {
 
-            props.put("mail.smtp.host", getHost(provider));
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.port",587);
-            props.put("mail.debug", "true");
             props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "outlook.office365.com");
+            props.put("mail.smtp.port", "587");
+
             return props;
         }
 
