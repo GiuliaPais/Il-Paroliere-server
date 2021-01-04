@@ -6,7 +6,7 @@ import uninsubria.server.services.playerServicesImpl.*;
 /**
  * Collection of all the possible services that can be requested by a player.
  * @author Giulia Pais
- * @version 0.9.8
+ * @version 0.9.9
  */
 public enum PlayerServiceType implements ServiceType {
 	CREATE_ROOM (CreateRoomService.class),
@@ -24,7 +24,8 @@ public enum PlayerServiceType implements ServiceType {
 	JOIN_ROOM(JoinRoomService.class),
 	FETCH_STATS(FetchStatsService.class),
 	WORD_STATS(WordStatsService.class),
-	LEAVE_GAME(LeaveGameService.class);
+	LEAVE_GAME(LeaveGameService.class),
+	REQUEST_DEF(WordsDefinitionService.class);
 	
 	private final Class<?> value;
 	

@@ -7,7 +7,6 @@ import uninsubria.utils.business.GameScore;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.6
+ * @version 0.9.7
  */
 public class RoomManager {
 
@@ -167,9 +166,7 @@ public class RoomManager {
 					tasks.add(task);
 					identity.put(tasks.indexOf(task), entry.getKey());
 				});
-		System.out.println("Manager: words requested" + LocalDateTime.now());
 		/* Submit */
-
 		try {
 			List<Future<ArrayList<String>>> results = executorService.invokeAll(tasks);
 			for (Future<ArrayList<String>> future : results) {
@@ -194,15 +191,13 @@ public class RoomManager {
 	 * @param gameScore the game score
 	 */
 	public void sendScores(GameScore gameScore) {
-		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Void> task = () -> {
-						entry.getValue().sendScores(gameScore);
-						return null;
-					};
-					executorService.submit(task);
-				});
+		for (ProxyRoom proxy : proxies.values()) {
+			try {
+				proxy.sendScores(gameScore);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**

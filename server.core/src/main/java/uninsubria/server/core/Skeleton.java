@@ -5,6 +5,7 @@ import uninsubria.server.playerManagerImpl.PlayerManager;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.connection.CommProtocolCommands;
+import uninsubria.utils.languages.Language;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.managersAPI.ProxySkeletonInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
@@ -19,7 +20,7 @@ import java.util.UUID;
  * It is a proxy for communication on socket with the client.
  *
  * @author Giulia Pais
- * @version 0.9.7
+ * @version 0.9.8
  */
 public class Skeleton extends Thread implements ProxySkeletonInterface {
     /*---Fields---*/
@@ -166,6 +167,12 @@ public class Skeleton extends Thread implements ProxySkeletonInterface {
             }
             case KICKED -> {
                 playerManager.signalWasKicked();
+            }
+            case WORD_REQUEST -> {
+                String[] words = (String[]) in.readObject();
+                Language lang = (Language) in.readObject();
+                ServiceResultInterface res = playerManager.requestWordsDefinitions(words, lang);
+                writeCommand(CommProtocolCommands.WORD_REQUEST, res);
             }
         }
     }

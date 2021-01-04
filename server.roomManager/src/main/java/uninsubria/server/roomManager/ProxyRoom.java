@@ -22,7 +22,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.7
+ * @version 0.9.8
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -81,7 +81,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
 	@Override
 	public void sendScores(GameScore gameScores) throws IOException {
-		writeCommand(CommProtocolCommands.SEND_SCORE, gameScores);
+		writeCommand(CommProtocolCommands.SEND_SCORE, gameScores.getMatchWords(), gameScores.getScores(), gameScores.getWinner());
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import uninsubria.server.services.playerServicesTypes.PlayerServiceType;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.Lobby;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.languages.Language;
 import uninsubria.utils.managersAPI.PlayerManagerInterface;
 import uninsubria.utils.serviceResults.ServiceResultInterface;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
  * Class responsible for creating and executing player requested services.
  *
  * @author Giulia Pais
- * @version 0.9.9
+ * @version 0.9.10
  */
 public class PlayerManager implements PlayerManagerInterface {
     /*---Fields---*/
@@ -176,5 +177,11 @@ public class PlayerManager implements PlayerManagerInterface {
     @Override
     public void signalWasKicked() {
         activeRoomID = null;
+    }
+
+    @Override
+    public ServiceResultInterface requestWordsDefinitions(String[] words, Language language) {
+        Service service = serviceFactory.getService(PlayerServiceType.REQUEST_DEF, words, language);
+        return service.execute();
     }
 }

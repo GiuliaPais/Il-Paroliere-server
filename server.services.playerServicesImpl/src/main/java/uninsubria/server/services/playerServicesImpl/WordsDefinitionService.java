@@ -16,7 +16,7 @@ import java.util.Map;
  * Implementation of a service that fetches definitions of requested words.
  *
  * @author Giulia Pais
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class WordsDefinitionService implements Service {
     /*---Fields---*/
@@ -24,7 +24,7 @@ public class WordsDefinitionService implements Service {
     private String[] words;
 
     /*---Constructors---*/
-    public WordsDefinitionService(Language language, String[] words) {
+    public WordsDefinitionService(String[] words, Language language) {
         this.language = language;
         this.words = words;
     }

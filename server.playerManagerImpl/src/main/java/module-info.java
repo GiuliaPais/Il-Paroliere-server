@@ -4,5 +4,6 @@ module server.playerManagerImpl {
     requires utils.business;
     requires server.services.playerServicesImpl;
     requires server.wrappers;
+    requires utils.languages;
     exports uninsubria.server.playerManagerImpl;
 }
