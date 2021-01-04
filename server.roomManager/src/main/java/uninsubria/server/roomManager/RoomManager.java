@@ -6,8 +6,8 @@ import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.GameScore;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.5
+ * @version 0.9.6
  */
 public class RoomManager {
 
@@ -99,7 +99,7 @@ public class RoomManager {
 	 * @param gridNum the nuber of the dices in the grid
 	 */
 	public boolean newMatch(String[] gridF, Integer[] gridNum) {
-		List<Callable<Void>> tasks = new ArrayList<>();
+		List<Future<Void>> futures = new ArrayList<>();
 		/* Create all the tasks */
 		proxies.entrySet().stream()
 				.forEach(entry -> {
@@ -107,26 +107,14 @@ public class RoomManager {
 						entry.getValue().startNewMatch(gridF, gridNum);
 						return null;
 					};
-					tasks.add(task);
+					futures.add(executorService.submit(task));
 				});
-		/* Submit */
-		try {
-			List<Future<Void>> results = executorService.invokeAll(tasks);
-			for (Future<Void> future : results) {
-				if (future.isCancelled()) {
-					proxies.entrySet().stream()
-							.forEach(entry -> {
-								Callable<Void> task = () -> {
-									entry.getValue().interruptGame();
-									return null;
-								};
-								executorService.submit(task);
-							});
-					return false;
-				}
+		for (Future<Void> f : futures) {
+			try {
+				f.get();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 		return true;
 	}
@@ -179,7 +167,9 @@ public class RoomManager {
 					tasks.add(task);
 					identity.put(tasks.indexOf(task), entry.getKey());
 				});
+		System.out.println("Manager: words requested" + LocalDateTime.now());
 		/* Submit */
+
 		try {
 			List<Future<ArrayList<String>>> results = executorService.invokeAll(tasks);
 			for (Future<ArrayList<String>> future : results) {
@@ -189,17 +179,6 @@ public class RoomManager {
 					arrayWords = words.toArray(arrayWords);
 					mapTmp.put(identity.get(results.indexOf(future)), arrayWords);
 				} catch (ExecutionException e) {
-					/* If there were communication errors, this player must be disconnected */
-					e.printStackTrace();
-					ProxyRoom proxy = proxies.get(identity.get(results.indexOf(future)));
-					proxy.terminate();
-					Set<PlayerWrapper> key = proxies.entrySet().stream()
-							.filter(entry -> entry.getValue().equals(proxy))
-							.map(entry -> entry.getKey())
-							.collect(Collectors.toSet());
-					for (PlayerWrapper k : key) {
-						proxies.remove(k);
-					}
 				}
 			}
 		} catch (InterruptedException e) {
@@ -229,23 +208,28 @@ public class RoomManager {
 	/**
 	 * Sets match timeout.
 	 *
-	 * @param waitTime the wait time
 	 * @return the match timeout
 	 */
-	public boolean setMatchTimeout(Duration waitTime) {
-		List<Callable<Boolean>> tasks = new ArrayList<>();
-		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Boolean> task = () -> entry.getValue().setTimeoutMatch();
-					tasks.add(task);
-				});
-		try {
-			List<Future<Boolean>> results = executorService.invokeAll(tasks, waitTime.getSeconds(), TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	public void setMatchTimeout() {
+		List<Thread> threads = new ArrayList<>();
+		for (ProxyRoom proxy : proxies.values()) {
+			Thread thread = new Thread(() -> {
+				try {
+					proxy.setTimeoutMatch();
+				} catch (IOException | ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			});
+			threads.add(thread);
+			thread.start();
 		}
-		return true;
+		for (Thread t : threads) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**

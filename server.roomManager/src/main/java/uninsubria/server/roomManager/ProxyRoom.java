@@ -13,18 +13,20 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Proxy class for the room. Responsible for communication over socket.
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.6
+ * @version 0.9.7
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
-	private final Duration FIXED_TIME_ADJUST = Duration.ofMillis(5000);
+	private final Duration FIXED_TIME_ADJUST = Duration.ofMillis(3000);
 	private final Socket socket;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;

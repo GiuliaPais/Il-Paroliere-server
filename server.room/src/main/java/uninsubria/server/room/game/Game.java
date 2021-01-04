@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.6
+ * @version 0.9.7
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -103,10 +103,9 @@ public class Game implements Runnable {
                 }
             }
         }
-        Instant max = timerInstant.stream().max(Instant::compareTo).get().plusSeconds(ruleset.getTimeToMatch().toSeconds()).plusSeconds(40);
+        Instant max = timerInstant.stream().max(Instant::compareTo).get().plusSeconds(ruleset.getTimeToMatch().toSeconds());
         /* Sleep until the first match is finished on client side. The sleep time (for standard ruleset) is calculated as:
          * - select the later instant obtained by pinging the clients
-         * - Add 40 seconds (30 seconds pre-game timer + 10 seconds of adjustment)
          * - Add 3 minutes (the duration of a match) */
         long sleepTime = Instant.now().until(max, ChronoUnit.MILLIS);
         setGameStatus(GameState.ONGOING);
@@ -128,7 +127,7 @@ public class Game implements Runnable {
         } while (winner == null);
         roomManager.endGame();
         try {
-            Thread.sleep(Duration.ofSeconds(40).toMillis());
+            Thread.sleep(Duration.ofSeconds(35).toMillis());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,11 +148,7 @@ public class Game implements Runnable {
 
     private void newMatch(long sleepTime) {
         /* Contact new players announcing a new match and sending the grid */
-        boolean ok = roomManager.newMatch(currentMatchGrid.getDiceFaces(), currentMatchGrid.getDiceNumb());
-        if (!ok) {
-            setGameStatus(GameState.INTERRUPTED);
-            return;
-        }
+        roomManager.newMatch(currentMatchGrid.getDiceFaces(), currentMatchGrid.getDiceNumb());
         if (sleepTime > 0) {
             try {
                 boolean to = monitor.isSomeoneLeaving(sleepTime);
@@ -174,7 +169,7 @@ public class Game implements Runnable {
         roomManager.sendScores(scores);
         Match match = new Match(++lastMatchIndex, scores.getMatchWords());
         matches.add(match);
-        roomManager.setMatchTimeout(ruleset.getTimeToWaitFromMatchToMatch());
+        roomManager.setMatchTimeout();
     }
 
     private GameScore calculateScores(HashMap<PlayerWrapper, String[]> playersWords) {
