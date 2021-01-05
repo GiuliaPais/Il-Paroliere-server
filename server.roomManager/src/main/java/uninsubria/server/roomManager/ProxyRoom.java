@@ -24,7 +24,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.9
+ * @version 0.9.10
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -77,7 +77,6 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		}
 		readCommand(in.readUTF());
 		HashSet<WordRequest> requestedWords = (HashSet<WordRequest>) receivedObjectQueue.remove(receivedObjectQueue.size()-1);
-		quit();
 		return requestedWords;
 	}
 

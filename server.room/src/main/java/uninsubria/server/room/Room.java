@@ -10,7 +10,6 @@ import uninsubria.utils.languages.Language;
 import uninsubria.utils.ruleset.Ruleset;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +20,7 @@ import java.util.concurrent.Future;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.6
+ * @version 0.9.7
  */
 public class Room {
 
@@ -93,12 +92,7 @@ public class Room {
      * @param playerID the player id
      */
     public synchronized void leaveRoom(String playerID) {
-        List<PlayerWrapper> toRemove = new ArrayList<>();
-        playerSlots.stream().filter(playerWrapper -> playerWrapper.getPlayer().getPlayerID().equals(playerID))
-                .forEach(playerWrapper -> {
-                    toRemove.add(playerWrapper);
-                });
-        playerSlots.removeAll(toRemove);
+        playerSlots.removeIf(pw -> pw.getPlayerID().equals(playerID));
         if (playerSlots.size() < numPlayers & !roomStatus.equals(RoomState.GAMEON))
             setRoomStatus(RoomState.OPEN);
     }

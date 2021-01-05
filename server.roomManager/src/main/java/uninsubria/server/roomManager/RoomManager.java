@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * RoomManager coordinates all operations that require the communication
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.8
+ * @version 0.9.9
  */
 public class RoomManager {
 
@@ -164,6 +163,13 @@ public class RoomManager {
 		GameEntriesWrapper gw = new GameEntriesWrapper(matches, requested);
 		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid, players, ruleset, language, gw);
 		service.execute();
+		for (ProxyRoom proxyRoom : proxies.values()) {
+			try {
+				proxyRoom.quit();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		terminateManager();
 	}
 
