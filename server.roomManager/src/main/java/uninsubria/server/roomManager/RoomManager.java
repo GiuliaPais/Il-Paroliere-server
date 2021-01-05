@@ -161,7 +161,7 @@ public class RoomManager {
 			requested.addAll(playerReq);
 		}
 		GameEntriesWrapper gw = new GameEntriesWrapper(matches, requested);
-		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid, players, ruleset, language, gw);
+		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid.toArray(new String[0]), players, ruleset, language, gw);
 		Thread thread = new Thread(() -> service.execute());
 		thread.start();
 	}
