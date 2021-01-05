@@ -9,8 +9,7 @@ import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.security.PasswordEncryptor;
 
-import java.io.*;
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -158,15 +157,6 @@ public class DbPopulator {
             } else {
                 gameInfo.setNumPlayers((byte) (random.ints(1, 2, generatedPlayers.size()).findFirst().getAsInt()));
             }*/
-            switch (i){
-                case(1) -> gameInfo.setNumPlayers((byte) (2));
-                case(2) -> gameInfo.setNumPlayers((byte) (2));
-                case(3) -> gameInfo.setNumPlayers((byte) (3));
-                case(4) -> gameInfo.setNumPlayers((byte) (3));
-                case(5) -> gameInfo.setNumPlayers((byte) (4));
-                case(6) -> gameInfo.setNumPlayers((byte) (5));
-                case(7) -> gameInfo.setNumPlayers((byte) (6));
-            }
             //gameInfo.setLanguage(languages[random.nextInt(languages.length)]);
             gameInfo.setLanguage(Language.ITALIAN);
 

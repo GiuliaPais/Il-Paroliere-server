@@ -2,8 +2,8 @@ package uninsubria.server.room.game;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import uninsubria.server.match.Match;
 import uninsubria.server.room.RoomLeaveMonitor;
-import uninsubria.server.room.match.Match;
 import uninsubria.server.roomManager.RoomManager;
 import uninsubria.server.roomlist.RoomList;
 import uninsubria.server.scoreCounter.DuplicateWords;
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.7
+ * @version 0.9.8
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -125,7 +125,7 @@ public class Game implements Runnable {
                 sleepTime = ruleset.getTimeToMatch().plusSeconds(5).toMillis();
             }
         } while (winner == null);
-        roomManager.endGame();
+        roomManager.endGame(totalGameGrid, ruleset, language, players.size(), matches);
         try {
             Thread.sleep(Duration.ofSeconds(35).toMillis());
         } catch (InterruptedException e) {

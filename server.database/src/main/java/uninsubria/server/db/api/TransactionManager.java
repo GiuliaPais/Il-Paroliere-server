@@ -1,10 +1,16 @@
 package uninsubria.server.db.api;
 
+import uninsubria.server.db.businesslayer.GameEntry;
+import uninsubria.server.db.businesslayer.GameInfo;
 import uninsubria.server.db.businesslayer.UserToken;
 import uninsubria.server.db.dao.*;
 import uninsubria.server.db.statistics.StatisticsManager;
 import uninsubria.server.email.EmailManager;
+import uninsubria.server.wrappers.GameEntriesWrapper;
 import uninsubria.utils.business.Player;
+import uninsubria.utils.business.Word;
+import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 import uninsubria.utils.security.PasswordEncryptor;
 import uninsubria.utils.serviceResults.ErrorMsgType;
 import uninsubria.utils.serviceResults.ServiceResultAggregate;
@@ -16,7 +22,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -26,7 +34,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.4
+ * @version 0.9.5
  */
 public class TransactionManager {
 	/*---Fields---*/
@@ -634,6 +642,62 @@ public class TransactionManager {
 		} catch (SQLException throwables) {
 			throwables.printStackTrace();
 			return null;
+		} finally {
+			resetConnections(connection);
+		}
+	}
+
+	/**
+	 * Registers the finished game statistics in the database.
+	 *
+	 * @param gameID      the game id
+	 * @param gameGrids   the game grids
+	 * @param numPlayers  the num players
+	 * @param ruleset     the ruleset
+	 * @param language    the language
+	 * @param entriesInfo the entries info
+	 */
+	public void registerGameStats(UUID gameID, String[] gameGrids, Integer numPlayers, Ruleset ruleset, Language language, GameEntriesWrapper entriesInfo) {
+		GameInfo gameInfoTuple = new GameInfo(gameID, gameGrids, numPlayers, ruleset, language);
+		List<GameEntry> gameEntries = new ArrayList<>();
+		/* For each match */
+		for (int i = 0; i < entriesInfo.getMatchesInfo().size(); i++) {
+			/* For each player and proposed words in the match */
+			for (Map.Entry<String, Word[]> mapentry : entriesInfo.getMatchWords(i+1).entrySet()) {
+				for (Word w : mapentry.getValue()) {
+					GameEntry entry = new GameEntry();
+					entry.setGame(gameID);
+					entry.setMatch((short) (i+1));
+					entry.setPlayerID(mapentry.getKey());
+					entry.setWord(w.getWord());
+					entry.setWrong(w.isWrong());
+					entry.setDuplicated(w.isDuplicated());
+					entry.setPoints((short) w.getPoints());
+					//set requested
+					boolean req = entriesInfo.wasRequested(w.getWord(), i+1);
+					entry.setRequested(req);
+					gameEntries.add(entry);
+				}
+			}
+		}
+		Connection connection;
+		try {
+			connection = ConnectionPool.getConnection();
+		} catch (InterruptedException throwables) {
+			throwables.printStackTrace();
+			return;
+		}
+		try {
+			connection.setAutoCommit(false);
+			gameInfoDAO.setConnection(connection);
+			gameInfoDAO.create(gameInfoTuple);
+			gameEntryDAO.setConnection(connection);
+			for (GameEntry ge : gameEntries) {
+				gameEntryDAO.create(ge);
+			}
+			connection.commit();
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
 		} finally {
 			resetConnections(connection);
 		}

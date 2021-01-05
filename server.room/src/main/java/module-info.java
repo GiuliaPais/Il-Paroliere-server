@@ -9,6 +9,7 @@ module server.room {
     requires utils.serviceResults;
     requires utils.business;
     requires javafx.base;
+    requires server.match;
 
     exports uninsubria.server.roomlist;
 }

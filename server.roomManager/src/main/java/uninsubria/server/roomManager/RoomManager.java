@@ -1,9 +1,16 @@
 package uninsubria.server.roomManager;
 
+import uninsubria.server.match.Match;
 import uninsubria.server.services.api.AbstractServiceFactory;
+import uninsubria.server.services.api.Service;
 import uninsubria.server.services.api.ServiceFactoryImpl;
+import uninsubria.server.services.roomServiceType.RoomServiceType;
+import uninsubria.server.wrappers.GameEntriesWrapper;
 import uninsubria.server.wrappers.PlayerWrapper;
 import uninsubria.utils.business.GameScore;
+import uninsubria.utils.business.WordRequest;
+import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -18,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.7
+ * @version 0.9.8
  */
 public class RoomManager {
 
@@ -134,19 +141,21 @@ public class RoomManager {
 	}
 
 	/**
-	 * Signals the players that the current game is ending.
+	 * Signals the players that the current game is ending and registers game stats.
 	 */
-	public synchronized void endGame() {
-		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Void> task = () -> {
-						entry.getValue().endGame();
-						return null;
-					};
-					executorService.submit(task);
-				});
-		//Game stats
+	public synchronized void endGame(List<String> totalGameGrid, Ruleset ruleset, Language language, Integer players, ArrayList<Match> matches) {
+		HashSet<WordRequest> requested = new HashSet<>();
+		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+			try {
+				HashSet<WordRequest> playerReq = entry.getValue().endGame();
+				requested.addAll(playerReq);
+			} catch (IOException | ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		GameEntriesWrapper gw = new GameEntriesWrapper(matches, requested);
+		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid, players, ruleset, language, gw);
+		service.execute();
 		terminateManager();
 	}
 

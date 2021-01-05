@@ -2,6 +2,7 @@ package uninsubria.server.roomManager;
 
 
 import uninsubria.utils.business.GameScore;
+import uninsubria.utils.business.WordRequest;
 import uninsubria.utils.connection.CommHolder;
 import uninsubria.utils.connection.CommProtocolCommands;
 import uninsubria.utils.managersAPI.ProxySkeletonInterface;
@@ -14,6 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +24,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.8
+ * @version 0.9.9
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -68,9 +70,15 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	}
 
 	@Override
-	public void endGame() throws IOException {
+	public HashSet<WordRequest> endGame() throws IOException, ClassNotFoundException {
 		writeCommand(CommProtocolCommands.END_GAME);
+		if (in == null) {
+			this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		}
+		readCommand(in.readUTF());
+		HashSet<WordRequest> requestedWords = (HashSet<WordRequest>) receivedObjectQueue.remove(receivedObjectQueue.size()-1);
 		quit();
+		return requestedWords;
 	}
 
 	@Override

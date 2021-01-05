@@ -1,6 +1,7 @@
 package uninsubria.server.db.businesslayer;
 
 import uninsubria.utils.languages.Language;
+import uninsubria.utils.ruleset.Ruleset;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -10,14 +11,14 @@ import java.util.UUID;
  *
  * @author Giulia Pais
  * @author Alessandro Lerro
- * @version 0.9.0
+ * @version 0.9.1
  */
 public class GameInfo {
     /*---Fields---*/
     private UUID gameId;
     private String[] allMatchesGrid;
-    private Byte numPlayers;
-    private String ruleset; //temporaneo, bisogna fare classi
+    private Integer numPlayers;
+    private Ruleset ruleset;
     private Language language;
 
     /*---Constructors---*/
@@ -34,12 +35,12 @@ public class GameInfo {
      * @param ruleset    the ruleset
      * @param lang       the language
      */
-    public GameInfo(String[] grid, Byte numPlayers, String ruleset, String lang) {
-        this.gameId = UUID.randomUUID();
+    public GameInfo(UUID id, String[] grid, Integer numPlayers, Ruleset ruleset, Language lang) {
+        this.gameId = id;
         this.allMatchesGrid = grid;
         this.numPlayers = numPlayers;
         this.ruleset = ruleset;
-        this.language = Language.valueOf(lang);
+        this.language = lang;
     }
 
     /*---Methods---*/
@@ -85,7 +86,7 @@ public class GameInfo {
      *
      * @return the num players
      */
-    public Byte getNumPlayers() {
+    public Integer getNumPlayers() {
         return numPlayers;
     }
 
@@ -94,7 +95,7 @@ public class GameInfo {
      *
      * @param numPlayers the num players
      */
-    public void setNumPlayers(Byte numPlayers) {
+    public void setNumPlayers(Integer numPlayers) {
         this.numPlayers = numPlayers;
     }
 
@@ -103,7 +104,7 @@ public class GameInfo {
      *
      * @return the ruleset
      */
-    public String getRuleset() {
+    public Ruleset getRuleset() {
         return ruleset;
     }
 
@@ -112,8 +113,17 @@ public class GameInfo {
      *
      * @param ruleset the ruleset
      */
-    public void setRuleset(String ruleset) {
+    public void setRuleset(Ruleset ruleset) {
         this.ruleset = ruleset;
+    }
+
+    /**
+     * Sets ruleset.
+     *
+     * @param ruleset the ruleset
+     */
+    public void setRuleset(String ruleset) {
+        this.ruleset = Ruleset.valueOf(ruleset);
     }
 
     /**
@@ -132,6 +142,15 @@ public class GameInfo {
      */
     public void setLanguage(Language language) {
         this.language = language;
+    }
+
+    /**
+     * Sets language.
+     *
+     * @param language the language
+     */
+    public void setLanguage(String language) {
+        this.language = Language.valueOf(language);
     }
 
     @Override

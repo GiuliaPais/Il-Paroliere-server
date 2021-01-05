@@ -28,6 +28,7 @@
         <module>server.services.roomServicesImpl</module>
         <module>server.playerManagerImpl</module>
         <module>server.roomManager</module>
+        <module>server.match</module>
     </modules>
 
     <build>

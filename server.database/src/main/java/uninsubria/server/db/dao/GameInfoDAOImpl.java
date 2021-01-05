@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * @author Alessandro Lerro
  * @author Giulia Pais
- * @version 0.9.3
+ * @version 0.9.4
  */
 public class GameInfoDAOImpl implements GameInfoDAO {
 	private Connection connection;
@@ -58,7 +58,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		statement.setObject(1, gameInfo.getGameId());
 		statement.setArray(2, connection.createArrayOf("VARCHAR", gameInfo.getAllMatchesGrid()));
 		statement.setInt(3, gameInfo.getNumPlayers());
-		statement.setString(4, gameInfo.getRuleset());
+		statement.setString(4, gameInfo.getRuleset().name());
 		statement.setString(5, gameInfo.getLanguage().name());
 		statement.executeUpdate();
 		statement.close();
@@ -74,7 +74,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 			GameInfo curr = new GameInfo();
 			curr.setGameId(rs.getObject(TableAttributes.GameID.getColumn_index(), UUID.class));
 			curr.setAllMatchesGrid((String[]) rs.getArray(TableAttributes.Grid.getColumn_index()).getArray());
-			curr.setNumPlayers(rs.getByte(TableAttributes.Num_players.getColumn_index()));
+			curr.setNumPlayers(rs.getInt(TableAttributes.Num_players.getColumn_index()));
 			curr.setRuleset(rs.getString(TableAttributes.Ruleset.getColumn_index()));
 			curr.setLanguage(Language.valueOf(rs.getString(TableAttributes.Language.getColumn_index())));
 			gameInfoList.add(curr);
@@ -93,7 +93,7 @@ public class GameInfoDAOImpl implements GameInfoDAO {
 		while(rs.next()) {
 			gameinfo.setGameId(rs.getObject(TableAttributes.GameID.getColumn_index(), UUID.class));
 			gameinfo.setAllMatchesGrid((String[]) rs.getArray(TableAttributes.Grid.getColumn_index()).getArray());
-			gameinfo.setNumPlayers(rs.getByte(TableAttributes.Num_players.getColumn_index()));
+			gameinfo.setNumPlayers(rs.getInt(TableAttributes.Num_players.getColumn_index()));
 			gameinfo.setRuleset(rs.getString(TableAttributes.Ruleset.getColumn_index()));
 			gameinfo.setLanguage(Language.valueOf(rs.getString(TableAttributes.Language.getColumn_index())));
 		}

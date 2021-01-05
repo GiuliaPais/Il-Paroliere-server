@@ -11,4 +11,6 @@ module server.database {
     requires server.email;
     requires java.mail;
     requires utils.security;
+    requires utils.ruleset;
+    requires server.wrappers;
 }
