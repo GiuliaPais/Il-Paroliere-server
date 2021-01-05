@@ -24,7 +24,7 @@ import java.util.concurrent.*;
  *
  * @author Davide di Giovanni
  * @author Giulia Pais
- * @version 0.9.9
+ * @version 0.9.10
  */
 public class RoomManager {
 
@@ -162,15 +162,8 @@ public class RoomManager {
 		}
 		GameEntriesWrapper gw = new GameEntriesWrapper(matches, requested);
 		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid, players, ruleset, language, gw);
-		service.execute();
-		for (ProxyRoom proxyRoom : proxies.values()) {
-			try {
-				proxyRoom.quit();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		terminateManager();
+		Thread thread = new Thread(() -> service.execute());
+		thread.start();
 	}
 
 	/**
@@ -259,7 +252,10 @@ public class RoomManager {
 	/**
 	 * Terminate manager.
 	 */
-	public void terminateManager() {
+	public void terminateManager() throws IOException {
+		for (ProxyRoom proxyRoom : proxies.values()) {
+			proxyRoom.quit();
+		}
 		executorService.shutdownNow();
 	}
 

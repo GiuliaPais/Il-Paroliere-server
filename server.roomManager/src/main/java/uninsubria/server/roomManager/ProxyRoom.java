@@ -24,7 +24,7 @@ import java.util.Objects;
  *
  * @author Davide Di Giovanni
  * @author Giulia Pais
- * @version 0.9.10
+ * @version 0.9.11
  */
 public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 
@@ -66,7 +66,6 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	@Override
 	public void interruptGame() throws IOException {
 		writeCommand(CommProtocolCommands.INTERRUPT_GAME);
-		quit();
 	}
 
 	@Override
@@ -123,6 +122,10 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 				receivedObjectQueue.add(words);
 			}
 			case TIMEOUT_MATCH, NEW_MATCH -> {}
+			case END_GAME -> {
+				HashSet<WordRequest> res = (HashSet<WordRequest>) in.readObject();
+				receivedObjectQueue.add(res);
+			}
 		}
 	}
 

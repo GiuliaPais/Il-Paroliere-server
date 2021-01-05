@@ -7,7 +7,7 @@ import uninsubria.server.services.roomServicesImpl.RegisterGameStatsService;
  * All available types of services that can be requested by a RoomManager.
  *
  * @author Giulia Pais
- * @version 0.9.1
+ * @version 0.9.2
  */
 public enum RoomServiceType implements ServiceType {
     /*---Enum constants---*/
@@ -24,6 +24,6 @@ public enum RoomServiceType implements ServiceType {
     /*---Methods---*/
     @Override
     public Class<?> getValue() {
-        return null;
+        return value;
     }
 }

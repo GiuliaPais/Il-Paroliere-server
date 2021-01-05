@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @author Giulia Pais
  * @author Davide Di Giovanni
- * @version 0.9.8
+ * @version 0.9.9
  */
 public class Game implements Runnable {
     /*---Fields---*/
@@ -82,7 +82,11 @@ public class Game implements Runnable {
                 if (ruleset.interruptIfSomeoneLeaves()) {
                     setGameStatus(GameState.INTERRUPTED);
                     roomManager.interruptGame();
-                    roomManager.terminateManager();
+                    try {
+                        roomManager.terminateManager();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
                     return;
                 }
             }
@@ -97,7 +101,11 @@ public class Game implements Runnable {
                     if (ruleset.interruptIfSomeoneLeaves()) {
                         setGameStatus(GameState.INTERRUPTED);
                         roomManager.interruptGame();
-                        roomManager.terminateManager();
+                        try {
+                            roomManager.terminateManager();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         return;
                     }
                 }
@@ -129,6 +137,11 @@ public class Game implements Runnable {
         try {
             Thread.sleep(Duration.ofSeconds(35).toMillis());
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            roomManager.terminateManager();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         setGameStatus(GameState.FINISHED);
