@@ -64,12 +64,11 @@ public class RoomManager {
 		List<Callable<Instant>> tasks = new ArrayList<>();
 		Map<Integer, PlayerWrapper> identity = new HashMap<>();
 		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Instant> task = () -> entry.getValue().startNewGame();
-					tasks.add(task);
-					identity.put(tasks.indexOf(task), entry.getKey());
-				});
+		for (Map.Entry<PlayerWrapper, ProxyRoom> playerWrapperProxyRoomEntry : proxies.entrySet()) {
+			Callable<Instant> task = () -> playerWrapperProxyRoomEntry.getValue().startNewGame();
+			tasks.add(task);
+			identity.put(tasks.indexOf(task), playerWrapperProxyRoomEntry.getKey());
+		}
 		/* Submit */
 		try {
 			List<Future<Instant>> results = executorService.invokeAll(tasks);
@@ -82,10 +81,13 @@ public class RoomManager {
 					e.printStackTrace();
 					ProxyRoom proxy = proxies.get(identity.get(results.indexOf(future)));
 					proxy.terminate();
-					Set<PlayerWrapper> key = proxies.entrySet().stream()
-							.filter(entry -> entry.getValue().equals(proxy))
-							.map(entry -> entry.getKey())
-							.collect(Collectors.toSet());
+					Set<PlayerWrapper> key = new HashSet<>();
+					for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+						if (entry.getValue().equals(proxy)) {
+							PlayerWrapper entryKey = entry.getKey();
+							key.add(entryKey);
+						}
+					}
 					for (PlayerWrapper k : key) {
 						proxies.remove(k);
 					}
@@ -107,14 +109,13 @@ public class RoomManager {
 	public boolean newMatch(String[] gridF, Integer[] gridNum) {
 		List<Future<Void>> futures = new ArrayList<>();
 		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Void> task = () -> {
-						entry.getValue().startNewMatch(gridF, gridNum);
-						return null;
-					};
-					futures.add(executorService.submit(task));
-				});
+		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+			Callable<Void> task = () -> {
+				entry.getValue().startNewMatch(gridF, gridNum);
+				return null;
+			};
+			futures.add(executorService.submit(task));
+		}
 		for (Future<Void> f : futures) {
 			try {
 				f.get();
@@ -130,28 +131,35 @@ public class RoomManager {
 	 */
 	public synchronized void interruptGame() {
 		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<Void> task = () -> {
-						entry.getValue().interruptGame();
-						return null;
-					};
-					executorService.submit(task);
-				});
+		proxies.values().stream().<Callable<Void>>map(proxyRoom -> () -> {
+			proxyRoom.interruptGame();
+			return null;
+		}).forEach(task -> executorService.submit(task));
 	}
 
 	/**
 	 * Signals the players that the current game is ending and registers game stats.
 	 */
 	public synchronized void endGame(List<String> totalGameGrid, Ruleset ruleset, Language language, Integer players, ArrayList<Match> matches) {
+		List<Future<HashSet<WordRequest>>> futures = new ArrayList<>();
 		HashSet<WordRequest> requested = new HashSet<>();
 		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+			Callable<HashSet<WordRequest>> task = () -> {
+				if (!Thread.currentThread().isInterrupted()) {
+					return entry.getValue().endGame();
+				}
+				return null;
+			};
+			futures.add(executorService.submit(task));
+		}
+		for (Future<HashSet<WordRequest>> future : futures) {
+			HashSet<WordRequest> playerReq = null;
 			try {
-				HashSet<WordRequest> playerReq = entry.getValue().endGame();
-				requested.addAll(playerReq);
-			} catch (IOException | ClassNotFoundException e) {
+				playerReq = future.get();
+			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
+			requested.addAll(playerReq);
 		}
 		GameEntriesWrapper gw = new GameEntriesWrapper(matches, requested);
 		Service service = serviceFactory.getService(RoomServiceType.GAME_STATS, UUID.randomUUID(), totalGameGrid, players, ruleset, language, gw);
@@ -169,12 +177,11 @@ public class RoomManager {
 		List<Callable<ArrayList<String>>> tasks = new ArrayList<>();
 		Map<Integer, PlayerWrapper> identity = new HashMap<>();
 		/* Create all the tasks */
-		proxies.entrySet().stream()
-				.forEach(entry -> {
-					Callable<ArrayList<String>> task = () -> entry.getValue().readWords();
-					tasks.add(task);
-					identity.put(tasks.indexOf(task), entry.getKey());
-				});
+		for (Map.Entry<PlayerWrapper, ProxyRoom> entry : proxies.entrySet()) {
+			Callable<ArrayList<String>> task = () -> entry.getValue().readWords();
+			tasks.add(task);
+			identity.put(tasks.indexOf(task), entry.getKey());
+		}
 		/* Submit */
 		try {
 			List<Future<ArrayList<String>>> results = executorService.invokeAll(tasks);
@@ -211,8 +218,6 @@ public class RoomManager {
 
 	/**
 	 * Sets match timeout.
-	 *
-	 * @return the match timeout
 	 */
 	public void setMatchTimeout() {
 		List<Thread> threads = new ArrayList<>();
