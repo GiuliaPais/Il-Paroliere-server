@@ -46,6 +46,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	public ProxyRoom(InetAddress address) throws IOException {
 		this.socket = new Socket(address, CommHolder.ROOM_PORT);
 		this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		out.flush();
 		this.receivedObjectQueue = new ArrayList<>();
 	}
 
