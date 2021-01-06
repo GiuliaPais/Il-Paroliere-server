@@ -11,7 +11,7 @@ package uninsubria.server.services.api;
 public interface ServiceType {
 	/**
 	 * Gets the Class object associated with this ServiceType. 
-	 * @return a Class<?> object associated with this type
+	 * @return a Class object associated with this type
 	 */
 	Class<?> getValue();
 

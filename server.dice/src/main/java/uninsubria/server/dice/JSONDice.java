@@ -11,14 +11,21 @@ import java.net.URI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * The type Json dice.
+ */
 public class JSONDice {
 
+	/**
+	 * Instantiates a new Json dice.
+	 */
 	public JSONDice() {
 		
 	}
-	
+
 	/**
 	 * Trasforma il dado passato come parametro in un oggetto JSONObject.
+	 *
 	 * @param dice il dado da trasformare in JSONObject.
 	 * @return <code>JSONObject</code> del dado.
 	 */
@@ -39,9 +46,10 @@ public class JSONDice {
 		
 		return obj;
 	}
-	
+
 	/**
 	 * Trasforma l'array di dadi passati come parametro in un oggetto JSONArray.
+	 *
 	 * @param dices l'array di dadi da trasformare in JSONArray.
 	 * @return <code>JSONArray</code> dei dadi.
 	 */
@@ -57,9 +65,10 @@ public class JSONDice {
 		
 		return array;
 	}
-	
+
 	/**
 	 * Trasforma JSONObject passato come parametro in dado.
+	 *
 	 * @param obj l'oggetto da trasformare in dado.
 	 * @return <code>Dice</code> ricavato da JSONObject.
 	 */
@@ -79,9 +88,10 @@ public class JSONDice {
 		return new Dice(diceNo, faces);
 		
 	}
-	
+
 	/**
 	 * Ricava un array di dadi da un JSONArray contenente JSONObject di dadi.
+	 *
 	 * @param array JSONArray da trasformare in array di dadi.
 	 * @return <code>Dice[]</code> contenenti tutti i dadi contenuti in JSONArray.
 	 */
@@ -98,9 +108,11 @@ public class JSONDice {
 		
 		return dices;
 	}
-	
+
 	/**
 	 * Ricava un array di dadi da una stringa di un file JSON.
+	 *
+	 * @param jsonString the json string
 	 * @return <code>Dice[]</code> contenenti tutti i dadi contenuti in JSONArray.
 	 */
 	public Dice[] makeDiceFromJSON(String jsonString) {
@@ -118,12 +130,13 @@ public class JSONDice {
 		
 		return dices;
 	}
-	
-	
+
+
 	/**
 	 * Scrive su un file o lo aggiorna se esistente, l'oggetto JSONObject.
-	 * @param path: il percorso del file.
-	 * @param obj: l'oggetto da trascrivere.
+	 *
+	 * @param path : il percorso del file.
+	 * @param obj  : l'oggetto da trascrivere.
 	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
 	public void writeJSONFile(URI path, JSONObject obj) throws IOException {
@@ -135,11 +148,12 @@ public class JSONDice {
 		buff.flush();
 		buff.close();
 	}
-	
+
 	/**
 	 * Scrive su un file o lo aggiorna se esistente, l'oggetto JSONArray.
-	 * @param path: il percorso del file.
-	 * @param array: l'array da trascrivere.
+	 *
+	 * @param path  : il percorso del file.
+	 * @param array : l'array da trascrivere.
 	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
 	public void writeJSONFile(URI path, JSONArray array) throws IOException {
@@ -151,11 +165,12 @@ public class JSONDice {
 		buff.flush();
 		buff.close();
 	}
-	
+
 	/**
 	 * Legge da un file JSON le stringhe contenute al suo interno e la restituisce.
-	 * @param path: il percorso del file JSON da leggere.
-	 * @return <code>String</code contenente l'array del file.
+	 *
+	 * @param path : il percorso del file JSON da leggere.
+	 * @return String contenente l'array del file.
 	 * @throws IOException eccezione causata dalla mancanza del path.
 	 */
 	public String readJSONFile(URI path) throws IOException {

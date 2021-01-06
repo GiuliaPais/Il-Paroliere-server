@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * The type Dice set.
+ */
 public class DiceSet {
 
 	private static final int nOfDices = 16;
@@ -14,11 +17,10 @@ public class DiceSet {
 	private DiceSetStandard diceLang;
 	private boolean thrown;
 	private Random generator;
-	
+
 	/**
 	 * Costruttore del set di dadi. Al suo interno vengono inizializzati l'array dei dadi,
 	 * la variabile booleana del lancio settata su <code>false</code>.
-	 * @throws URISyntaxException
 	 */
 	public DiceSet() {
 		generator = new Random();
@@ -29,40 +31,43 @@ public class DiceSet {
 	/**
 	 * Costruttore del set di dadi. Al suo interno vengono inizializzati l'array dei dadi,
 	 * la variabile booleana del lancio settata su <code>false</code>.
+	 *
 	 * @param diceLanguage il set di lingue da utilizzare.
-	 * @throws IOException
-	 * @throws URISyntaxException
 	 */
 	public DiceSet(DiceSetStandard diceLanguage) {
 		generator = new Random();
 
 		init(diceLanguage);
 	}
-	
+
 	/**
 	 * Ottieni il numero di dadi utilizzati per la partita.
+	 *
 	 * @return <code>int</code> contenente il numero di dadi utilizzati.
 	 */
 	public int getNOfDices() {
 		return nOfDices;
 	}
-	
+
 	/**
 	 * Ottieni l'array contenente il set di dadi di gioco.
+	 *
 	 * @return <code>Array</code> contenente i dadi.
 	 */
 	public Dice[] getDices() {
 		return dices;
 	}
-	
+
 	/**
 	 * Restituisce il valore della variabile booleana thrown. <code>True</code> se i dadi sono
 	 * stati lanciati. <code>False</code> altrimenti.
+	 *
+	 * @return the boolean
 	 */
 	public boolean areThrown() {
 		return thrown;
 	}
-	
+
 	/**
 	 * Lancia i dadi e setta la variabile thrown a <code>True</code>.
 	 */
@@ -72,7 +77,7 @@ public class DiceSet {
 		}
 		thrown = true;
 	}
-	
+
 	/**
 	 * Setta la variabile thrown a <code>False</code> e resetta le facce dei dadi.
 	 */
@@ -85,14 +90,16 @@ public class DiceSet {
 
 	/**
 	 * Setta un nuovo standard di dadi da utilizzare.
+	 *
 	 * @param newLanguage il nuovo standard di dadi da utilizzare.
 	 */
 	public void setDiceSetStandard(DiceSetStandard newLanguage) {
 		init(newLanguage);
 	}
-	
+
 	/**
 	 * Restituisce un array di stringhe contenenti i risultati del lancio dei dadi, se lanciati. Null altrimenti.
+	 *
 	 * @return Array di stringhe contenente i risultati del lancio.
 	 */
 	public String[] getResultFaces() {
@@ -107,6 +114,7 @@ public class DiceSet {
 
 	/**
 	 * Restituisce un array di Integer contenenti i numeri dei dadi lanciati. Null altrimenti.
+	 *
 	 * @return Array di Integer contenente il numero dei dadi del lancio.
 	 */
 	public Integer[] getResultNumb() {
@@ -122,6 +130,7 @@ public class DiceSet {
 	/**
 	 * Restituisce un array di String contenente le singole lettere sulle facce dei dadi, partendo dal primo,
 	 * senza ripetizioni.
+	 *
 	 * @return String[], un array di String con le occorrenze delle lettere.
 	 */
 	public String[] getLettersOccurrences() {
@@ -146,6 +155,7 @@ public class DiceSet {
 
 	/**
 	 * Restituisce un array di stringhe contenente il dado in forma di stringa per posizione.
+	 *
 	 * @return array di stringhe contenente i dadi in forma di stringa.
 	 */
 	public String[] toStringArray() {
@@ -157,7 +167,7 @@ public class DiceSet {
 
 		return array;
 	}
-	
+
 	/**
 	 * Randomizza la posizione dei dadi lanciati.
 	 */
