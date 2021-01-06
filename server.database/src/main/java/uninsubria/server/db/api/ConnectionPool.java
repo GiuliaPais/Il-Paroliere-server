@@ -22,8 +22,6 @@ public class ConnectionPool {
 	private String user;
 	private String password;
 	private String dburl;
-	private String dbhost;
-	private String dbName;
 	private LinkedBlockingQueue<Connection> connectionPool;
 
 	private ConnectionPool() {}
@@ -54,8 +52,6 @@ public class ConnectionPool {
 		ConnectionPool instance = getInstance();
 		instance.user = admin;
 		instance.password = password;
-		instance.dbhost = host;
-		instance.dbName = dbName;
 		instance.dburl = "jdbc:postgresql://" + host + "/" + dbName;
 		instance.initPool();
 	}

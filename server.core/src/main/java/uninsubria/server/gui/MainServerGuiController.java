@@ -1,17 +1,24 @@
 package uninsubria.server.gui;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXDialog;
+import com.jfoenix.controls.JFXDialogLayout;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import uninsubria.server.dbpopulator.DbPopulator;
 import uninsubria.utils.connection.CommHolder;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 /**
  * Controller class for the main portion of the server side GUI,
@@ -22,14 +29,16 @@ import java.net.Socket;
  */
 public class MainServerGuiController {
     /*---Fields---*/
-    @FXML
-    AnchorPane root;
+    @FXML StackPane rootContainer;
+    @FXML AnchorPane root;
     @FXML TextFlow console;
-    @FXML
-    JFXButton back_btn;
+    @FXML JFXButton back_btn, popDbBtn, cleanDbBtn;
+
+    private final DbPopulator dbPopulator;
 
     /*---Constructors---*/
     public MainServerGuiController() {
+        dbPopulator = new DbPopulator(10);
     }
 
     /*---Methods---*/
@@ -54,11 +63,15 @@ public class MainServerGuiController {
                 ServerLauncher.masterServer.getState().equals(Thread.State.RUNNABLE)) {
             ServerLauncher.masterServer.start();
             back_btn.setDisable(true);
+            popDbBtn.setDisable(false);
+            cleanDbBtn.setDisable(false);
             return;
         }
         ServerLauncher.newServerInstance();
         ServerLauncher.masterServer.start();
         back_btn.setDisable(true);
+        popDbBtn.setDisable(false);
+        cleanDbBtn.setDisable(false);
         return;
     }
 
@@ -80,11 +93,47 @@ public class MainServerGuiController {
             printToConsole(e.getStackTrace().toString(), MessageType.WARNING);
         }
         back_btn.setDisable(false);
+        popDbBtn.setDisable(true);
+        cleanDbBtn.setDisable(true);
     }
 
     @FXML void back() throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DbLogin.fxml"));
         Parent parent = loader.load();
         root.getScene().setRoot(parent);
+    }
+
+    @FXML void populate(){
+        try {
+            dbPopulator.populate();
+            printToConsole("Database populated", MessageType.MESSAGE);
+        } catch (NoSuchAlgorithmException | SQLException | InterruptedException e) {
+            printToConsole(e.getMessage(), MessageType.ERROR);
+        }
+    }
+
+    @FXML void clean(){
+        JFXDialog dialog = new JFXDialog();
+        JFXDialogLayout content = new JFXDialogLayout();
+        Label bodyContent = new Label("Are you sure you want to clear the database? All data will be lost and " +
+                "it won't be possible to retrieve it");
+        content.setBody(bodyContent);
+        JFXButton yes = new JFXButton("YES");
+        JFXButton no = new JFXButton("NO");
+        no.setOnAction(event -> dialog.close());
+        yes.setOnAction(event -> {
+            try {
+                dbPopulator.clearAll();
+                printToConsole("Database cleaned", MessageType.MESSAGE);
+            } catch (SQLException | InterruptedException throwables) {
+                printToConsole(throwables.getMessage(), MessageType.ERROR);
+            }
+            dialog.close();
+        });
+        content.setActions(yes, no);
+        dialog.setDialogContainer(rootContainer);
+        dialog.setContent(content);
+        dialog.setTransitionType(JFXDialog.DialogTransition.CENTER);
+        dialog.show();
     }
 }

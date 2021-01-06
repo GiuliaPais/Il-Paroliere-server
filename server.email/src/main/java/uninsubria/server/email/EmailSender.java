@@ -74,7 +74,7 @@ public class EmailSender{
     public static void sendEmail(Email email) throws SendFailedException, MessagingException{
         String provider = "outlook";
         Properties props = getProperties(provider);
-        /**Session session = Session.getInstance(props,  new Authenticator() {
+        /*Session session = Session.getInstance(props,  new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication("Il_Paroliere@outlook.it", "Paroliere21");
             }
@@ -91,7 +91,6 @@ public class EmailSender{
         msg.setSubject(email.getSubject());
         msg.setContent(email.getBody(), "text/html; charset=UTF-8");
         Transport.send(msg);
-        System.out.println("Email sent sussessfully");
     }
 
     /**

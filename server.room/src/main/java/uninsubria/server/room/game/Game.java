@@ -51,6 +51,15 @@ public class Game implements Runnable {
     private String winner;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Game.
+     *
+     * @param players  the players
+     * @param ruleset  the ruleset
+     * @param language the language
+     * @param roomId   the room id
+     * @param monitor  the monitor
+     */
     public Game(ArrayList<PlayerWrapper> players, Ruleset ruleset, Language language, UUID roomId, RoomLeaveMonitor monitor) {
         this.players = players;
         this.ruleset = ruleset;
@@ -147,14 +156,29 @@ public class Game implements Runnable {
         setGameStatus(GameState.FINISHED);
     }
 
+    /**
+     * Gets game status.
+     *
+     * @return the game status
+     */
     public GameState getGameStatus() {
         return gameStatus.get();
     }
 
+    /**
+     * Game status property object property.
+     *
+     * @return the object property
+     */
     public ObjectProperty<GameState> gameStatusProperty() {
         return gameStatus;
     }
 
+    /**
+     * Sets game status.
+     *
+     * @param gameStatus the game status
+     */
     public void setGameStatus(GameState gameStatus) {
         this.gameStatus.set(gameStatus);
     }

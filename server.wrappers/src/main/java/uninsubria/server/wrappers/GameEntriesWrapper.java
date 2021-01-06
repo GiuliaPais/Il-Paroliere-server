@@ -21,6 +21,7 @@ public class GameEntriesWrapper {
     private final HashSet<WordRequest> wordsRequested;
 
     /*---Constructors---*/
+
     /**
      * Instantiates a new Game entries wrapper.
      *
@@ -33,14 +34,31 @@ public class GameEntriesWrapper {
     }
 
     /*---Methods---*/
+    /**
+     * Gets matches info.
+     *
+     * @return the matches info
+     */
     public List<Match> getMatchesInfo() {
         return matchesInfo;
     }
 
+    /**
+     * Gets words requested.
+     *
+     * @return the words requested
+     */
     public HashSet<WordRequest> getWordsRequested() {
         return wordsRequested;
     }
 
+    /**
+     * Was the given word requested by at least one player in the given match?
+     *
+     * @param word    the word
+     * @param matchNo the match no
+     * @return true if requested, false otherwise
+     */
     public boolean wasRequested(String word, int matchNo) {
         for (WordRequest wr : wordsRequested) {
             boolean k = wr.getWord().equals(word) & wr.getMatchRequested() == matchNo;
@@ -51,6 +69,12 @@ public class GameEntriesWrapper {
         return false;
     }
 
+    /**
+     * Gets match words.
+     *
+     * @param matchNumber the match number
+     * @return the match words
+     */
     public Hashtable<String, Word[]> getMatchWords(int matchNumber) {
         for (Match m : matchesInfo) {
             if (m.getMatchNo() == matchNumber) {

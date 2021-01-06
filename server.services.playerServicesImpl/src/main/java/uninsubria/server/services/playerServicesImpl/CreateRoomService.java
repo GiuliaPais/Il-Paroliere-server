@@ -34,8 +34,4 @@ public class CreateRoomService implements Service {
 		RoomList.createRoom(playerWrapper, lobby);
 		return null;
 	}
-	
-	
-
-
 }

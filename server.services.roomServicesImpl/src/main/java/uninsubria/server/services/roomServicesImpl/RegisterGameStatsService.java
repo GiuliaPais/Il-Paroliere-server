@@ -28,6 +28,16 @@ public class RegisterGameStatsService implements Service {
     private final GameEntriesWrapper entriesInfo;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Register game stats service.
+     *
+     * @param gameID      the game id
+     * @param gameGrids   the game grids
+     * @param numPlayers  the num players
+     * @param ruleset     the ruleset
+     * @param language    the language
+     * @param entriesInfo the entries info
+     */
     public RegisterGameStatsService(UUID gameID, String[] gameGrids, Integer numPlayers, Ruleset ruleset, Language language, GameEntriesWrapper entriesInfo) {
         this.gameID = gameID;
         this.gameGrids = gameGrids;

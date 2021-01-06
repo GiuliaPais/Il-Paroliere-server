@@ -37,6 +37,12 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	private Instant nextScheduledTimerTime;
 	private List<Object> receivedObjectQueue;
 
+	/**
+	 * Instantiates a new Proxy room.
+	 *
+	 * @param address the address
+	 * @throws IOException the io exception
+	 */
 	public ProxyRoom(InetAddress address) throws IOException {
 		this.socket = new Socket(address, CommHolder.ROOM_PORT);
 		this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
@@ -91,7 +97,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 	}
 
 	@Override
-	public void writeCommand(CommProtocolCommands command, Object... params) throws IOException {
+	public synchronized void writeCommand(CommProtocolCommands command, Object... params) throws IOException {
 		out.writeUTF(command.getCommand());
 		for (Object p : params) {
 			if (p instanceof String) {
@@ -121,7 +127,7 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 				ArrayList<String> words = (ArrayList<String>) in.readObject();
 				receivedObjectQueue.add(words);
 			}
-			case TIMEOUT_MATCH, NEW_MATCH -> {}
+			case TIMEOUT_MATCH, NEW_MATCH -> {return;}
 			case END_GAME -> {
 				HashSet<WordRequest> res = (HashSet<WordRequest>) in.readObject();
 				receivedObjectQueue.add(res);
@@ -155,6 +161,9 @@ public class ProxyRoom implements ProxySkeletonInterface, RoomProxyInterface {
 		return true;
 	}
 
+	/**
+	 * Terminates the proxy by closing all resources.
+	 */
 	public void terminate() {
 		try {
 			if (in != null)

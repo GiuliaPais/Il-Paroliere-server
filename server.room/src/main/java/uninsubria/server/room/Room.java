@@ -36,8 +36,22 @@ public class Room {
     private Future<?> currentGame;
     private RoomLeaveMonitor monitor;
 
+    /**
+     * The enum Room state.
+     */
     public enum RoomState {
-        OPEN, FULL, GAMEON
+        /**
+         * Open room state.
+         */
+        OPEN,
+        /**
+         * Full room state.
+         */
+        FULL,
+        /**
+         * Gameon room state.
+         */
+        GAMEON
     }
 
     /*---Constructors---*/
@@ -97,18 +111,39 @@ public class Room {
             setRoomStatus(RoomState.OPEN);
     }
 
+    /**
+     * Gets room status.
+     *
+     * @return the room status
+     */
     public RoomState getRoomStatus() {
         return roomStatus.get();
     }
 
+    /**
+     * Room status property object property.
+     *
+     * @return the object property
+     */
     public ObjectProperty<RoomState> roomStatusProperty() {
         return roomStatus;
     }
 
+    /**
+     * Sets room status.
+     *
+     * @param roomStatus the room status
+     */
     public synchronized void setRoomStatus(RoomState roomStatus) {
         this.roomStatus.set(roomStatus);
     }
 
+    /**
+     * Lets the player passed as a parameter to leave the current game. If it is specified in the ruleset,
+     * the game is also interrupted.
+     *
+     * @param playerID the player id
+     */
     public synchronized void leaveGame(String playerID) {
         if (ruleset.interruptIfSomeoneLeaves()) {
             /* Sends an interrupt to the game if only if the ruleset contains this rule */
@@ -120,6 +155,9 @@ public class Room {
         monitor.signalPlayerisLeaving(pw);
     }
 
+    /**
+     * Interrupts the current game and sets the appropriate room status.
+     */
     public synchronized void interruptGame() {
         if (currentGame != null) {
             currentGame.cancel(true);
@@ -177,8 +215,9 @@ public class Room {
     }
 
     /**
-     * Restituisce gli attuali player nella Room.
-     * @return gli attuali player nella room.
+     * Gets the current players in the room.
+     *
+     * @return players as a list of playerIDs
      */
     public ArrayList<String> getCurrentPlayers() {
         ArrayList<String> playerNames = new ArrayList<>();

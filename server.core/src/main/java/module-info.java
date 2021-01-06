@@ -12,6 +12,7 @@ module server.core {
     requires server.email;
     requires server.playerManagerImpl;
     requires server.room;
+    requires server.dbpopulator;
 
     opens uninsubria.server.gui to javafx.fxml;
     exports uninsubria.server.gui;

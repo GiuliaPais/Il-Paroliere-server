@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * RoomList is a sigleton and it's thread-safe.
  *
  * @author Davide Di Giovanni
- * @author Giulia Pais (minor)
+ * @author Giulia Pais
  * @version 0.9.7
  */
 public class RoomList {
@@ -143,5 +143,13 @@ public class RoomList {
      */
     public static ConcurrentHashMap<UUID, Lobby> getLobbies() {
         return getInstance().lobbies;
+    }
+
+    /**
+     * Clears the room list.
+     */
+    public static void clear() {
+        getInstance().rooms.clear();
+        getInstance().lobbies.clear();
     }
 }

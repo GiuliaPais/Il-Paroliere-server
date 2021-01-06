@@ -18,6 +18,12 @@ public class LeaveGameService implements Service {
     private final String playerID;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Leave game service.
+     *
+     * @param roomId   the room id
+     * @param playerID the player id
+     */
     public LeaveGameService(UUID roomId, String playerID) {
         this.roomId = roomId;
         this.playerID = playerID;

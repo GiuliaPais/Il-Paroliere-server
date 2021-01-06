@@ -29,10 +29,10 @@ class ServerUDP extends Thread {
     private int clientPort;
     private boolean running;
 
+    /*---Constructor---*/
     /**
      * Instantiates a new Server udp.
      */
-    /*---Constructor---*/
     public ServerUDP() {
         this.initialize();
         this.start();

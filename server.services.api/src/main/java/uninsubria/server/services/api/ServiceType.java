@@ -13,6 +13,6 @@ public interface ServiceType {
 	 * Gets the Class object associated with this ServiceType. 
 	 * @return a Class<?> object associated with this type
 	 */
-	public Class<?> getValue();
+	Class<?> getValue();
 
 }

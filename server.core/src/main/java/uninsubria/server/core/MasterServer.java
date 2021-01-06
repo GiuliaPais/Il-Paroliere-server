@@ -30,7 +30,7 @@ public class MasterServer extends Thread {
     /*---Fields---*/
     private MainServerGuiController controllerReference;
     private ServerSocket serverSocket;
-    private ConcurrentLinkedQueue<Skeleton> connected_clients;
+    private final ConcurrentLinkedQueue<Skeleton> connected_clients;
 
     /* -- For DB connections -- */
     private String dbHost;
@@ -113,6 +113,7 @@ public class MasterServer extends Thread {
             connected_clients.remove(s);
         }
         ConnectionPool.clearPool();
+        RoomList.clear();
         serverSocket.close();
         Platform.runLater(() -> controllerReference.printToConsole("Server closed", MessageType.MESSAGE));
     }

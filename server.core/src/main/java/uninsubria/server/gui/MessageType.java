@@ -10,5 +10,5 @@ public enum MessageType {
     /*---Enum constants---*/
     MESSAGE,
     WARNING,
-    ERROR;
+    ERROR
 }

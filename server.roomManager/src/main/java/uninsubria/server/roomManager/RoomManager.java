@@ -167,9 +167,9 @@ public class RoomManager {
 	}
 
 	/**
-	 * Legge le parole dai proxy e le restituisce insieme al giocatore che le ha trovate.
+	 * Requests the list of words found by each player at the end of a match.
 	 *
-	 * @return HashMap contenente player e parole trovate.
+	 * @return a map with every player and the words found
 	 */
 	public synchronized HashMap<PlayerWrapper, String[]> readWords() {
 		HashMap<PlayerWrapper, String[]> mapTmp = new HashMap<>();
@@ -216,7 +216,7 @@ public class RoomManager {
 	}
 
 	/**
-	 * Sets match timeout.
+	 * Sets match timeout and waits for all players to notify they're ready.
 	 */
 	public void setMatchTimeout() {
 		List<Thread> threads = new ArrayList<>();

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public enum wordsOfGrid {
+public enum WordsOfGrid {
 
     //+STIA FINE FINTA LISTA SLIP TISI PISTA TINTA
     // -PENTITI ISTINTI INTIMI LIMITI PETI
@@ -71,7 +71,7 @@ public enum wordsOfGrid {
     private final String[] grid;
     private final String[] words;
 
-    wordsOfGrid(String[] grid, String ... words) {
+    WordsOfGrid(String[] grid, String ... words) {
         this.grid = grid;
         this.words = words;
     }
@@ -87,7 +87,7 @@ public enum wordsOfGrid {
         return words;
     }
 
-    public String getRandomWord(wordsOfGrid wog){
+    public String getRandomWord(WordsOfGrid wog){
         String word;
         Random random = new Random();
         List<String> words = wog.getWords();
@@ -95,10 +95,10 @@ public enum wordsOfGrid {
         return word;
     }
 
-    public static wordsOfGrid getRandomGrid(){
-        wordsOfGrid wog;
+    public static WordsOfGrid getRandomGrid(){
+        WordsOfGrid wog;
         Random rdm = new Random();
-        int index = rdm.nextInt(wordsOfGrid.values().length);
+        int index = rdm.nextInt(WordsOfGrid.values().length);
         System.out.println("Griglia N " + index);
         wog = switch (index) {
             case (0) -> GRID0;

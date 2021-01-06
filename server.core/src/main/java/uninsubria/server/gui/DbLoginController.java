@@ -97,9 +97,6 @@ public class DbLoginController {
         boolean validPw = dbPw.validate();
         boolean validEmail = emailAddr.validate();
         boolean validEPw = emailPw.validate();
-        if (validHost & validName & validAdmin & validPw & validEmail & validEPw) {
-            return true;
-        }
-        return false;
+        return validHost & validName & validAdmin & validPw & validEmail & validEPw;
     }
 }

@@ -24,7 +24,7 @@ public class ServerLauncher extends Application {
     /*---Methods---*/
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.prefs = Preferences.userRoot().node("IlParoliere-server");
+        prefs = Preferences.userRoot().node("IlParoliere-server");
         masterServer = new MasterServer();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DbLogin.fxml"));
         Parent parent = loader.load();

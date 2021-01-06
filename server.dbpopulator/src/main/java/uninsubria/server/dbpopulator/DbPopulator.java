@@ -4,13 +4,10 @@ import uninsubria.server.db.api.ConnectionPool;
 import uninsubria.server.db.businesslayer.GameEntry;
 import uninsubria.server.db.businesslayer.GameInfo;
 import uninsubria.server.db.dao.*;
-import uninsubria.server.dictionary.loader.DictionaryException;
 import uninsubria.utils.business.Player;
 import uninsubria.utils.languages.Language;
 import uninsubria.utils.security.PasswordEncryptor;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,63 +15,61 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * @author Giulia Pais
- * @version 0.9.0
+ * Utility object for generating sample data for database population.
+ *
+ * @author Alessandro Lerro
  */
 public class DbPopulator {
     /*---Fields---*/
-    private PlayerDAO playerDAO;
-    private GameEntryDAO gameEntryDAO;
-    private GameInfoDAO gameInfoDAO;
-    private int playerEntries, gameInfoEntries;
-    private List<Player> generatedPlayers;
-    private List<GameEntry> generatedEntries;
-    private List<GameInfo> generatedGames;
-    private Random random = new Random();
+    private final PlayerDAO playerDAO;
+    private final GameEntryDAO gameEntryDAO;
+    private final GameInfoDAO gameInfoDAO;
+    private final int playerEntries;
+    private final List<Player> generatedPlayers;
+    private final List<GameEntry> generatedEntries;
+    private final List<GameInfo> generatedGames;
+    private final Random random = new Random();
     private final String[] possibleNames = new String[] {"Andrea", "Marco", "Lorenzo", "Leonardo", "Alessandro",
     "Davide", "Mattia", "Gabriele", "Luca", "Edoardo", "Riccardo", "Pietro", "Tommaso", "Matteo", "Francesco",
     "Sofia", "Giulia", "Alice", "Aurora", "Emma", "Giorgia", "Chiara", "Anna", "Beatrice", "Lucia"};
     private final String[] possibleLastNames = new String[] {"Rossi", "Bianchi", "Ferrari", "Russo", "Gallo",
     "Costa", "Fontana", "Conti", "Ricci", "Rinaldi", "Longo", "Gatti", "Galli", "Ferraro", "Santoro", "Ferri",
     "Colombo", "De Luca", "Barbieri", "Sala", "Villa", "Cattaneo", "Brambilla", "Fumagalli", "Trevisan", "Magnani"};
-    private List<String> moves = new ArrayList<>(Arrays.asList("UP", "DOWN", "LEFT", "RIGHT", "RIGHTUP", "RIGHTDOWN", "LEFTUP", "LEFTDOWN"));
-
+    private final List<String> moves = new ArrayList<>(Arrays.asList("UP", "DOWN", "LEFT", "RIGHT", "RIGHTUP", "RIGHTDOWN", "LEFTUP", "LEFTDOWN"));
 
     /*---Constructors---*/
-    public DbPopulator(int playerEntries, int gameInfoEntries) {
+    /**
+     * Instantiates a new Db populator.
+     *
+     * @param playerEntries the player entries to generate
+     */
+    public DbPopulator(int playerEntries) {
         this.playerDAO = new PlayerDAOImpl();
         this.gameEntryDAO = new GameEntryDAOImpl();
         this.gameInfoDAO = new GameInfoDAOImpl();
         this.playerEntries = playerEntries;
-        this.gameInfoEntries = gameInfoEntries;
         this.generatedPlayers = new ArrayList<>();
         this.generatedGames = new ArrayList<>();
         this.generatedEntries = new ArrayList<>();
     }
 
     /*---Methods---*/
-
-    /**
-     *
-     * @param length
-     * @return generatedString, usata per la creazione di stringhe alfanumeriche casuali
-     */
     private String generateRandomAlphaNumString(int length) {
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
-        String generatedString = random.ints(leftLimit, rightLimit + 1)
+
+        return random.ints(leftLimit, rightLimit + 1)
                 .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
                 .limit(length)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
-
-        return generatedString;
     }
 
     /**
-     * il metodo elimina tutte le tuple del database
-     * @throws SQLException
-     * @throws InterruptedException
+     * Clears all tuples from database.
+     *
+     * @throws SQLException         the sql exception
+     * @throws InterruptedException the interrupted exception
      */
     public void clearAll() throws SQLException, InterruptedException {
         Connection connection = ConnectionPool.getConnection();
@@ -91,15 +86,13 @@ public class DbPopulator {
     }
 
     /**
-     * il metodo si occupa della popolazione del database
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws SQLException
-     * @throws InterruptedException
+     * Populates the database.
+     *
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws SQLException             the sql exception
+     * @throws InterruptedException     the interrupted exception
      */
-    public void populate() throws NoSuchAlgorithmException, IOException, DictionaryException, URISyntaxException, SQLException, InterruptedException {
+    public void populate() throws NoSuchAlgorithmException, SQLException, InterruptedException {
         createDummyPlayers();
         createDummyGames();
         populatePlayerTable();
@@ -134,7 +127,6 @@ public class DbPopulator {
     private void createDummyPlayers() throws NoSuchAlgorithmException {
         for (int i = 0; i < playerEntries; i++) {
             Player player = new Player();
-            //player.setPlayerID(generateRandomAlphaNumString(20));
             player.setPlayerID("user" + (i+1));
             player.setEmail(player.getPlayerID() + "@example.com");
             player.setSurname(possibleLastNames[random.nextInt(possibleLastNames.length)]);
@@ -146,146 +138,31 @@ public class DbPopulator {
         }
     }
 
-    private void createDummyGames() throws DictionaryException, IOException, URISyntaxException, NoSuchAlgorithmException {
-        Language[] languages = Language.values();
+    private void createDummyGames() {
         for (int i = 1; i <= 7/*gameInfoEntries*/; i++) {
             GameInfo gameInfo = new GameInfo();
             gameInfo.setGameId(UUID.randomUUID());
             gameInfo.setRuleset("STANDARD");
-            /*if (generatedPlayers.size() >= 6) {
-                gameInfo.setNumPlayers((byte) (random.ints(1,2,6).findFirst().getAsInt()));
-            } else {
-                gameInfo.setNumPlayers((byte) (random.ints(1, 2, generatedPlayers.size()).findFirst().getAsInt()));
-            }*/
-            //gameInfo.setLanguage(languages[random.nextInt(languages.length)]);
             gameInfo.setLanguage(Language.ITALIAN);
-
-            short matchesNumber = (short) (random.nextInt(6)+1);
-            //String[] grid = createDummyGameEntries(matchesNumber, gameInfo.getNumPlayers(), gameInfo.getGameId(), gameInfo.getLanguage());
-
-            String[] grid = createDummyGameEntries(gameInfo.getNumPlayers(), gameInfo.getGameId(), gameInfo.getLanguage(), i);
+            int num_players = switch(i){
+                case(1), (2) -> 2;
+                case(3), (4) -> 3;
+                case(5) -> 4;
+                case(6) -> 5;
+                case(7) -> 6;
+                default -> throw new IllegalStateException("Unexpected value: " + i);
+            };
+            gameInfo.setNumPlayers(num_players);
+            String[] grid = createDummyGameEntries(gameInfo.getNumPlayers(), gameInfo.getGameId(), i);
             gameInfo.setAllMatchesGrid(grid);
             generatedGames.add(gameInfo);
         }
     }
 
-   /* private String[] createDummyGameEntries(short numberOfMatches, int numPlayers, UUID gameID, Language lang) throws IOException,
-            DictionaryException, URISyntaxException {
-        /* Randomly extract players from the player list (no duplicates allowed)
-        List<Player> chosenPlayers = new ArrayList<>(numPlayers);
-        for (int i = 0; i < numPlayers; i++) {
-            Player chosen = generatedPlayers.get(random.nextInt(generatedPlayers.size()));
-            chosenPlayers.add(chosen);
-            generatedPlayers.remove(chosen);
-        }
-        /* Put back the players extracted in the original list
-        generatedPlayers.addAll(chosenPlayers);
-        /* For each match and each player generate some words - valid and not
-        List<GameEntry> gameEntries = new ArrayList<>();
-        List<String> validWords = DictionaryManager.getValidWords(lang);
-
-
-        DiceSet diceSet = new DiceSet();
-        diceSet.setDiceSetStandard(DiceSetStandard.valueOf(lang.name()));
-        String[] uniqueGameGrid = new String[16];
-        for(int matchNo = 1; matchNo <= numberOfMatches; matchNo++) {
-            List<String> foundValidWords = new ArrayList<>();
-            List<String> foundRandomWords = new ArrayList<>();
-            diceSet.setNotThrown();
-            diceSet.throwDices();
-            diceSet.randomizePosition();
-            String[] matchGrid = diceSet.getResultFaces();
-            if (matchNo == 1) {
-                uniqueGameGrid = matchGrid;
-            } else {
-                uniqueGameGrid = Stream.concat(Arrays.stream(uniqueGameGrid), Arrays.stream(matchGrid))
-                        .toArray(String[]::new);
-            }
-            GraphGrid graphGrid = new GraphGrid(matchGrid);
-            int validWordsToFind = random.nextInt(10);
-            int randomWords = random.nextInt(10);
-            while (validWordsToFind > 0 & validWords.size() > 0) {
-                int rand = random.nextInt(validWords.size());
-                String currWord = validWords.remove(rand);
-                if (currWord.length() < 3) {
-                    continue;
-                }
-                boolean obtainable = graphGrid.isDerivableFromGrid(currWord);
-                if (obtainable) {
-                    foundValidWords.add(currWord);
-                    validWordsToFind--;
-                } else if(randomWords > 0) {
-                    foundRandomWords.add(currWord);
-                    randomWords--;
-                }
-            }
-            /* Add all wrong words as game entries for a random player
-            for (String wrongW : foundRandomWords) {
-                Player player = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
-                GameEntry gameEntry = new GameEntry(gameID, player.getPlayerID(), (short) matchNo, wrongW,
-                        random.nextBoolean(), false, true);
-                gameEntries.add(gameEntry);
-            }
-            /* Pick a certain number of valid found words to be duplicated
-            if (foundValidWords.size() > 0) {
-                int duplicatedWords = random.nextInt(foundValidWords.size());
-                while (duplicatedWords > 0) {
-                    String duplWord = foundValidWords.remove(random.nextInt(foundValidWords.size()));
-                    duplicatedWords--;
-                    Player player1 = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
-                    Player player2 = player1;
-                    while (player1.equals(player2)) {
-                        player2 = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
-                    }
-                    GameEntry gameEntry1 = new GameEntry(gameID, player1.getPlayerID(), (short) matchNo, duplWord,
-                            random.nextBoolean(), true, false);
-                    GameEntry gameEntry2 = new GameEntry(gameID, player2.getPlayerID(), (short) matchNo, duplWord,
-                            random.nextBoolean(), true, false);
-                    gameEntries.add(gameEntry1);
-                    gameEntries.add(gameEntry2);
-                }
-            }
-            /* Put remaining words
-            for (String word: foundValidWords) {
-                Player player = chosenPlayers.get(random.nextInt(chosenPlayers.size()));
-                GameEntry gameEntry = new GameEntry(gameID, player.getPlayerID(), (short) matchNo, word,
-                        random.nextBoolean(), false, false);
-                gameEntries.add(gameEntry);
-            }
-        }
-        generatedEntries.addAll(gameEntries);
-        return uniqueGameGrid;
-    }*/
-
-    public List<Player> getGeneratedPlayers() {
-        return generatedPlayers;
-    }
-
-    public List<GameEntry> getGeneratedEntries() {
-        return generatedEntries;
-    }
-
-    public List<GameInfo> getGeneratedGames() {
-        return generatedGames;
-    }
-
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita di 2 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries2_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries2_1(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         //MATCH 1
-        for (String x: wordsOfGrid.GRID0.getGrid()) {
+        for (String x: WordsOfGrid.GRID0.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -303,7 +180,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "PENTITI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "FINE", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID11.getGrid()) {
+        for (String x: WordsOfGrid.GRID11.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -326,7 +203,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "UNTA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 2, "ETERA", rdm.nextBoolean(),true,false));
         //MATCH 3
-        for (String x: wordsOfGrid.GRID10.getGrid()) {
+        for (String x: WordsOfGrid.GRID10.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -360,7 +237,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TIPO", rdm.nextBoolean(),false,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 3, "TOT", rdm.nextBoolean(),false,false));
         //MATCH 4
-        for (String x: wordsOfGrid.GRID6.getGrid()) {
+        for (String x: WordsOfGrid.GRID6.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -376,7 +253,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "TIR", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 4, "NERI", rdm.nextBoolean(),false,true));
         //MATCH 5
-        for (String x: wordsOfGrid.GRID1.getGrid()) {
+        for (String x: WordsOfGrid.GRID1.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -400,23 +277,10 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita di 2 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries2_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries2_2(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         //MATCH 1
-        for (String x: wordsOfGrid.GRID2.getGrid()) {
+        for (String x: WordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -448,7 +312,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "STARE", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(1).getPlayerID(), (short) 1, "MANE", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID2.getGrid()) {
+        for (String x: WordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -481,23 +345,10 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita di 3 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries3_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries3_1(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         //MATCH 1
-        for (String x: wordsOfGrid.GRID4.getGrid()) {
+        for (String x: WordsOfGrid.GRID4.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -531,7 +382,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "BUFALA", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), (short) 1, "FASCIA", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID5.getGrid()) {
+        for (String x: WordsOfGrid.GRID5.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -570,24 +421,11 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita di 3 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries3_2(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries3_2(List<Player> players, UUID gameID, List<String> grids)  {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        for (String x: wordsOfGrid.GRID7.getGrid()) {
+        for (String x: WordsOfGrid.GRID7.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -614,7 +452,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "CATTURE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ETERE", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID8.getGrid()) {
+        for (String x: WordsOfGrid.GRID8.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -656,7 +494,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "ESSO", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(2).getPlayerID(), n, "NUDO", rdm.nextBoolean(),true,false));
         //MATCH 3
-        for (String x: wordsOfGrid.GRID9.getGrid()) {
+        for (String x: WordsOfGrid.GRID9.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -698,24 +536,11 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita di 4 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries4_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries4_1(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        for (String x: wordsOfGrid.GRID2.getGrid()) {
+        for (String x: WordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -755,7 +580,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "STRADE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "TENDA", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID3.getGrid()) {
+        for (String x: WordsOfGrid.GRID3.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -785,7 +610,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "CON", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "ALBO", rdm.nextBoolean(),true,false));
         //MATCH 3
-        for (String x: wordsOfGrid.GRID12.getGrid()) {
+        for (String x: WordsOfGrid.GRID12.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -824,7 +649,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "FINE", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(3).getPlayerID(), n, "BICI", rdm.nextBoolean(),true,false));
         //MATCH 4
-        for (String x: wordsOfGrid.GRID6.getGrid()) {
+        for (String x: WordsOfGrid.GRID6.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -853,24 +678,11 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita a 5 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries5_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries5_1(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        for (String x: wordsOfGrid.GRID10.getGrid()) {
+        for (String x: WordsOfGrid.GRID10.getGrid()) {
             grids.add(x);
         }
         //P0
@@ -911,7 +723,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "NOVE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "ATEO", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID11.getGrid()) {
+        for (String x: WordsOfGrid.GRID11.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -950,7 +762,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "AVRETE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "AVERE", rdm.nextBoolean(),true,false));
         //MATCH 3
-        for (String x: wordsOfGrid.GRID9.getGrid()) {
+        for (String x: WordsOfGrid.GRID9.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -991,7 +803,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "TASSO", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "TASSA", rdm.nextBoolean(),true,false));
         //MATCH 4
-        for (String x: wordsOfGrid.GRID3.getGrid()) {
+        for (String x: WordsOfGrid.GRID3.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -1026,7 +838,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "POI", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "PUOI", rdm.nextBoolean(),false,true));
         //MATCH 5
-        for (String x: wordsOfGrid.GRID7.getGrid()) {
+        for (String x: WordsOfGrid.GRID7.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -1055,7 +867,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "METTE", rdm.nextBoolean(),false,true));
         generatedEntries.add(new GameEntry(gameID, players.get(4).getPlayerID(), n, "MERE", rdm.nextBoolean(),false,true));
         //MATCH 6
-        for (String x: wordsOfGrid.GRID0.getGrid()) {
+        for (String x: WordsOfGrid.GRID0.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -1086,24 +898,11 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param players
-     * @param gameID
-     * @param lang
-     * @param grids
-     * @return grids, le griglie di gioco, partita a 6 giocatori
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries6_1(List<Player> players, UUID gameID, Language lang, List<String> grids) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries6_1(List<Player> players, UUID gameID, List<String> grids) {
         Random rdm = new Random();
         short n=1;
         //MATCH 1
-        for (String x: wordsOfGrid.GRID2.getGrid()) {
+        for (String x: WordsOfGrid.GRID2.getGrid()) {
             grids.add(x);
         }
         generatedEntries.add(new GameEntry(gameID, players.get(0).getPlayerID(), n, "MANSARDA", rdm.nextBoolean(),false,false));
@@ -1143,7 +942,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "ANSA", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "AURA", rdm.nextBoolean(),true,false));
         //MATCH 2
-        for (String x: wordsOfGrid.GRID4.getGrid()) {
+        for (String x: WordsOfGrid.GRID4.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -1192,7 +991,7 @@ public class DbPopulator {
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "FLAN", rdm.nextBoolean(),true,false));
         generatedEntries.add(new GameEntry(gameID, players.get(5).getPlayerID(), n, "SLANCIA", rdm.nextBoolean(),false,true));
         //MATCH 3
-        for (String x: wordsOfGrid.GRID5.getGrid()) {
+        for (String x: WordsOfGrid.GRID5.getGrid()) {
             grids.add(x);
         }
         n++;
@@ -1234,22 +1033,8 @@ public class DbPopulator {
         return grids.toArray(new String[grids.size()]);
     }
 
-    /**
-     *
-     * @param numPlayers
-     * @param gameID
-     * @param lang
-     * @param n
-     * @return grids, le griglie di gioco
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     * @throws NoSuchAlgorithmException
-     */
-    private String[] createDummyGameEntries(int numPlayers, UUID gameID, Language lang, int n) throws IOException,
-            DictionaryException, URISyntaxException, NoSuchAlgorithmException {
+    private String[] createDummyGameEntries(int numPlayers, UUID gameID, int n)  {
         List<String> grids = new ArrayList<>();
-        String[] arrayGrids;
         Player chosen;
         List<Player> chosenPlayers = new ArrayList<>();
         for (int i = 0; i < numPlayers; i++) {
@@ -1259,191 +1044,15 @@ public class DbPopulator {
         }
         //Put back the players extracted in the original list
         generatedPlayers.addAll(chosenPlayers);
-        System.out.println("Players generated");
         switch (n){
-            case(1) -> arrayGrids = createDummyGameEntries2_1(chosenPlayers, gameID, lang, grids);
-            case(2) -> arrayGrids = createDummyGameEntries2_2(chosenPlayers, gameID, lang, grids);
-            case(3) -> arrayGrids = createDummyGameEntries3_1(chosenPlayers, gameID, lang, grids);
-            case(4) -> arrayGrids = createDummyGameEntries3_2(chosenPlayers, gameID, lang, grids);
-            case(5) -> arrayGrids = createDummyGameEntries4_1(chosenPlayers, gameID, lang, grids);
-            case(6) -> arrayGrids = createDummyGameEntries5_1(chosenPlayers, gameID, lang, grids);
-            case(7) -> arrayGrids = createDummyGameEntries6_1(chosenPlayers, gameID, lang, grids);
+            case(1) -> createDummyGameEntries2_1(chosenPlayers, gameID, grids);
+            case(2) -> createDummyGameEntries2_2(chosenPlayers, gameID, grids);
+            case(3) -> createDummyGameEntries3_1(chosenPlayers, gameID, grids);
+            case(4) -> createDummyGameEntries3_2(chosenPlayers, gameID, grids);
+            case(5) -> createDummyGameEntries4_1(chosenPlayers, gameID, grids);
+            case(6) -> createDummyGameEntries5_1(chosenPlayers, gameID, grids);
+            case(7) -> createDummyGameEntries6_1(chosenPlayers, gameID, grids);
         }
         return grids.toArray(new String[grids.size()]);
     }
-
-    /*/**
-     *il metodo crea tutte le tuple di un Game e le genera simulando match per match
-     * @param numPlayers
-     * @param gameID
-     * @param lang
-     * @return
-     * @throws IOException
-     * @throws DictionaryException
-     * @throws URISyntaxException
-     */
-    //togliere i file gestire il tutto in maniera statica(classi enumerative)
-    /*private String[] createDummyGameEntries(int numPlayers, UUID gameID, Language lang)throws IOException,
-            DictionaryException, URISyntaxException {
-        /* Randomly extract players from the player list (no duplicates allowed)
-        List<Player> chosenPlayers = new ArrayList<>(numPlayers);
-        int[] score= new int[numPlayers];
-        for (int x: score)
-            x = 0;
-        short match_number=0;
-        Player chosen;
-
-        for (int i = 0; i < numPlayers; i++) {
-            chosen = generatedPlayers.get(random.nextInt(generatedPlayers.size()));
-            chosenPlayers.add(chosen);
-            generatedPlayers.remove(chosen);
-        }
-        /* Put back the players extracted in the original list
-        generatedPlayers.addAll(chosenPlayers);
-        System.out.println("Players generated");
-        List<String> grid = new ArrayList<>();
-        List<String> totalWordInMatch =  new ArrayList<>();
-
-
-        while(!isMatchFinished(score)){
-            wordsOfGrid woG = wordsOfGrid.getRandomGrid();
-            grid.add(woG.getGrid());
-            totalWordInMatch.addAll(woG.getWords());
-            match_number++;
-            System.out.println("MATCH " + match_number + "     GRID: [" + woG.getGrid() + "]");
-            System.out.println("Set up valid words of Match" + match_number + " completed: num players = " + numPlayers);
-            ArrayList<String>[] paroleIdentificabili = new ArrayList[numPlayers];
-            List<WordAnalyzer> paroleTrovate = new ArrayList<>();
-            List<String> soloParoleTrovate = new ArrayList<>();
-            List<WordAnalyzer>[] personalWords = new ArrayList[numPlayers];
-
-            //si decide tutto qui il numero di parole e le parole scelte
-            generateWord(numPlayers, personalWords, paroleIdentificabili, woG, paroleTrovate, lang, soloParoleTrovate);
-
-            System.out.println();
-            System.out.println("Parole Trovate: " + paroleTrovate.toString());
-
-            //si effettuano i dovuti controlli e poi si creano le istanze di GameEntry
-            controlWord(numPlayers, chosenPlayers, personalWords, score,paroleTrovate, gameID,match_number);
-
-            //si resettano tutte le liste per un possibile prossimo match
-            reset(paroleIdentificabili,paroleTrovate, soloParoleTrovate);
-            System.out.println("IL MATCH N "+ match_number + " E' FINITO");
-           // break;
-        }
-
-        System.out.println("SCORE = " + Arrays.toString(score));
-        String[] grids = new String[grid.size()];
-        return grid.toArray(grids);
-    }
-
-
-    public boolean isMatchFinished(int[] score) {
-        for (int x : score) {
-            if (x >= 50)
-                return true;
-        }
-        return false;
-    }
-    */
-    /*/**
-     *
-     * @param numPlayers num of players "playing" the game
-     * @param personalWords words(WordAnalyzer) that player found
-     * @param paroleIdentificabili words
-     * @param woG Grid plus possibles Word
-     * @param paroleTrovate words found in a specific match without repetition
-     * @param lang Language [italian]
-     * Generate random word from wordsOfGrid pool
-     * the method
-     *
-     *//*
-    public void generateWord(int numPlayers, List<WordAnalyzer>[] personalWords, ArrayList<String>[] paroleIdentificabili, wordsOfGrid woG, List<WordAnalyzer> paroleTrovate, Language lang, List<String> soloParoleTrovate/*,valids*){
-        for (int i=0; i<numPlayers; i++) {
-            personalWords[i] = new ArrayList<>();
-            paroleIdentificabili[i] = new ArrayList<>();
-            if(i==0)
-                paroleIdentificabili[i].addAll(woG.getWords());
-            else{
-                paroleIdentificabili[i].addAll(woG.getWords());
-                for (int j=0; j<personalWords[i-1].size();j++){
-                    if(personalWords[i-1].get(j).isValid())
-                    paroleIdentificabili[i].remove(personalWords[i-1].get(j).getWord());
-                }
-            }
-            System.out.println("parole identificabili: " + paroleIdentificabili[i].toString());
-            int numWordFound = random.nextInt((5)+ 1);
-            System.out.println("Player n " + i);
-
-            for (int j = 0; j < numWordFound; j++) {
-                int n =random.nextInt(paroleIdentificabili[i].size());
-                String word = paroleIdentificabili[i].remove(n);
-                WordAnalyzer wordAnalyzer = new WordAnalyzer(word, lang);
-                wordAnalyzer.setDuplicate(false);
-                if (!soloParoleTrovate.contains(word)){
-                    paroleTrovate.add(wordAnalyzer);
-                    soloParoleTrovate.add(word);
-                }
-                else{
-                    for(WordAnalyzer x: paroleTrovate){
-                        if(x.getWord().equals(word))
-                            x.setDuplicate(true);
-                    }
-                }
-                personalWords[i].add(wordAnalyzer);
-            }
-        }
-    }*/
-
-    /*/**
-     *
-     * @param numPlayers num of players "playing" the game
-     * @param chosenPlayers Array of Players
-     * @param personalWords words(WordAnalyzer) that player found
-     * @param score Array of Players score
-     * @param paroleTrovate words found in a specific match without repetition
-     * @param gameID the game id
-     * @param match_number the match number
-     * the method control the word previously generated
-     *//*
-    public void controlWord(int numPlayers, List<Player> chosenPlayers, List<WordAnalyzer>[] personalWords, int[] score, List<WordAnalyzer> paroleTrovate, UUID gameID, short match_number/*,valids*){
-        for (int i=0; i<numPlayers; i++) {
-            Player chosen = chosenPlayers.get(i);
-            //CONTROLLO delle parole duplicate in base al valore della parola in parole trovate
-            for (WordAnalyzer x : paroleTrovate) {
-                for (int j = 0; j < personalWords[i].size(); j++) {
-                    if (x.getWord().equals(personalWords[i].get(j).getWord())) {
-                        personalWords[i].get(j).setDuplicate(x.isDuplicated());
-                    }
-                }
-            }
-        }
-        for (int i=0; i<numPlayers; i++) {
-            Player chosen = chosenPlayers.get(i);
-
-            for (int j=0; j<personalWords[i].size(); j++){
-                String word = personalWords[i].get(j).getWord();
-                if(personalWords[i].get(j).isValid() & !personalWords[i].get(j).isDuplicated())
-                    score[i] += personalWords[i].get(j).getScore();
-
-                boolean requested = random.nextBoolean();
-
-                GameEntry gameEntry = new GameEntry(gameID, chosen.getPlayerID(), match_number, word, requested, personalWords[i].get(j).isDuplicated(), !personalWords[i].get(j).isValid());
-                System.out.println("Parola: " + word + " valid: " + personalWords[i].get(j).isValid() + ", duplicated: " + personalWords[i].get(j).isDuplicated() + ", requested: " + requested + ", score : " + gameEntry.getPoints());
-            }
-            System.out.println("Player " + i + " score: " + score[i]);
-        }
-    }*/
-
-    /*/**
-     *
-     * @param paroleIdentificabili
-     * @param paroleTrovate
-     *//*
-    public void reset(List<String>[] paroleIdentificabili, List<WordAnalyzer> paroleTrovate, List<String> soloParoleTrovate/*,valids*){
-        for (int i=0; i<paroleIdentificabili.length;i++)
-            paroleIdentificabili[i].clear();
-        paroleTrovate.clear();
-        soloParoleTrovate.clear();
-    }*/
 }

@@ -24,6 +24,12 @@ public class WordsDefinitionService implements Service {
     private String[] words;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Words definition service.
+     *
+     * @param words    the words
+     * @param language the language
+     */
     public WordsDefinitionService(String[] words, Language language) {
         this.language = language;
         this.words = words;

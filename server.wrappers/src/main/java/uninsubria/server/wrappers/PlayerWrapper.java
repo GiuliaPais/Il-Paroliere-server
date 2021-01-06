@@ -16,7 +16,6 @@ public class PlayerWrapper {
     private InetAddress ipAddress;
 
     /*---Constructors---*/
-
     /**
      * Instantiates a new Player wrapper.
      *

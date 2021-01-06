@@ -17,16 +17,32 @@ public class Match {
     private final Hashtable<String, Word[]> matchWords;
 
     /*---Constructors---*/
+    /**
+     * Instantiates a new Match.
+     *
+     * @param matchNo    the match no
+     * @param matchWords the match words
+     */
     public Match(int matchNo, Hashtable<String, Word[]> matchWords) {
         this.matchNo = matchNo;
         this.matchWords = matchWords;
     }
 
     /*---Methods---*/
+    /**
+     * Gets match number.
+     *
+     * @return the match no
+     */
     public int getMatchNo() {
         return matchNo;
     }
 
+    /**
+     * Gets match words.
+     *
+     * @return the match words
+     */
     public Hashtable<String, Word[]> getMatchWords() {
         return matchWords;
     }
