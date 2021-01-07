@@ -96,6 +96,8 @@
                     </options>
                     <launcher>Il_Paroliere-server</launcher>
                     <mainClass>uninsubria.server.gui.ServerLauncher</mainClass>
+                    <jlinkImageName>Il_Paroliere</jlinkImageName>
+                    <jlinkZipName>Il_Paroliere</jlinkZipName>
                 </configuration>
             </plugin>
         </plugins>
