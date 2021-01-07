@@ -14,8 +14,8 @@ import javax.mail.internet.MimeMessage;
  * @version 0.9.2
  */
 public class EmailSender{
-	/*(le proprieta' sono state prese dal sito:
-	 https://support.microsoft.com/it-it/office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
+	/*it-it(le proprieta' sono state prese dal sito:
+	 https://support.microsoft.com//office/impostazioni-di-posta-elettronica-pop-e-imap-per-outlook-8361e398-8af4-4e97-b147-6c6c4ac95353)*/
 
     private String username;
     private String password;
@@ -85,12 +85,37 @@ public class EmailSender{
                 return new PasswordAuthentication(EmailSender.getInstance().getUsername(), EmailSender.getInstance().getPassword());
             }
         });
+
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(EmailSender.getInstance().getUsername()));
         msg.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email.getTo()));
         msg.setSubject(email.getSubject());
         msg.setContent(email.getBody(), "text/html; charset=UTF-8");
-        Transport.send(msg);
+        // Create a transport.
+        Transport transport = session.getTransport();
+
+        // Send the message.
+        try
+        {
+            System.out.println("Sending...");
+
+            // Connect to outlook using the SMTP username and password you specified above. host : smtp-mail.outlook.com
+            transport.connect("smtp-mail.outlook.com", "Il_Paroliere@outlook.it", "Paroliere21");
+
+            // Send the email.
+            transport.sendMessage(msg, msg.getAllRecipients());
+            System.out.println("Email sent!");
+        }
+        catch (Exception ex) {
+            System.out.println("The email was not sent.");
+            System.out.println("Error message: " + ex.getMessage());
+        }
+        finally
+        {
+            // Close and terminate the connection.
+            transport.close();
+        }
+
     }
 
     /**
@@ -118,8 +143,10 @@ public class EmailSender{
 
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.host", "outlook.office365.com");
-            props.put("mail.smtp.port", "587");
+            //props.put("mail.smtp.host", "outlook.office365.com");
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.host", "smtp-mail.outlook.com");
+            props.put("mail.smtp.port", 587);
 
             return props;
         }
